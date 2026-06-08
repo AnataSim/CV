@@ -198,9 +198,20 @@ const VOICE_AFK_CONFIG_FILE = path.join(__dirname, '../database/voice-afk-config
 // =================== KRPK-0421: Ghost Mode Selfbot Manager ===================
 // ==============================================================================
 
-const GHOST_USER_TOKEN = process.env.GHOST_USER_TOKEN || null;
-const SIM_DISCORD_ID = process.env.SIM_DISCORD_ID || '661135501226672129';
-const GHOST_CONTROL_CHANNEL_ID = process.env.GHOST_CONTROL_CHANNEL_ID || '1513463585605423174';
+const GHOST_CONFIG_FILE = path.join(__dirname, '../database/ghost-mode-config.json');
+
+function saveGhostConfig(cfg) {
+  try {
+    fs.writeFileSync(GHOST_CONFIG_FILE, JSON.stringify(cfg, null, 2), 'utf8');
+  } catch (e) { console.error('[KRPK-0421] Gagal simpan ghost config:', e.message); }
+}
+
+function loadGhostConfig() {
+  try {
+    if (fs.existsSync(GHOST_CONFIG_FILE)) return JSON.parse(fs.readFileSync(GHOST_CONFIG_FILE, 'utf8'));
+  } catch (e) { console.error('[KRPK-0421] Gagal baca ghost config:', e.message); }
+  return null;
+}
 
 class SelfbotManager {
   constructor(token) {
@@ -214,6 +225,8 @@ class SelfbotManager {
     this.currentGuildId = null;
     this.currentChannelId = null;
     this._reconnectTimer = null;
+    this._destroyed = false;       // true hanya kalau destroy() dipanggil secara eksplisit
+    this._reconnectDelay = 5000;  // mulai 5 detik, naik s/d 60 detik
   }
 
   connect() {
@@ -222,6 +235,7 @@ class SelfbotManager {
       this.ws = new WebSocket('wss://gateway.discord.gg/?v=10&encoding=json');
 
       this.ws.on('open', () => {
+        this._reconnectDelay = 5000; // reset backoff setelah berhasil
         console.log('[KRPK-0421] WebSocket Gateway terbuka.');
       });
 
@@ -243,6 +257,8 @@ class SelfbotManager {
             console.log(`[KRPK-0421] Ghost user ready: ${d.user.username}#${d.user.discriminator}`);
             clearTimeout(timeout);
             resolve();
+            // Auto-restore voice jika sebelumnya sedang aktif
+            this._autoRestoreVoice();
           }
         } else if (op === 9) { // Invalid session
           console.warn('[KRPK-0421] Invalid session dari Gateway.');
@@ -257,6 +273,12 @@ class SelfbotManager {
         this.isConnected = false;
         this._stopHeartbeat();
         clearTimeout(timeout);
+        // Auto-reconnect kalau bukan karena destroy() eksplisit
+        if (!this._destroyed) {
+          console.log(`[KRPK-0421] Akan reconnect dalam ${this._reconnectDelay / 1000}s...`);
+          this._reconnectTimer = setTimeout(() => this._doReconnect(), this._reconnectDelay);
+          this._reconnectDelay = Math.min(this._reconnectDelay * 2, 60000); // max 60 detik
+        }
       });
 
       this.ws.on('error', (err) => {
@@ -265,6 +287,40 @@ class SelfbotManager {
         reject(err);
       });
     });
+  }
+
+  async _doReconnect() {
+    if (this._destroyed) return;
+    try {
+      console.log('[KRPK-0421] Mencoba reconnect ke Gateway...');
+      await this.connect();
+      console.log('[KRPK-0421] Reconnect berhasil!');
+    } catch (err) {
+      console.error('[KRPK-0421] Reconnect gagal:', err.message);
+      // Akan dicoba lagi oleh close handler berikutnya
+    }
+  }
+
+  async _autoRestoreVoice() {
+    // Cek apakah ghost mode seharusnya aktif berdasarkan config yang tersimpan
+    await new Promise(r => setTimeout(r, 2000)); // tunggu 2 detik setelah READY
+    const cfg = loadGhostConfig();
+    if (!cfg || !cfg.isEnabled || !cfg.guildId || !cfg.channelId) return;
+    try {
+      console.log(`[KRPK-0421] Auto-restore: bergabung kembali ke voice channel ${cfg.channelId}...`);
+      await this.joinVoice(cfg.guildId, cfg.channelId);
+      // Update nickname juga
+      if (cfg.nickname) {
+        await new Promise(r => setTimeout(r, 1500));
+        await this.setNickname(cfg.guildId, cfg.nickname).catch(e =>
+          console.warn('[KRPK-0421] Auto-restore nickname gagal:', e.message)
+        );
+      }
+      console.log('[KRPK-0421] Auto-restore voice berhasil!');
+      await updateGhostControlMessageStatus(true).catch(() => {});
+    } catch (err) {
+      console.error('[KRPK-0421] Auto-restore voice gagal:', err.message);
+    }
   }
 
   _identify() {
@@ -337,7 +393,6 @@ class SelfbotManager {
   }
 
   async setNickname(guildId, nickname) {
-    // PATCH /guilds/{guild_id}/members/@me
     const url = `https://discord.com/api/v10/guilds/${guildId}/members/@me`;
     const resp = await fetch(url, {
       method: 'PATCH',
@@ -371,6 +426,11 @@ class SelfbotManager {
   }
 
   destroy() {
+    this._destroyed = true;
+    if (this._reconnectTimer) {
+      clearTimeout(this._reconnectTimer);
+      this._reconnectTimer = null;
+    }
     this._stopHeartbeat();
     if (this.ws) {
       this.ws.close();
@@ -383,7 +443,7 @@ class SelfbotManager {
 }
 
 let ghostManager = null;
-let ghostControlMessageId = null; // ID pesan kontrol yang dikirim Sparxie
+let ghostControlMessageId = null;
 
 
 let connectionState = {
@@ -1217,6 +1277,9 @@ function initializeBot(token) {
           await new Promise(r => setTimeout(r, 1500)); // tunggu sebentar sebelum PATCH nick
           await ghostManager.setNickname(guildId, newNick);
 
+          // Simpan state agar auto-restore setelah restart
+          saveGhostConfig({ isEnabled: true, guildId, channelId: targetChannelId, nickname: newNick });
+
           console.log(`[KRPK-0421] Ghost Mode ENABLED → voice:${targetChannelId}, nick:"${newNick}"`);
           await interaction.editReply({ content: `✅ **Ghost Mode ON** — Bergabung ke voice dan nickname diubah ke \`${newNick}\`.` });
 
@@ -1237,6 +1300,9 @@ function initializeBot(token) {
           }
 
           await ghostManager.leaveVoice();
+
+          // Hapus config agar tidak auto-restore setelah restart
+          saveGhostConfig({ isEnabled: false, guildId: null, channelId: null, nickname: null });
 
           console.log('[KRPK-0421] Ghost Mode DISABLED.');
           await interaction.editReply({ content: '✅ **Ghost Mode OFF** — Keluar dari voice dan nickname dikembalikan.' });
