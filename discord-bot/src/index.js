@@ -1799,16 +1799,17 @@ app.get('/api/leaderboard', async (req, res) => {
       };
 
       // Try direct first (works on localhost/residential IP), then proxy chain for VPS
+      const VERCEL_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kranciweb.vercel.app';
       const fetchAttempts = [
         () => fetch(cakeyUrl, { headers: browserHeaders, signal: AbortSignal.timeout(6000) })
           .then(r => r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`))),
+        () => fetch(`${VERCEL_URL}/api/cakey-proxy?guildId=${guildId}`, { signal: AbortSignal.timeout(10000) })
+          .then(r => r.ok ? r.text() : Promise.reject(new Error(`vercel-proxy HTTP ${r.status}`))),
         () => fetch(`https://corsproxy.io/?url=${encodeURIComponent(cakeyUrl)}`, { headers: browserHeaders, signal: AbortSignal.timeout(8000) })
-          .then(r => r.ok ? r.text() : Promise.reject(new Error(`proxy1 HTTP ${r.status}`))),
+          .then(r => r.ok ? r.text() : Promise.reject(new Error(`proxy2 HTTP ${r.status}`))),
         () => fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(cakeyUrl)}`, { signal: AbortSignal.timeout(8000) })
-          .then(r => r.ok ? r.json() : Promise.reject(new Error(`proxy2 HTTP ${r.status}`)))
+          .then(r => r.ok ? r.json() : Promise.reject(new Error(`proxy3 HTTP ${r.status}`)))
           .then(data => data.contents),
-        () => fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(cakeyUrl)}`, { signal: AbortSignal.timeout(8000) })
-          .then(r => r.ok ? r.text() : Promise.reject(new Error(`proxy3 HTTP ${r.status}`))),
       ];
 
       let html = null;
