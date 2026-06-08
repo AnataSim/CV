@@ -1190,9 +1190,23 @@ function initializeBot(token) {
         try {
           // Cari voice channel yang sama dengan Sparxie
           let targetChannelId = connectionState.channelId;
-          if (!targetChannelId) {
-            return interaction.editReply({ content: '❌ Sparxie belum join voice channel manapun. Connect Sparxie ke voice dulu.' });
+
+          // Fallback: cek langsung dari guild voice state kalau connectionState belum diisi
+          if (!targetChannelId && client && GUILD_ID) {
+            try {
+              const guild = client.guilds.cache.get(GUILD_ID);
+              const botMember = guild?.members.cache.get(client.user.id);
+              targetChannelId = botMember?.voice?.channelId || null;
+              if (targetChannelId) {
+                console.log(`[KRPK-0421] Fallback: Sparxie ditemukan di voice channel ${targetChannelId} via guild cache.`);
+              }
+            } catch (_) {}
           }
+
+          if (!targetChannelId) {
+            return interaction.editReply({ content: '❌ Sparxie belum join voice channel manapun. Connect Sparxie ke voice dulu via Control Booth.' });
+          }
+
 
           // Get current nickname and strip [💤] if already there, then prepend it
           let currentNick = await ghostManager.getCurrentNickname(guildId);
