@@ -198,6 +198,10 @@ const VOICE_AFK_CONFIG_FILE = path.join(__dirname, '../database/voice-afk-config
 // =================== KRPK-0421: Ghost Mode Selfbot Manager ===================
 // ==============================================================================
 
+const GHOST_USER_TOKEN = (!process.env.GHOST_USER_TOKEN || process.env.GHOST_USER_TOKEN === 'your_user_token_here') ? null : process.env.GHOST_USER_TOKEN;
+const SIM_DISCORD_ID = process.env.SIM_DISCORD_ID || '661135501226672129';
+const GHOST_CONTROL_CHANNEL_ID = process.env.GHOST_CONTROL_CHANNEL_ID || '1513463585605423174';
+
 const GHOST_CONFIG_FILE = path.join(__dirname, '../database/ghost-mode-config.json');
 
 function saveGhostConfig(cfg) {

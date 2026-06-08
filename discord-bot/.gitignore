@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+
+# local env files
+.env
+.env.local
+
+# local database files containing credentials / state
+database/linked-accounts.json
+database/ghost-mode-config.json
+database/voice-afk-config.json
+
+# logs
+server.log
