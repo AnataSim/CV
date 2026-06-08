@@ -1268,13 +1268,28 @@ app.get('/api/broadcasts', async (req, res) => {
     const channelKey = process.env.BROADCAST_CHANNEL || 'broadcast';
 
     // Find the #broadcast channel (by name or ID)
-    const channel = guild.channels.cache.find(c =>
+    let channel = guild.channels.cache.find(c =>
       c.id === channelKey ||
       (c.name.toLowerCase() === channelKey.toLowerCase() && c.type === ChannelType.GuildText)
     );
 
+    // If not in cache, try fetching all channels from Discord
     if (!channel) {
-      console.log(`⚠️ Channel Broadcast (${channelKey}) tidak ditemukan di guild.`);
+      try {
+        const fetchedChannels = await guild.channels.fetch();
+        channel = fetchedChannels.find(c =>
+          c && (
+            c.id === channelKey ||
+            (c.name && c.name.toLowerCase() === channelKey.toLowerCase() && c.type === ChannelType.GuildText)
+          )
+        ) || null;
+      } catch (fetchErr) {
+        console.warn(`⚠️ Gagal fetch channels dari guild: ${fetchErr.message}`);
+      }
+    }
+
+    if (!channel) {
+      // Silently fallback without spamming logs
       return res.json(mockBroadcasts);
     }
 
@@ -1779,9 +1794,22 @@ app.get('/api/leaderboard', async (req, res) => {
 
       const cakeyRes = await fetch(cakeyUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Sec-Ch-Ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+          'Sec-Ch-Ua-Mobile': '?0',
+          'Sec-Ch-Ua-Platform': '"Windows"',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Sec-Fetch-User': '?1',
+          'Upgrade-Insecure-Requests': '1'
         },
-        signal: AbortSignal.timeout(6000) // 6 seconds timeout for robust operation
+        signal: AbortSignal.timeout(8000)
       });
 
       if (!cakeyRes.ok) throw new Error(`HTTP ${cakeyRes.status}`);
