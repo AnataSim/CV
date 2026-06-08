@@ -63,7 +63,7 @@ export default function ControlBooth({
   publishVolunteerSettings,
   handleLogout
 }: ControlBoothProps) {
-  const apiEndpoint = backendUrl || "http://127.0.0.1:3001";
+  const apiEndpoint = backendUrl || process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:3001";
 
   function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 1500): Promise<T> {
     return Promise.race([

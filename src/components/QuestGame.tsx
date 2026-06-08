@@ -103,7 +103,7 @@ const isUserAdmin = (role: string | null) => {
 };
 
 export default function QuestGame({ currentUser, displayName, userRole, onScrollToLobby, backendUrl }: QuestGameProps) {
-  const BACKEND_URL = backendUrl || (typeof window !== "undefined" ? localStorage.getItem("crunchy_backend_url") : null) || "http://127.0.0.1:3001";
+  const BACKEND_URL = backendUrl || (typeof window !== "undefined" ? localStorage.getItem("crunchy_backend_url") : null) || process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:3001";
   const [gameState, setGameState] = useState<"menu" | "playing">("menu");
   const [timeMode, setTimeMode] = useState<"auto" | "morning" | "sunset" | "night">("auto");
   const [currentHour, setCurrentHour] = useState<number>(() => {

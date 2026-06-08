@@ -215,7 +215,9 @@ export default function CrunchyVerseStage() {
   const [attachedMediaUrl, setAttachedMediaUrl] = useState<string | null>(null);
   
   // API Integration States
-  const [backendUrl, setBackendUrl] = useState<string>("http://127.0.0.1:3001");
+  const [backendUrl, setBackendUrl] = useState<string>(
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:3001"
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {

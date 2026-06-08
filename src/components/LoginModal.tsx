@@ -47,7 +47,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
           // Fallback: Check local Bot API
           if (!isVolunteerable) {
             try {
-              const backendUrl = localStorage.getItem("crunchy_backend_url") || "http://127.0.0.1:3001";
+              const backendUrl = localStorage.getItem("crunchy_backend_url") || process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:3001";
               const res = await fetch(`${backendUrl}/api/volunteerables/${id}`);
               if (res.ok) {
                 const data = await res.json();
@@ -169,7 +169,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     }, 300000);
 
     try {
-      const backendUrl = localStorage.getItem("crunchy_backend_url") || "http://127.0.0.1:3001";
+      const backendUrl = localStorage.getItem("crunchy_backend_url") || process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:3001";
       const popupUrl = `${backendUrl}/api/oauth/link?state=frontend_login`;
       
       // Calculate popup center position
