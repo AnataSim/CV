@@ -1,0 +1,178 @@
+{
+  "portal": [
+    {
+      "id": "msg-1",
+      "content": "Halo para Anomaly! Selamat datang di saluran Portal teater CrunchyVerse. ✨🎪",
+      "author": "Pimpinan Produksi",
+      "authorAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=stage-manager",
+      "timestamp": "Hari Ini pukul 08:30",
+      "isBot": false
+    },
+    {
+      "id": "msg-2",
+      "content": "Jangan lupa untuk nobar seru malam ini di voice chat ya, kita ada event seru!",
+      "author": "[HokBen] SALZ",
+      "authorAvatar": "https://api.dicebear.com/7.x/lorelei/svg?seed=salz",
+      "timestamp": "Hari Ini pukul 09:15",
+      "isBot": false
+    }
+  ],
+  "command": [
+    {
+      "id": "msg-3",
+      "content": "Gunakan perintah `/sparxie` di sini untuk memanggil asisten bot cerdas Sparxie!",
+      "author": "Sparxie Bot",
+      "authorAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie",
+      "timestamp": "Hari Ini pukul 10:00",
+      "isBot": true
+    }
+  ],
+  "share-meme": [
+    {
+      "id": "msg-4",
+      "content": "Meme garing hari ini dipersembahkan oleh keaktifan anomaly teater! 🍿😂",
+      "author": "yae.eva",
+      "authorAvatar": "https://api.dicebear.com/7.x/pixel-art/svg?seed=yae",
+      "timestamp": "Hari Ini pukul 11:15",
+      "isBot": false
+    }
+  ],
+  "talking": [
+    {
+      "id": "msg-5",
+      "content": "Lagi asik nongkrong nih guys, ada rekomendasi lagu bagus buat didengerin pas nobar?",
+      "author": "Dari Kontak Anda",
+      "authorAvatar": "https://api.dicebear.com/7.x/identicon/svg?seed=kontak",
+      "timestamp": "Hari Ini pukul 12:30",
+      "isBot": false
+    }
+  ],
+  "share-leak": [
+    {
+      "id": "msg-6",
+      "content": "Ssst... kabarnya frame Divergent Universe mau ditambahin slide baru yang lebih menantang! 🤫🤐",
+      "author": "Sutradara Event",
+      "authorAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=director",
+      "timestamp": "Hari Ini pukul 13:00",
+      "isBot": false
+    }
+  ],
+  "share-info": [
+    {
+      "id": "msg-7",
+      "content": "Pemberitahuan: Jam operasional panggung utama teater akan diperpanjang selama libur nasional.",
+      "author": "Pimpinan Produksi",
+      "authorAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=stage-manager",
+      "timestamp": "Hari Ini pukul 14:15",
+      "isBot": false
+    }
+  ],
+  "share-garem": [
+    {
+      "id": "msg-8",
+      "content": "Wih, baru aja dapet rate-up Acheron dalam 10 kali pull! Garam abis! 🧂😭✨",
+      "author": "[AFK] T0ddei",
+      "authorAvatar": "https://api.dicebear.com/7.x/lorelei/svg?seed=toddei",
+      "timestamp": "Hari Ini pukul 15:20",
+      "isBot": false
+    }
+  ],
+  "stream": [
+    {
+      "id": "msg-9",
+      "content": "🔴 Siaran langsung teater CrunchyVerse sedang berlangsung! Tonton keseruannya sekarang!",
+      "author": "Sparxie Bot",
+      "authorAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie",
+      "timestamp": "Hari Ini pukul 16:00",
+      "isBot": true
+    }
+  ],
+  "voice-afk": [
+    {
+      "id": "msg-vc-afk-1",
+      "content": "Saluran AFK. Tidur nyenyak para Anomaly... 💤💤",
+      "author": "Sparxie Bot",
+      "authorAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie",
+      "timestamp": "Hari Ini pukul 08:30",
+      "isBot": true
+    }
+  ],
+  "voice-jtc": [
+    {
+      "id": "msg-vc-jtc-1",
+      "content": "Bergabunglah untuk membuat saluran obrolan suara custom secara instan! ➕🎙️",
+      "author": "Sparxie Bot",
+      "authorAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie",
+      "timestamp": "Hari Ini pukul 08:30",
+      "isBot": true
+    }
+  ],
+  "voice-studyroom": [
+    {
+      "id": "msg-vc-study-1",
+      "content": "Selamat datang di kanal teks saluran suara STUDY ROOM! Sembari diskusi/belajar, kalian bisa ketik-ketik di sini. 🎙️📚",
+      "author": "Sparxie Bot",
+      "authorAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie",
+      "timestamp": "Hari Ini pukul 08:30",
+      "isBot": true
+    },
+    {
+      "id": "msg-vc-study-2",
+      "content": "Lagi nobar dengerin Pastel Ghost nih di voice chat! Seru banget lagunya. 🎵✨",
+      "author": "[HokBen] SALZ",
+      "authorAvatar": "https://api.dicebear.com/7.x/lorelei/svg?seed=salz",
+      "timestamp": "Hari Ini pukul 12:45",
+      "isBot": false
+    }
+  ],
+  "voice-existence": [
+    {
+      "id": "msg-vc-exist-1",
+      "content": "Saluran statistik keanggotaan real-time. Keberadaan Anomaly ke-346 terdeteksi! 📊✨",
+      "author": "Sparxie Bot",
+      "authorAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie",
+      "timestamp": "Hari Ini pukul 13:00",
+      "isBot": true
+    }
+  ],
+  "1435053596742914160": [
+    {
+      "id": "msg-init-1780747214326",
+      "content": "Selamat datang di saluran #1435053596742914160! Mulai obrolan seru di sini. ✨",
+      "author": "Sparxie Bot",
+      "authorAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie",
+      "timestamp": "Hari Ini",
+      "isBot": true
+    },
+    {
+      "id": "msg-1780747218792-850",
+      "content": "hai",
+      "mediaUrl": null,
+      "replyToMsgId": null,
+      "author": "Sim",
+      "authorAvatar": "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png",
+      "timestamp": "Hari Ini pukul 19.00",
+      "isBot": false
+    },
+    {
+      "id": "msg-1780747220410-113",
+      "content": "hai",
+      "mediaUrl": null,
+      "replyToMsgId": null,
+      "author": "Sim",
+      "authorAvatar": "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png",
+      "timestamp": "Hari Ini pukul 19.00",
+      "isBot": false
+    },
+    {
+      "id": "msg-1780749507378-170",
+      "content": "test",
+      "mediaUrl": null,
+      "replyToMsgId": null,
+      "author": "Sim",
+      "authorAvatar": "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png",
+      "timestamp": "Hari Ini pukul 19.38",
+      "isBot": false
+    }
+  ]
+}

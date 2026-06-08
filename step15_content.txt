@@ -1,0 +1,113 @@
+Created At: 2026-06-05T08:05:51Z
+Completed At: 2026-06-05T08:05:51Z
+File Path: `file:///e:/Code/CrunchyVerse/discord-bot/debug-rpc.js`
+Total Lines: 104
+Total Bytes: 3226
+Showing lines 1 to 104
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: const net = require('net');
+2: const fs = require('fs');
+3: const path = require('path');
+4: const dotenv = require('dotenv');
+5: 
+6: dotenv.config({ path: path.join(__dirname, '.env') });
+7: const CLIENT_ID = process.env.DISCORD_CLIENT_ID || "1410583272173600819";
+8: 
+9: console.log('🤖 Starting Discord RPC Diagnostic Script...');
+10: console.log(`🔑 Client ID: ${CLIENT_ID}`);
+11: 
+12: // Try pipes 0 to 9
+13: let pipeFound = false;
+14: 
+15: for (let i = 0; i < 10; i++) {
+16:   const pipePath = process.platform === 'win32'
+17:     ? `\\\\.\\pipe\\discord-ipc-${i}`
+18:     : `${process.env.XDG_RUNTIME_DIR || process.env.TMPDIR || process.env.TMP || '/tmp'}/discord-ipc-${i}`;
+19: 
+20:   console.log(`🔌 Testing connection to: ${pipePath}`);
+21:   
+22:   const socket = net.createConnection(pipePath);
+23:   
+24:   socket.on('connect', () => {
+25:     console.log(`✅ SUCCESS: Connected to ${pipePath}!`);
+26:     pipeFound = true;
+27:     
+28:     // Try handshake
+29:     const handshake = {
+30:       v: 1,
+31:       client_id: CLIENT_ID
+32:     };
+33:     
+34:     sendIPCPacket(socket, 0, handshake);
+35:   });
+36:   
+37:   socket.on('data', (data) => {
+38:     try {
+39:       const op = data.readInt32LE(0);
+40:       const len = data.readInt32LE(4);
+41:       const jsonStr = data.toString('utf8', 8, 8 + len);
+42:       const response = JSON.parse(jsonStr);
+43:       console.log(`📩 Received response (OP ${op}):`, JSON.stringify(response, null, 2));
+44:       
+45:       if (response.evt === 'READY') {
+46:         console.log('🎉 Handshake successful! Sending test activity...');
+4
+<truncated 60 bytes>
+T_ACTIVITY",
+49:           args: {
+50:             pid: process.pid,
+51:             activity: {
+52:               state: "Testing Rich Presence",
+53:               details: "CrunchyVerse Bot Connection",
+54:               assets: {
+55:                 large_image: "https://vantage.csw.lenovo.com/v1/web/containerwidget/default/favicon.ico",
+56:                 large_text: "CrunchyVerse"
+57:               },
+58:               timestamps: {
+59:                 start: Date.now()
+60:               }
+61:             }
+62:           },
+63:           nonce: "test-nonce"
+64:         });
+65:         
+66:         console.log('📡 Test activity sent. Check your Discord client profile to see if "Playing Sparxie" is visible!');
+67:         setTimeout(() => {
+68:           console.log('👋 Diagnostic complete. Closing connection.');
+69:           socket.destroy();
+70:           process.exit(0);
+71:         }, 10000);
+72:       }
+73:     } catch (err) {
+74:       console.error('⚠️ Error parsing data:', err.message);
+75:     }
+76:   });
+77:   
+78:   socket.on('error', (err) => {
+79:     // Expected if pipe does not exist
+80:   });
+81: }
+82: 
+83: function sendIPCPacket(socket, op, data) {
+84:   try {
+85:     const json = JSON.stringify(data);
+86:     const dataBuf = Buffer.from(json, 'utf8');
+87:     const headerBuf = Buffer.alloc(8);
+88:     headerBuf.writeInt32LE(op, 0);
+89:     headerBuf.writeInt32LE(dataBuf.length, 4);
+90:     socket.write(Buffer.concat([headerBuf, dataBuf]));
+91:     console.log(`📤 Sent packet (OP ${op}):`, json);
+92:   } catch (err) {
+93:     console.error('❌ Failed to send packet:', err.message);
+94:   }
+95: }
+96: 
+97: // Timeout after 8 seconds if no pipe connects
+98: setTimeout(() => {
+99:   if (!pipeFound) {
+100:     console.error('❌ FAILED: Could not connect to any Discord IPC pipes (0-9). Make sure the Discord desktop app is running on this machine.');
+101:     process.exit(1);
+102:   }
+103: }, 8000);
+104: 
+The above content shows the entire, complete file contents of the requested file.

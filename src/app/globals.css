@@ -1,26 +1,299 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #060102;
+  --foreground: #f5ebe6;
+  --theater-red-rgb: 128, 0, 32;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  --font-display: "Cinzel", serif;
+  --font-sans: "Outfit", sans-serif;
+  
+  --color-theater-red-light: #e51a2d;
+  --color-theater-red: #800020;
+  --color-theater-red-dark: #3a000c;
+  --color-theater-black: #060102;
+  --color-theater-gold: #d4af37;
+  --color-theater-gold-dim: #aa841e;
+  
+  --animate-pulse-glow: pulse-glow 2s infinite ease-in-out;
+  --animate-spotlight-drift: spotlight-drift 20s infinite ease-in-out;
+  --animate-curtain-wrinkle: curtain-wrinkle 6s infinite ease-in-out;
+  --animate-float: float 4s infinite ease-in-out;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes pulse-glow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(229, 26, 45, 0.4), 0 0 20px rgba(229, 26, 45, 0.2);
+    box-shadow: 0 0 15px rgba(229, 26, 45, 0.2);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(229, 26, 45, 0.8), 0 0 45px rgba(229, 26, 45, 0.5);
+    box-shadow: 0 0 25px rgba(229, 26, 45, 0.4);
   }
 }
 
-body {
+@keyframes spotlight-drift {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(40px, -20px) scale(1.1);
+  }
+}
+
+@keyframes curtain-wrinkle {
+  0%, 100% {
+    filter: contrast(1.1) brightness(1);
+  }
+  50% {
+    filter: contrast(1.2) brightness(0.9);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Base resets & utilities */
+html, body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Outfit", sans-serif;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
+
+/* Snap scroll container */
+.scroll-container {
+  scroll-snap-type: y proximity;
+  overflow-y: scroll;
+  height: 100vh;
+  scrollbar-width: none;
+}
+.scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Frame 1 — Cinematic hero, no internal scroll */
+.scroll-frame {
+  scroll-snap-align: start;
+  height: 100vh;
+  flex-shrink: 0;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Frame 2+ — Snap to start, but content scrolls inside */
+.scroll-frame-inner {
+  scroll-snap-align: start;
+  height: 100vh;
+  flex-shrink: 0;
+  width: 100%;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #3a000c transparent;
+}
+.scroll-frame-inner::-webkit-scrollbar {
+  width: 4px;
+}
+.scroll-frame-inner::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-frame-inner::-webkit-scrollbar-thumb {
+  background: #3a000c;
+  border-radius: 99px;
+}
+
+/* Theatrical Shadows and Gradients */
+.theater-vignette {
+  background: radial-gradient(circle, transparent 20%, #060102 95%);
+}
+
+.spotlight {
+  background: radial-gradient(circle 350px at var(--x, 50%) var(--y, 50%), rgba(212, 175, 55, 0.12) 0%, rgba(128, 0, 32, 0.05) 50%, transparent 100%);
+}
+
+.curtain-shadow-left {
+  background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 100%);
+}
+
+.curtain-shadow-right {
+  background: linear-gradient(to left, rgba(0,0,0,0.8) 0%, transparent 100%);
+}
+
+/* Golden border styled like theater stage edge */
+.stage-gold-trim {
+  border-image: linear-gradient(to right, #8a6f27, #ffd700, #c5a059, #ffd700, #8a6f27) 1;
+}
+
+/* Curtain background styles */
+.curtain-fabric {
+  background-image: repeating-linear-gradient(
+    90deg,
+    #4a0008,
+    #4a0008 10px,
+    #5a000c 20px,
+    #800020 30px,
+    #9e0c24 40px,
+    #800020 50px,
+    #5a000c 60px,
+    #4a0008 70px
+  );
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+}
+
+.curtain-valance {
+  background-image: repeating-linear-gradient(
+    0deg,
+    #320004,
+    #5a000c 15px,
+    #800020 30px,
+    #5a000c 45px
+  );
+  box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+}
+
+/* Dust particles animation in spotlight */
+.dust-particle {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float-particle var(--duration, 8s) infinite linear;
+}
+
+@keyframes float-particle {
+  0% {
+    transform: translateY(105vh) translateX(0) scale(0.8);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-5vh) translateX(var(--drift, 40px)) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* ==============================================================================
+   ======================= FRAME 7: CARD QUEST GAME ANIMATIONS ==================
+   ============================================================================== */
+
+/* 3D Card Flip styling */
+.card-perspective {
+  perspective: 1200px;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  transform-style: preserve-3d;
+}
+
+.card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 1rem;
+}
+
+.card-back {
+  background: radial-gradient(circle at center, #110103 0%, #000000 100%);
+  z-index: 2;
+}
+
+.card-front {
+  transform: rotateY(180deg);
+  z-index: 1;
+}
+
+/* Card Dealing */
+.deck-card {
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  transform: translate(var(--tx, 0px), var(--ty, 0px)) rotate(var(--rot, 0deg)) scale(1);
+}
+
+.deck-card:hover {
+  transform: translate(var(--tx, 0px), calc(var(--ty, 0px) - 16px)) rotate(var(--rot, 0deg)) scale(1.08) !important;
+  z-index: 40 !important;
+  border-color: #d4af37 !important;
+  box-shadow: 0 12px 30px rgba(212, 175, 55, 0.4);
+}
+
+/* Deal Card animation using custom offsets */
+.animate-deal {
+  animation: deal-card 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes deal-card {
+  0% {
+    transform: translate(0px, 150px) rotate(0deg) scale(0.2);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(var(--tx, 0px), var(--ty, 0px)) rotate(var(--rot, 0deg)) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Active card slot flight animation */
+@keyframes fly-to-center {
+  0% {
+    transform: translate(var(--tx, 0px), var(--ty, 0px)) rotate(var(--rot, 0deg)) scale(1);
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(0deg) scale(1.15);
+  }
+}
+
+/* Cloud movement background animation */
+.cloud-scroller {
+  animation: scroll-clouds 45s linear infinite;
+}
+
+@keyframes scroll-clouds {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Star twinkling */
+.star-twinkle {
+  animation: twinkle var(--speed, 3s) infinite ease-in-out;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: var(--min-op, 0.2); }
+  50% { opacity: var(--max-op, 0.85); }
+}
+
+/* Color transition for adaptive sky backgrounds */
+.adaptive-sky {
+  transition: background 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+

@@ -1,0 +1,428 @@
+[LOG] 2026-06-07T23:58:21.929Z 🤖 Menghubungkan bot ke Discord...
+[LOG] 2026-06-07T23:58:21.953Z 
+======================================================
+[LOG] 2026-06-07T23:58:21.954Z 🎪 Server API CrunchyVerse Bot berjalan dengan sukses!
+[LOG] 2026-06-07T23:58:21.954Z 📡 URL API Lokal: http://localhost:3001
+[LOG] 2026-06-07T23:58:21.954Z 🖥️  Endpoint Stats: http://localhost:3001/api/stats
+[LOG] 2026-06-07T23:58:21.955Z ======================================================
+
+[LOG] 2026-06-07T23:58:24.171Z ✅ Bot berhasil login sebagai KranciWib#6965!
+[LOG] 2026-06-07T23:58:24.182Z [VoiceAFK SUCCESS] 06.58.24 - Bot VoiceAFK terintegrasi dengan CrunchyVerse (KranciWib#6965)
+[LOG] 2026-06-07T23:58:24.184Z 🎪 Terhubung ke server: CrunchyVerse
+[LOG] 2026-06-07T23:58:24.185Z 📡 [LiveStatusChannels] Mengubah nama channel 1480715185453793524 dari "⚫ AIRED" menjadi "🔴 Airing"
+[LOG] 2026-06-07T23:58:24.186Z 📡 [LiveStatusChannels] Mengubah nama channel 1512685924771958846 dari "-" menjadi "Streaming 🎪 STAGE LIVE: Nobar Konser & Chit-chat Bareng Member Anomaly! 🍿"
+[ERR] 2026-06-07T23:58:24.187Z (node:11536) DeprecationWarning: The ready event has been renamed to clientReady to distinguish it from the gateway READY event and will only emit under that name in v15. Please use clientReady instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[LOG] 2026-06-07T23:58:24.596Z 👥 Mengisi cache member berhasil.
+[LOG] 2026-06-07T23:58:24.597Z ⏰ [AutoRank] Menjadwalkan pengecekan otomatis setiap 10 menit.
+[LOG] 2026-06-07T23:58:25.930Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-07T23:58:26.148Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-07T23:58:27.711Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-07T23:58:29.612Z 
+⏰ [AutoRank] Menjalankan pengecekan otomatis rank role...
+[LOG] 2026-06-07T23:58:29.617Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-07T23:58:30.577Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-07T23:58:30.578Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-07T23:58:31.302Z 🔔 [AutoRank] Perubahan terdeteksi di "leveling": pertama kali → fuzulovefoxian|183
+[LOG] 2026-06-07T23:58:31.877Z 🔴 [AutoRank] Melepas role dari fuzulovefoxian
+[LOG] 2026-06-07T23:58:32.860Z 🏆 [AutoRank] Role "🏆 Rank 1 Leveling: Level 183" → fuzulovefoxian (820154491654504458)
+[LOG] 2026-06-07T23:58:34.367Z 🔔 [AutoRank] Perubahan terdeteksi di "streak": pertama kali → fuzulovefoxian|202
+[LOG] 2026-06-07T23:58:34.751Z 🔴 [AutoRank] Melepas role dari fuzulovefoxian
+[LOG] 2026-06-07T23:58:35.665Z 🏆 [AutoRank] Role "🏆 Rank 1 Streak: ☀️ 202 Hari" → fuzulovefoxian (820154491654504458)
+[LOG] 2026-06-07T23:58:36.956Z 
+🔄 [OAuth] ====== Memulai sinkronisasi metadata Discord ======
+[LOG] 2026-06-07T23:58:36.957Z 👥 [OAuth] Mensinkronisasi 1 akun...
+[LOG] 2026-06-07T23:58:36.957Z 📡 [OAuth] Updating connection metadata for @sim.tsx (ID: 661135501226672129)...
+[LOG] 2026-06-07T23:58:36.960Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-07T23:58:37.175Z 🔔 [AutoRank] Perubahan terdeteksi di "voice": pertama kali → palecursedvessel|2489
+[LOG] 2026-06-07T23:58:37.566Z 🔴 [AutoRank] Melepas role dari palecursedvessel
+[LOG] 2026-06-07T23:58:37.923Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-07T23:58:37.923Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-07T23:58:38.383Z 📊 [OAuth] User Stats: [object Object]
+[LOG] 2026-06-07T23:58:38.528Z 🏆 [AutoRank] Role "🏆 Rank 1 Voice: 2489 Hours" → palecursedvessel (1051027211160928276)
+[LOG] 2026-06-07T23:58:38.736Z ✅ [OAuth] Successfully pushed stats to Discord for @sim.tsx
+[LOG] 2026-06-07T23:58:40.033Z 🔔 [AutoRank] Perubahan terdeteksi di "cvWealth": pertama kali → palecursedvessel|28.472.876
+[LOG] 2026-06-07T23:58:40.451Z 🔴 [AutoRank] Melepas role dari palecursedvessel
+[LOG] 2026-06-07T23:58:40.747Z ✅ [OAuth] Sinkronisasi selesai.
+
+[LOG] 2026-06-07T23:58:41.377Z 🏆 [AutoRank] Role "🏆 Rank 1 Value Account: CV$ 28.472.876" → palecursedvessel (1051027211160928276)
+[LOG] 2026-06-07T23:58:42.880Z 🏆 [AutoRank] Update selesai: 4/4 role diperbarui · 4/4 berhasil di-assign ke juara
+[LOG] 2026-06-07T23:59:24.016Z 📥 [API/Submission] Menerima upload media dari pemain: Test Tester (UID: test-user-1234) untuk quest: "CDM 180%+"
+[LOG] 2026-06-07T23:59:25.572Z ✅ [API/Submission] Media sukses dikirim ke Discord. Msg ID: 1513331575063056504, Attachment URL: https://cdn.discordapp.com/attachments/1512604646328504370/1513331575159394314/screenshot.png?ex=6a27575b&is=6a2605db&hm=88ecad7136a719aaa81922d871433cba071761312d280ce654729a4ebd2bca4f&
+[LOG] 2026-06-07T23:59:49.209Z ✅ [API/Approve] Memproses persetujuan manual untuk submission ID: sub-1780876765573-120
+[LOG] 2026-06-07T23:59:49.210Z 💰 [Points] Lokal: Ditambahkan 10 poin ke user test-user-1234. Total poin baru: 10
+[LOG] 2026-06-07T23:59:50.716Z 🎭 [API/Approve] Mencari member Discord ID: "661135501226672129"...
+[LOG] 2026-06-07T23:59:50.717Z 📊 [Progress Roles] User test-user-1234 has completed 1 active quests.
+[LOG] 2026-06-08T00:00:59.892Z 🤖 [API/roles] Menghubungkan ke Discord Guild...
+[LOG] 2026-06-08T00:00:59.893Z 👥 [API/roles] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:00:59.895Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:00:59.907Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:01:00.376Z ✅ [API/roles] Berhasil membaca 201 role dari server Discord.
+[LOG] 2026-06-08T00:01:00.951Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:01:00.951Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:01:20.817Z 🤖 [API/roles] Menghubungkan ke Discord Guild...
+[LOG] 2026-06-08T00:01:20.817Z 👥 [API/roles] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:01:20.819Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:01:21.805Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:01:21.806Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:01:21.931Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:01:21.941Z ✅ [API/roles] Berhasil membaca 201 role dari server Discord.
+[LOG] 2026-06-08T00:01:23.253Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:01:23.770Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:01:44.931Z 📥 [API/Submission] Menerima upload media dari pemain: Sim (UID: sim-discord-661135501226672129) untuk quest: "CDM 180%+"
+[LOG] 2026-06-08T00:01:48.951Z ✅ [API/Submission] Media sukses dikirim ke Discord. Msg ID: 1513332173451558954, Attachment URL: https://cdn.discordapp.com/attachments/1512604646328504370/1513332173753552936/Screenshot_2026-06-08_065151.png?ex=6a2757ea&is=6a26066a&hm=9aad2c3cf4f634dfd05fa9e44d37ded1c5959e4881485f818ad7f833b5f4d5c6&
+[LOG] 2026-06-08T00:01:53.344Z 🔔 [Reaction] Menerima reaksi ✅ dari @sim.tsx pada pesan ID 1513332173451558954
+[LOG] 2026-06-08T00:01:53.344Z 🎯 [Reaction] Ditemukan submission lokal ID: sub-1780876908952-99 untuk pesan: 1513332173451558954
+[ERR] 2026-06-08T00:01:53.864Z [2026-06-08T00:01:53.864Z]  @firebase/firestore: Firestore (12.14.0): Could not reach Cloud Firestore backend. Connection failed 1 times. Most recent error: FirebaseError: [code=permission-denied]: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project crunchyweb before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=crunchyweb then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+This typically indicates that your device does not have a healthy Internet connection at the moment. The client will operate in offline mode until it is able to successfully connect to the backend.
+[LOG] 2026-06-08T00:01:53.879Z ✅ [Submission] Approved submission: sub-1780876908952-99
+[LOG] 2026-06-08T00:01:53.880Z 🔥 [Reaction] Updated local user deck card quest-1780834229446-915 status to Completed
+[LOG] 2026-06-08T00:01:54.158Z 💰 [Points] Lokal: Ditambahkan 10 poin ke user sim-discord-661135501226672129. Total poin baru: 973010
+[LOG] 2026-06-08T00:01:56.978Z 🎭 [Reaction] Mencari member Discord ID: "661135501226672129"...
+[LOG] 2026-06-08T00:01:56.979Z 📊 [Progress Roles] User sim-discord-661135501226672129 has completed 2 active quests.
+[LOG] 2026-06-08T00:02:00.820Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:02:41.486Z 📥 [API/Submission] Menerima upload media dari pemain: Sim (UID: sim-discord-661135501226672129) untuk quest: "SPD 160+"
+[LOG] 2026-06-08T00:02:44.223Z ✅ [API/Submission] Media sukses dikirim ke Discord. Msg ID: 1513332404188614770, Attachment URL: https://cdn.discordapp.com/attachments/1512604646328504370/1513332404662702140/Screenshot_2026-06-08_070233.png?ex=6a275821&is=6a2606a1&hm=a72d4ae3c1d54d5a9ea5ccb724dfd958d6bd44f00b211ed419cb0ebbdfe7fc1f&
+[LOG] 2026-06-08T00:02:48.995Z 🔔 [Reaction] Menerima reaksi ✅ dari @sim.tsx pada pesan ID 1513332404188614770
+[LOG] 2026-06-08T00:02:48.996Z 🎯 [Reaction] Ditemukan submission lokal ID: sub-1780876964224-142 untuk pesan: 1513332404188614770
+[LOG] 2026-06-08T00:02:49.042Z ✅ [Submission] Approved submission: sub-1780876964224-142
+[LOG] 2026-06-08T00:02:49.043Z 🔥 [Reaction] Updated local user deck card quest-1780834115234-273 status to Completed
+[LOG] 2026-06-08T00:02:49.306Z 💰 [Points] Lokal: Ditambahkan 10 poin ke user sim-discord-661135501226672129. Total poin baru: 973010
+[LOG] 2026-06-08T00:02:52.314Z 🎭 [Reaction] Mencari member Discord ID: "661135501226672129"...
+[LOG] 2026-06-08T00:02:52.315Z 📊 [Progress Roles] User sim-discord-661135501226672129 has completed 3 active quests.
+[LOG] 2026-06-08T00:03:00.919Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:04:00.957Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:04:21.942Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:04:22.138Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:04:22.676Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:04:39.270Z 📥 [API/Submission] Menerima upload media dari pemain: Sim (UID: sim-discord-661135501226672129) untuk quest: "Owlbert"
+[LOG] 2026-06-08T00:04:41.838Z ✅ [API/Submission] Media sukses dikirim ke Discord. Msg ID: 1513332899141652652, Attachment URL: https://cdn.discordapp.com/attachments/1512604646328504370/1513332899489910834/Screenshot_2026-02-15-22-03-16-280_com.HoYoverse.hkrpgoversea.jpg?ex=6a275897&is=6a260717&hm=c4d31a0eed21acd099c7a5203959dd6ee7c3e45a438f989b1f7e630c308d3c30&
+[LOG] 2026-06-08T00:04:53.227Z 🔔 [Reaction] Menerima reaksi ✅ dari @sim.tsx pada pesan ID 1513332899141652652
+[LOG] 2026-06-08T00:04:53.228Z 🎯 [Reaction] Ditemukan submission lokal ID: sub-1780877081839-86 untuk pesan: 1513332899141652652
+[LOG] 2026-06-08T00:04:53.280Z ✅ [Submission] Approved submission: sub-1780877081839-86
+[LOG] 2026-06-08T00:04:53.281Z 🔥 [Reaction] Updated local user deck card quest-1780835391313-310 status to Completed
+[LOG] 2026-06-08T00:04:53.560Z 💰 [Points] Lokal: Ditambahkan 10 poin ke user sim-discord-661135501226672129. Total poin baru: 973010
+[LOG] 2026-06-08T00:04:56.571Z 🎭 [Reaction] Mencari member Discord ID: "661135501226672129"...
+[LOG] 2026-06-08T00:04:56.572Z 📊 [Progress Roles] User sim-discord-661135501226672129 has completed 4 active quests.
+[LOG] 2026-06-08T00:05:05.927Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:06:05.950Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:07:14.381Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:07:21.944Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:07:22.126Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:07:22.126Z 📡 [LiveStatusChannels] Mengubah nama channel 1480715185453793524 dari "🔴 Airing" menjadi "⚫ AIRED"
+[LOG] 2026-06-08T00:07:22.127Z 📡 [LiveStatusChannels] Mengubah nama channel 1512685924771958846 dari "Streaming 🎪 STAGE LIVE: Nobar Konser & Chit-chat Bareng Member Anomaly! 🍿" menjadi "-"
+[LOG] 2026-06-08T00:07:22.576Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:08:15.955Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:08:24.607Z 
+⏰ [AutoRank] Menjalankan pengecekan otomatis rank role...
+[LOG] 2026-06-08T00:08:24.611Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:08:25.733Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:08:25.734Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:08:26.614Z ✅ [AutoRank] Tidak ada perubahan peringkat — role tetap relevan.
+[LOG] 2026-06-08T00:09:17.959Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:10:21.959Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:10:22.145Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:10:22.658Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:10:34.964Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:10:56.517Z 🤖 [API/roles] Menghubungkan ke Discord Guild...
+[LOG] 2026-06-08T00:10:56.518Z 👥 [API/roles] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:10:56.519Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:10:56.919Z ✅ [API/roles] Berhasil membaca 201 role dari server Discord.
+[LOG] 2026-06-08T00:10:58.039Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:10:58.040Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:11:36.956Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:13:21.952Z 
+🔄 [OAuth] ====== Memulai sinkronisasi metadata Discord ======
+[LOG] 2026-06-08T00:13:21.953Z 👥 [OAuth] Mensinkronisasi 1 akun...
+[LOG] 2026-06-08T00:13:21.953Z 📡 [OAuth] Updating connection metadata for @sim.tsx (ID: 661135501226672129)...
+[LOG] 2026-06-08T00:13:21.956Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:13:21.961Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:13:22.313Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:13:23.085Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:13:23.086Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:13:23.666Z 📊 [OAuth] User Stats: [object Object]
+[LOG] 2026-06-08T00:13:23.996Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:13:24.071Z ✅ [OAuth] Successfully pushed stats to Discord for @sim.tsx
+[LOG] 2026-06-08T00:13:26.084Z ✅ [OAuth] Sinkronisasi selesai.
+
+[LOG] 2026-06-08T00:13:35.043Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:15:35.033Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:16:21.969Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:16:22.165Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:16:22.707Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:16:36.947Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:17:36.962Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:18:24.617Z 
+⏰ [AutoRank] Menjalankan pengecekan otomatis rank role...
+[LOG] 2026-06-08T00:18:24.618Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:18:25.608Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:18:25.609Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:18:26.466Z ✅ [AutoRank] Tidak ada perubahan peringkat — role tetap relevan.
+[LOG] 2026-06-08T00:18:41.632Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:19:21.974Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:19:22.290Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:19:22.998Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:19:41.642Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:19:42.089Z 📥 [API/Submission] Menerima upload media dari pemain: Sim (UID: sim-discord-661135501226672129) untuk quest: "Beloved One Bond"
+[LOG] 2026-06-08T00:19:44.577Z ✅ [API/Submission] Media sukses dikirim ke Discord. Msg ID: 1513336685918949377, Attachment URL: https://cdn.discordapp.com/attachments/1512604646328504370/1513336686308884560/Screenshot_2026-02-15-22-24-25-978_com.HoYoverse.hkrpgoversea.jpg?ex=6a275c1e&is=6a260a9e&hm=710a4e2d53279256dcfc15282f01f8c15ace76af78869f736f6b1935413fa0e6&
+[LOG] 2026-06-08T00:19:54.632Z 🔔 [Reaction] Menerima reaksi ✅ dari @sim.tsx pada pesan ID 1513336685918949377
+[LOG] 2026-06-08T00:19:54.633Z 🎯 [Reaction] Ditemukan submission lokal ID: sub-1780877984579-695 untuk pesan: 1513336685918949377
+[LOG] 2026-06-08T00:19:54.687Z ✅ [Submission] Approved submission: sub-1780877984579-695
+[LOG] 2026-06-08T00:19:54.688Z 🔥 [Reaction] Updated local user deck card quest-1780835335407-451 status to Completed
+[LOG] 2026-06-08T00:19:54.954Z 💰 [Points] Lokal: Ditambahkan 10 poin ke user sim-discord-661135501226672129. Total poin baru: 973010
+[LOG] 2026-06-08T00:19:57.977Z 🎭 [Reaction] Mencari member Discord ID: "661135501226672129"...
+[LOG] 2026-06-08T00:19:57.977Z 📊 [Progress Roles] User sim-discord-661135501226672129 has completed 5 active quests.
+[LOG] 2026-06-08T00:19:59.266Z 🏆 [Serial Role] User sim-discord-661135501226672129 mendapat role Serial #1 — Crescent Eclipse (Rank 1)
+[LOG] 2026-06-08T00:20:41.957Z 🎙️ [API/voice-channel] Menemukan 6 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:21:07.366Z [VoiceAFK INFO] 07.21.07 - Menerima perintah sambung ke Voice Channel: Guild 1403255548698300416, Channel 1435053596742914160
+[LOG] 2026-06-08T00:21:07.367Z [VoiceAFK INFO] 07.21.07 - Menghubungkan ke Voice Channel: Server 1403255548698300416, Channel 1435053596742914160...
+[LOG] 2026-06-08T00:21:22.375Z [VoiceAFK ERROR] 07.21.22 - Gagal menyambung ke voice channel: The operation was aborted
+[LOG] 2026-06-08T00:21:46.955Z 🎙️ [API/voice-channel] Menemukan 7 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:22:21.976Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:22:22.260Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:22:22.813Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:22:51.631Z 🎙️ [API/voice-channel] Menemukan 7 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:23:56.520Z 🎙️ [API/voice-channel] Menemukan 7 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:24:56.525Z 🎙️ [API/voice-channel] Menemukan 7 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:25:21.989Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:25:22.284Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:25:22.837Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:25:56.548Z 🎙️ [API/voice-channel] Menemukan 7 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:26:56.960Z 🎙️ [API/voice-channel] Menemukan 8 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:28:21.960Z 
+🔄 [OAuth] ====== Memulai sinkronisasi metadata Discord ======
+[LOG] 2026-06-08T00:28:21.961Z 👥 [OAuth] Mensinkronisasi 1 akun...
+[LOG] 2026-06-08T00:28:21.961Z 📡 [OAuth] Updating connection metadata for @sim.tsx (ID: 661135501226672129)...
+[LOG] 2026-06-08T00:28:21.963Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:28:21.991Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:28:22.380Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:28:22.945Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:28:23.122Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:28:23.123Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:28:23.679Z 📊 [OAuth] User Stats: [object Object]
+[LOG] 2026-06-08T00:28:24.115Z ✅ [OAuth] Successfully pushed stats to Discord for @sim.tsx
+[LOG] 2026-06-08T00:28:24.620Z 
+⏰ [AutoRank] Menjalankan pengecekan otomatis rank role...
+[LOG] 2026-06-08T00:28:24.622Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:28:25.304Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:28:25.304Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:28:26.116Z ✅ [OAuth] Sinkronisasi selesai.
+
+[LOG] 2026-06-08T00:28:26.147Z ✅ [AutoRank] Tidak ada perubahan peringkat — role tetap relevan.
+[LOG] 2026-06-08T00:28:35.019Z 🎙️ [API/voice-channel] Menemukan 8 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:29:35.020Z 🎙️ [API/voice-channel] Menemukan 8 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:30:35.038Z 🎙️ [API/voice-channel] Menemukan 9 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:31:22.004Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:31:22.232Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:31:22.755Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:31:36.955Z 🎙️ [API/voice-channel] Menemukan 9 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:32:36.958Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:33:36.961Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:34:22.008Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:34:22.396Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:34:22.886Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:34:38.741Z 🤖 [API/roles] Menghubungkan ke Discord Guild...
+[LOG] 2026-06-08T00:34:38.741Z 👥 [API/roles] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:34:38.743Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:34:38.746Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:34:39.127Z ✅ [API/roles] Berhasil membaca 201 role dari server Discord.
+[LOG] 2026-06-08T00:34:39.772Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:34:39.773Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:34:50.790Z ✅ [OAuth/Callback] Linked account successfully: @xymp_ (ID: 880751803883487283)
+[LOG] 2026-06-08T00:34:50.790Z 📡 [OAuth] Updating connection metadata for @xymp_ (ID: 880751803883487283)...
+[LOG] 2026-06-08T00:34:50.793Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:34:51.805Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:34:51.806Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:34:52.238Z 📊 [OAuth] User Stats: [object Object]
+[LOG] 2026-06-08T00:34:52.657Z ✅ [OAuth] Successfully pushed stats to Discord for @xymp_
+[LOG] 2026-06-08T00:35:16.294Z 🤖 [API/roles] Menghubungkan ke Discord Guild...
+[LOG] 2026-06-08T00:35:16.295Z 👥 [API/roles] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:35:16.298Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:35:16.786Z ✅ [API/roles] Berhasil membaca 201 role dari server Discord.
+[LOG] 2026-06-08T00:35:17.291Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:35:17.291Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:35:26.217Z ✅ [OAuth/Callback] Linked account successfully: @xymp_ (ID: 880751803883487283)
+[LOG] 2026-06-08T00:35:26.218Z 📡 [OAuth] Updating connection metadata for @xymp_ (ID: 880751803883487283)...
+[LOG] 2026-06-08T00:35:26.222Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:35:27.250Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:35:27.251Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:35:27.622Z 📊 [OAuth] User Stats: [object Object]
+[LOG] 2026-06-08T00:35:28.035Z ✅ [OAuth] Successfully pushed stats to Discord for @xymp_
+[LOG] 2026-06-08T00:35:41.391Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:36:32.562Z 🤖 [API/roles] Menghubungkan ke Discord Guild...
+[LOG] 2026-06-08T00:36:32.563Z 👥 [API/roles] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:36:32.565Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:36:32.997Z ✅ [API/roles] Berhasil membaca 201 role dari server Discord.
+[LOG] 2026-06-08T00:36:33.534Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:36:33.535Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:36:41.959Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:36:46.559Z ✅ [OAuth/Callback] Linked account successfully: @xymp_ (ID: 880751803883487283)
+[LOG] 2026-06-08T00:36:46.559Z 📡 [OAuth] Updating connection metadata for @xymp_ (ID: 880751803883487283)...
+[LOG] 2026-06-08T00:36:46.563Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:36:47.855Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:36:47.856Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:36:48.310Z 📊 [OAuth] User Stats: [object Object]
+[LOG] 2026-06-08T00:36:48.800Z ✅ [OAuth] Successfully pushed stats to Discord for @xymp_
+[LOG] 2026-06-08T00:37:22.008Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:37:22.203Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:37:22.682Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:37:42.575Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:38:24.628Z 
+⏰ [AutoRank] Menjalankan pengecekan otomatis rank role...
+[LOG] 2026-06-08T00:38:24.630Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:38:29.741Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:38:29.742Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:38:30.606Z ✅ [AutoRank] Tidak ada perubahan peringkat — role tetap relevan.
+[LOG] 2026-06-08T00:38:42.948Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:39:47.949Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:40:22.009Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:40:22.237Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:40:23.608Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:40:47.952Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:41:17.829Z 🤖 [API/roles] Menghubungkan ke Discord Guild...
+[LOG] 2026-06-08T00:41:17.830Z 👥 [API/roles] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:41:17.831Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:41:18.235Z ✅ [API/roles] Berhasil membaca 201 role dari server Discord.
+[LOG] 2026-06-08T00:41:18.824Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:41:18.825Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:41:47.955Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:42:12.727Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:42:12.737Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:42:13.722Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:42:13.722Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:42:13.798Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:42:13.799Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:43:21.968Z 
+🔄 [OAuth] ====== Memulai sinkronisasi metadata Discord ======
+[LOG] 2026-06-08T00:43:21.969Z 👥 [OAuth] Mensinkronisasi 2 akun...
+[LOG] 2026-06-08T00:43:21.969Z 📡 [OAuth] Updating connection metadata for @sim.tsx (ID: 661135501226672129)...
+[LOG] 2026-06-08T00:43:21.972Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:43:22.013Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:43:22.222Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:43:22.743Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:43:23.030Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:43:23.031Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:43:23.498Z 📊 [OAuth] User Stats: [object Object]
+[LOG] 2026-06-08T00:43:23.867Z ✅ [OAuth] Successfully pushed stats to Discord for @sim.tsx
+[LOG] 2026-06-08T00:43:25.869Z 📡 [OAuth] Updating connection metadata for @xymp_ (ID: 880751803883487283)...
+[LOG] 2026-06-08T00:43:25.870Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:43:26.379Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:43:26.380Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:43:26.748Z 📊 [OAuth] User Stats: [object Object]
+[LOG] 2026-06-08T00:43:27.079Z ✅ [OAuth] Successfully pushed stats to Discord for @xymp_
+[LOG] 2026-06-08T00:43:29.090Z ✅ [OAuth] Sinkronisasi selesai.
+
+[LOG] 2026-06-08T00:43:34.954Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:44:34.959Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:45:35.004Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:46:22.017Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:46:22.274Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:46:22.723Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:46:35.008Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:47:35.009Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:48:24.638Z 
+⏰ [AutoRank] Menjalankan pengecekan otomatis rank role...
+[LOG] 2026-06-08T00:48:24.642Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:48:25.753Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:48:25.754Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:48:26.681Z 🔔 [AutoRank] Perubahan terdeteksi di "voice": palecursedvessel|2489 → palecursedvessel|2490
+[LOG] 2026-06-08T00:48:27.303Z ✅ [AutoRank] Role "voice": "🏆 Rank 1 Voice: 2490 Hours" → "🏆 Rank 1 Voice: 2490 Hours"
+[LOG] 2026-06-08T00:48:27.738Z 🔴 [AutoRank] Melepas role dari palecursedvessel
+[LOG] 2026-06-08T00:48:28.664Z 🏆 [AutoRank] Role "🏆 Rank 1 Voice: 2490 Hours" → palecursedvessel (1051027211160928276)
+[LOG] 2026-06-08T00:48:30.175Z 🏆 [AutoRank] Update selesai: 1/4 role diperbarui · 1/4 berhasil di-assign ke juara
+[LOG] 2026-06-08T00:48:35.011Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:49:22.019Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:49:22.315Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:49:22.953Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:49:35.016Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:50:36.963Z 🎙️ [API/voice-channel] Menemukan 9 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:52:22.031Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:52:22.370Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:52:22.946Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:52:34.955Z 🎙️ [API/voice-channel] Menemukan 9 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:53:35.001Z 🎙️ [API/voice-channel] Menemukan 9 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:54:26.317Z ✅ [OAuth/Callback] Linked account successfully: @sim.tsx (ID: 661135501226672129)
+[LOG] 2026-06-08T00:54:26.317Z 📡 [OAuth] Updating connection metadata for @sim.tsx (ID: 661135501226672129)...
+[LOG] 2026-06-08T00:54:26.321Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:54:27.470Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:54:27.472Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:54:28.046Z 📊 [OAuth] User Stats: [object Object]
+[LOG] 2026-06-08T00:54:28.416Z ✅ [OAuth] Successfully pushed stats to Discord for @sim.tsx
+[LOG] 2026-06-08T00:54:35.022Z 🎙️ [API/voice-channel] Menemukan 9 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:55:22.044Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:55:22.264Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:55:22.932Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:55:35.049Z 🎙️ [API/voice-channel] Menemukan 9 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:56:36.951Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:57:36.952Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:58:21.978Z 
+🔄 [OAuth] ====== Memulai sinkronisasi metadata Discord ======
+[LOG] 2026-06-08T00:58:21.979Z 👥 [OAuth] Mensinkronisasi 2 akun...
+[LOG] 2026-06-08T00:58:21.979Z 📡 [OAuth] Updating connection metadata for @sim.tsx (ID: 661135501226672129)...
+[LOG] 2026-06-08T00:58:21.981Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:58:22.054Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T00:58:22.275Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T00:58:22.942Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:58:22.942Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:58:23.131Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T00:58:23.305Z 📊 [OAuth] User Stats: [object Object]
+[LOG] 2026-06-08T00:58:23.629Z ✅ [OAuth] Successfully pushed stats to Discord for @sim.tsx
+[LOG] 2026-06-08T00:58:24.640Z 
+⏰ [AutoRank] Menjalankan pengecekan otomatis rank role...
+[LOG] 2026-06-08T00:58:24.641Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:58:25.148Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:58:25.148Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:58:25.640Z 📡 [OAuth] Updating connection metadata for @xymp_ (ID: 880751803883487283)...
+[LOG] 2026-06-08T00:58:25.643Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T00:58:26.185Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T00:58:26.186Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T00:58:26.410Z 🔔 [AutoRank] Perubahan terdeteksi di "voice": palecursedvessel|2490 → palecursedvessel|2501
+[LOG] 2026-06-08T00:58:26.598Z 📊 [OAuth] User Stats: [object Object]
+[LOG] 2026-06-08T00:58:26.942Z ✅ [AutoRank] Role "voice": "🏆 Rank 1 Voice: 2501 Hours" → "🏆 Rank 1 Voice: 2501 Hours"
+[LOG] 2026-06-08T00:58:26.945Z ✅ [OAuth] Successfully pushed stats to Discord for @xymp_
+[LOG] 2026-06-08T00:58:27.677Z 🔴 [AutoRank] Melepas role dari palecursedvessel
+[LOG] 2026-06-08T00:58:28.947Z ✅ [OAuth] Sinkronisasi selesai.
+
+[LOG] 2026-06-08T00:58:29.555Z 🏆 [AutoRank] Role "🏆 Rank 1 Voice: 2501 Hours" → palecursedvessel (1051027211160928276)
+[LOG] 2026-06-08T00:58:31.056Z 🏆 [AutoRank] Update selesai: 1/4 role diperbarui · 1/4 berhasil di-assign ke juara
+[LOG] 2026-06-08T00:58:37.667Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T00:59:41.947Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T01:00:41.957Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T01:01:22.059Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T01:01:25.623Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T01:01:26.135Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T01:02:34.958Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T01:02:56.685Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T01:02:56.687Z 🤖 [API/roles] Menghubungkan ke Discord Guild...
+[LOG] 2026-06-08T01:02:56.687Z 👥 [API/roles] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T01:02:56.710Z 🤖 [API/roles] Menghubungkan ke Discord Guild...
+[LOG] 2026-06-08T01:02:56.710Z 👥 [API/roles] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T01:02:56.711Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T01:02:57.277Z ✅ [API/roles] Berhasil membaca 201 role dari server Discord.
+[LOG] 2026-06-08T01:02:57.750Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T01:02:57.751Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T01:02:57.805Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T01:02:57.805Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T01:02:57.989Z ✅ [API/roles] Berhasil membaca 201 role dari server Discord.
+[LOG] 2026-06-08T01:03:36.955Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T01:04:01.143Z 🤖 [API/roles] Menghubungkan ke Discord Guild...
+[LOG] 2026-06-08T01:04:01.144Z 👥 [API/roles] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T01:04:01.144Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T01:04:01.155Z 🤖 [API/roles] Menghubungkan ke Discord Guild...
+[LOG] 2026-06-08T01:04:01.156Z 👥 [API/roles] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T01:04:01.157Z 📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "1403255548698300416"...
+[LOG] 2026-06-08T01:04:01.567Z ✅ [API/roles] Berhasil membaca 201 role dari server Discord.
+[LOG] 2026-06-08T01:04:01.959Z ✅ [API/roles] Berhasil membaca 201 role dari server Discord.
+[LOG] 2026-06-08T01:04:02.172Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T01:04:02.172Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T01:04:02.180Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!
+[LOG] 2026-06-08T01:04:02.181Z 👥 [API/leaderboard] Menggunakan 350 member ter-cache.
+[LOG] 2026-06-08T01:04:22.065Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T01:04:22.372Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T01:04:23.030Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).
+[LOG] 2026-06-08T01:04:41.108Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T01:05:41.955Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T01:06:41.958Z 🎙️ [API/voice-channel] Menemukan 10 member aktif di voice channel 1435053596742914160 ("Not quite my tempo")
+[LOG] 2026-06-08T01:07:22.067Z 📡 [AUTOCRON] Menjalankan pengecekan status live TikTok otomatis untuk @jobetmaritoas...
+[LOG] 2026-06-08T01:07:22.389Z 💤 [AUTOCRON] (Webcast API) @jobetmaritoas offline (status_code 30003).
+[LOG] 2026-06-08T01:07:22.915Z 💤 [AUTOCRON] (Fallback) @jobetmaritoas sedang offline (Intermission).

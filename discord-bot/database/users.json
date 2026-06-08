@@ -1,0 +1,23 @@
+{
+  "sim-discord-661135501226672129": {
+    "uid": "sim-discord-661135501226672129",
+    "name": "Pemain Teater",
+    "cv": 8501992,
+    "points": 8501992
+  },
+  "test-user-1234": {
+    "uid": "test-user-1234",
+    "name": "Test Tester",
+    "email": "test@example.com",
+    "role": "Penonton Teater",
+    "cv": 10,
+    "points": 10
+  },
+  "sim-discord-880751803883487283": {
+    "uid": "sim-discord-880751803883487283",
+    "name": "Pemain Teater",
+    "cv": 0,
+    "points": 0,
+    "role": "Penonton Teater"
+  }
+}

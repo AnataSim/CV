@@ -1,0 +1,82 @@
+Created At: 2026-06-05T08:06:26Z
+Completed At: 2026-06-05T08:06:26Z
+File Path: `file:///e:/Code/CrunchyVerse/discord-bot/index.js`
+Total Lines: 2600
+Total Bytes: 108934
+Showing lines 1801 to 2600
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1801:       results.push({ category: cat, success: false, reason: err.message, champion: top1?.displayName });
+1802:     }
+1803:   }
+1804: 
+1805:   const successCount = results.filter(r => r.success).length;
+1806:   const assignedCount = results.filter(r => r.assignedTo).length;
+1807:   console.log(`✅ [RankRoles] Selesai. ${successCount}/4 role diperbarui, ${assignedCount}/4 berhasil di-assign ke member.\n`);
+1808: 
+1809:   res.json({
+1810:     success: successCount > 0,
+1811:     message: `${successCount}/4 role diperbarui · ${assignedCount}/4 berhasil di-assign ke juara`,
+1812:     results
+1813:   });
+1814: });
+1815: 
+1816: // ================= Sparxie Bot Chat API =================
+1817: 
+1818: let chatChannels = [
+1819:   { id: "portal", name: "✨ ┇ portal", type: "text", desc: "Portal informasi utama Anomaly CrunchyVerse 🎪" },
+1820:   { id: "command", name: "💬 ┇ command", type: "text", desc: "Kanal command bot Sparxie 🤖" },
+1821:   { id: "share-meme", name: "🌠 ┇ share-meme", type: "text", desc: "Tempat berbagi meme lucu & gokil 🍿" },
+1822:   { id: "talking", name: "💬 ┇ talking", type: "text", desc: "Kanal ngobrol santai sesama Anomaly 🗣️" },
+1823:   { id: "share-leak", name: "🔒 ┇ share-leak", type: "text", desc: "Bocoran rahasia & konten eksklusif teater 🤫" },
+1824:   { id: "share-info", name: "👁️ ┇ share-info", type: "text", desc: "Informasi dan update terhangat 👁️" },
+1825:   { id: "share-garem", name: "🥛 ┇ share-garem", type: "text", desc: "Kanal berbagi garam / gacha pulls 🧂" },
+1826:   { id: "stream", name: "‼
+<truncated 33145 bytes>
+sText = "Belum terhubung ke CrunchyVerse";
+2555:   let detailsText = "Owner of CrunchyVerse";
+2556:   
+2557:   if (userIds.length > 0) {
+2558:     const userId = userIds[0];
+2559:     const acc = accounts[userId];
+2560:     const stats = await getUserStats(userId);
+2561:     statsText = `⭐ Level: ${stats.level} | 🔥 Streak: ${stats.streak} Hari`;
+2562:     detailsText = `🎙️ Voice: ${stats.voice} Jam | 🪙 ${stats.cv_wealth.toLocaleString('id-ID')} CV$`;
+2563:   }
+2564:   
+2565:   const activityPayload = {
+2566:     cmd: "SET_ACTIVITY",
+2567:     args: {
+2568:       pid: process.pid,
+2569:       activity: {
+2570:         state: statsText,
+2571:         details: detailsText,
+2572:         assets: {
+2573:           large_image: "https://vantage.csw.lenovo.com/v1/web/containerwidget/default/favicon.ico",
+2574:           large_text: "CrunchyVerse Theater",
+2575:           small_image: "https://api.dicebear.com/7.x/pixel-art/svg?seed=sim",
+2576:           small_text: "Sparxie Bot"
+2577:         },
+2578:         timestamps: {
+2579:           start: Date.now()
+2580:         }
+2581:       }
+2582:     },
+2583:     nonce: Math.random().toString()
+2584:   };
+2585:   
+2586:   sendIPCPacket(1, activityPayload);
+2587: }
+2588: 
+2589: // Inisialisasi koneksi RPC lokal
+2590: setTimeout(connectDiscordRPC, 5000); // Hubungkan 5 detik setelah server berjalan
+2591: 
+2592: // Start Express Server
+2593: app.listen(PORT, '0.0.0.0', () => {
+2594:   console.log(`\n======================================================`);
+2595:   console.log(`🎪 Server API CrunchyVerse Bot berjalan dengan sukses!`);
+2596:   console.log(`📡 URL API Lokal: http://localhost:${PORT}`);
+2597:   console.log(`🖥️  Endpoint Stats: http://localhost:${PORT}/api/stats`);
+2598:   console.log(`======================================================\n`);
+2599: });
+2600: 
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

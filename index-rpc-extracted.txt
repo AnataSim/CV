@@ -1,0 +1,117 @@
+Created At: 2026-06-05T08:08:28Z
+Completed At: 2026-06-05T08:08:30Z
+The following changes were made by the multi_replace_file_content tool to: e:\Code\CrunchyVerse\discord-bot\index.js. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -2283,9 +2283,6 @@
+   }
+   
+   console.log(`✅ [OAuth] Sinkronisasi selesai.\n`);
+-  
+-  // Also update local Rich Presence if active
+-  updateLocalRichPresence();
+ }
+ 
+ // Start OAuth2 flow redirect
+@@ -2450,7 +2450,6 @@
+   
+   const success = await updateConnectionMetadata(userId, acc.username, token);
+   if (success) {
+-    updateLocalRichPresence(); // Update RPC immediately
+     res.json({ success: true, message: `Pembaruan data metadata untuk @${acc.username} sukses!` });
+   } else {
+     res.status(500).json({ error: "Failed to push statistics to Discord." });
+@@ -2460,132 +2460,7 @@
+ setInterval(runMetadataSyncCycle, 900000); // 15 minutes
+ setTimeout(runMetadataSyncCycle, 15000); // 15 seconds after boot
+ 
+-// ==============================================================================
+-// =================== Discord Local Rich Presence (IPC Namepipe) ================
+-// ==============================================================================
+-const net = require('net');
+-
+-let rpcSocket = null;
+-let rpcConnected = false;
+-let rpcReconnectTimeout = null;
+-
+-function connectDiscordRPC() {
+-  if (rpcSocket) {
+-    rpcSocket.destroy();
+-  }
+-  
+-  const pipePath = process.platform === 'win32' 
+-    ? '\\\\.\\pipe\\discord-ipc-0' 
+-    : `${process.env.XDG_RUNTIME_DIR || process.env.TMPDIR || process.env.TMP || '/tmp'}/discord-ipc-0`;
+-
+-  console.log(`🔌 [RPC] Menghubungkan ke Discord local IPC: ${pipePath}...`);
+-  
+-  rpcSocket = net.createConnection(pipePath);
+-  
+-  rpcSocket.on('connect', () => {
+-    console.log('✅ [RPC] Terhubung ke Discord local IPC pipe!');
+-    // Send Handshake
+-    sendIPCPacket(0, {
+-      v: 1,
+-      client_id: process.env.DISCORD_CLIENT_ID || "1410583
+<truncated 1186 bytes>
+    console.error('❌ [RPC] Gagal mengirim paket IPC:', err.message);
+-  }
+-}
+-
+-function scheduleRPCRetry() {
+-  if (rpcReconnectTimeout) return;
+-  rpcReconnectTimeout = setTimeout(() => {
+-    rpcReconnectTimeout = null;
+-    connectDiscordRPC();
+-  }, 20000); // Coba lagi setiap 20 detik jika gagal / terputus
+-}
+-
+-async function updateLocalRichPresence() {
+-  if (!rpcConnected) return;
+-  
+-  const accounts = loadLinkedAccounts();
+-  const userIds = Object.keys(accounts);
+-  
+-  let statsText = "Belum terhubung ke CrunchyVerse";
+-  let detailsText = "Owner of CrunchyVerse";
+-  
+-  if (userIds.length > 0) {
+-    const userId = userIds[0];
+-    const acc = accounts[userId];
+-    const stats = await getUserStats(userId);
+-    statsText = `⭐ Level: ${stats.level} | 🔥 Streak: ${stats.streak} Hari`;
+-    detailsText = `🎙️ Voice: ${stats.voice} Jam | 🪙 ${stats.cv_wealth.toLocaleString('id-ID')} CV$`;
+-  }
+-  
+-  const activityPayload = {
+-    cmd: "SET_ACTIVITY",
+-    args: {
+-      pid: process.pid,
+-      activity: {
+-        state: statsText,
+-        details: detailsText,
+-        assets: {
+-          large_image: "https://vantage.csw.lenovo.com/v1/web/containerwidget/default/favicon.ico",
+-          large_text: "CrunchyVerse Theater",
+-          small_image: "https://api.dicebear.com/7.x/pixel-art/svg?seed=sim",
+-          small_text: "Sparxie Bot"
+-        },
+-        timestamps: {
+-          start: Date.now()
+-        }
+-      }
+-    },
+-    nonce: Math.random().toString()
+-  };
+-  
+-  sendIPCPacket(1, activityPayload);
+-}
+-
+-// Inisialisasi koneksi RPC lokal
+-setTimeout(connectDiscordRPC, 5000); // Hubungkan 5 detik setelah server berjalan
++// Local RPC functionality removed as per request.
+ 
+ // Start Express Server
+ app.listen(PORT, '0.0.0.0', () => {
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.

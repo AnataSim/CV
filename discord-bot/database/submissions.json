@@ -1,0 +1,18 @@
+[
+  {
+    "id": "sub-1780876765573-120",
+    "questId": "quest-1780834229446-915",
+    "questTitle": "CDM 180%+",
+    "questDescription": "Build Character Apapun dengan Stats Crit Damage 180%+",
+    "points": 10,
+    "userId": "test-user-1234",
+    "username": "Test Tester",
+    "userEmail": "test@example.com",
+    "discordMessageId": "1513331575063056504",
+    "mediaUrl": "https://cdn.discordapp.com/attachments/1512604646328504370/1513331575159394314/screenshot.png?ex=6a27575b&is=6a2605db&hm=88ecad7136a719aaa81922d871433cba071761312d280ce654729a4ebd2bca4f&",
+    "status": "approved",
+    "createdAt": "2026-06-07T23:59:25.573Z",
+    "roleId": "",
+    "roleName": ""
+  }
+]

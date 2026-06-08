@@ -1,0 +1,24 @@
+{
+  "name": "crunchyverse-discord-bot",
+  "version": "1.0.0",
+  "description": "Discord Bot API Server for CrunchyVerse Interactive Portfolio",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "rank-update": "node src/utils/bot-rank-updater.js",
+    "rank-update:dev": "nodemon src/utils/bot-rank-updater.js"
+  },
+  "dependencies": {
+    "@discordjs/voice": "^0.17.0",
+    "cors": "^2.8.5",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "libsodium-wrappers": "^0.7.16",
+    "opusscript": "^0.0.8"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}

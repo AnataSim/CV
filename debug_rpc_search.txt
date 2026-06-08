@@ -1,0 +1,1254 @@
+﻿
+> C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:9:{"step_index":9,"source":"MODEL","type":"LIST_DIRECTORY","status":"DONE","created_at":"2026-06-05T08:05:44Z","c
+ontent":"Created At: 2026-06-05T08:05:44Z\nCompleted At: 2026-06-05T08:05:44Z\n{\"name\":\".env\",\"sizeBytes\":\"695\"
+}\n{\"name\":\".env.example\",\"sizeBytes\":\"581\"}\n{\"name\":\"bot-rank-updater.js\",\"sizeBytes\":\"8613\"}\n{\"nam
+e\":\"debug-rpc.js\",\"sizeBytes\":\"3226\"}\n{\"name\":\"index.js\",\"sizeBytes\":\"108934\"}\n{\"name\":\"linked-acco
+unts.json\",\"sizeBytes\":\"228\"}\n{\"name\":\"node_modules\",\"isDir\":true}\n{\"name\":\"package-lock.json\",\"sizeB
+ytes\":\"55374\"}\n{\"name\":\"package.json\",\"sizeBytes\":\"527\"}\n{\"name\":\"register-connection-metadata.js\",\"s
+izeBytes\":\"2689\"}\n{\"name\":\"server.log\",\"sizeBytes\":\"6059\"}\n\nSummary: This directory contains 1 
+subdirectories and 10 files."}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:10:{"step_index":10,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:05:44Z
+","tool_calls":[{"name":"grep_search","args":{"CaseInsensitive":"true","Includes":"[\"*.js\"]","IsRegex":"false","Match
+PerLine":"true","Query":"\"rpc\"","SearchPath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\"","toolAction":"\"Searchin
+g for RPC in JS files\"","toolSummary":"\"Search for RPC in bot JS files\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:11:{"step_index":11,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:05:46Z","co
+ntent":"Created At: 2026-06-05T08:05:46Z\nCompleted At: 2026-06-05T08:05:47Z\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\
+\discord-bot\\\\node_modules\\\\discord-api-types\\\\v8.js\",\"LineNumber\":44,\"LineContent\":\"__exportStar(require(\
+\\"./rpc/v8\\\"), exports);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord-api-ty
+pes\\\\payloads\\\\v9\\\\application.js\",\"LineNumber\":35,\"LineContent\":\"    
+ApplicationFlags[ApplicationFlags[\\\"RPCHasConnected\\\"] = 2048] = \\\"RPCHasConnected\\\";\"}\n{\"File\":\"e:\\\\Cod
+e\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord-api-types\\\\payloads\\\\v9\\\\oauth2.js\",\"LineNumber\":7
+0,\"LineContent\":\"     * For local rpc server api access, this allows you to read messages from all client channels\"
+}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord-api-types\\\\payloads\\\\v9\\\\oaut
+h2.js\",\"LineNumber\":79,\"LineContent\":\"     * For local rpc server access, this allows you to control a user's 
+local Discord client - requires Discord approval\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modu
+les\\\\discord-api-types\\\\payloads\\\\v9\\\\oauth2.js\",\"LineNumber\":81,\"LineContent\":\"    
+OAuth2Scopes[\\\"RPC\\\"] = \\\"rpc\\\";\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\d
+iscord-api-types\\\\payloads\\\\v9\\\\oauth2.js\",\"LineNumber\":83,\"LineContent\":\"     * For local rpc server api 
+access, this allows you to receive notifications pushed out to the user - requires Discord approval\"}\n{\"File\":\"e:\
+\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord-api-types\\\\payloads\\\\v9\\\\oauth2.js\",\"LineNumb
+er\":85,\"LineContent\":\"    OAuth2Scopes[\\\"RPCNotificationsRead\\\"] = \\\"rpc.notifications.read\\\";\"}\n{\"File\
+":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord-api-types\\\\payloads\\\\v8\\\\oauth2.js\",\"L
+ineNumber\":62,\"LineContent\":\"     * For local rpc server api access, this allows you to read messages from all 
+client channels\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord-api-types\\\\paylo
+ads\\\\v8\\\\oauth2.js\",\"LineNumber\":67,\"LineContent\":\"     * For local rpc server access, this allows you to 
+control a us\n<truncated 6393 
+bytes>\nrd-bot\\\\node_modules\\\\discord-api-types\\\\rpc\\\\common.js\",\"LineNumber\":7,\"LineContent\":\"    
+RPCDeviceType[\\\"AudioOutput\\\"] = \\\"audiooutput\\\";\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\
+node_modules\\\\discord-api-types\\\\rpc\\\\common.js\",\"LineNumber\":8,\"LineContent\":\"    
+RPCDeviceType[\\\"VideoInput\\\"] = \\\"videoinput\\\";\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\no
+de_modules\\\\discord-api-types\\\\rpc\\\\common.js\",\"LineNumber\":9,\"LineContent\":\"})(RPCDeviceType || 
+(exports.RPCDeviceType = RPCDeviceType = {}));\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_module
+s\\\\discord-api-types\\\\rpc\\\\common.js\",\"LineNumber\":10,\"LineContent\":\"var RPCVoiceSettingsModeType;\"}\n{\"F
+ile\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord-api-types\\\\rpc\\\\common.js\",\"LineNumb
+er\":11,\"LineContent\":\"(function (RPCVoiceSettingsModeType) {\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-
+bot\\\\node_modules\\\\discord-api-types\\\\rpc\\\\common.js\",\"LineNumber\":12,\"LineContent\":\"    
+RPCVoiceSettingsModeType[\\\"PushToTalk\\\"] = \\\"PUSH_TO_TALK\\\";\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\disc
+ord-bot\\\\node_modules\\\\discord-api-types\\\\rpc\\\\common.js\",\"LineNumber\":13,\"LineContent\":\"    
+RPCVoiceSettingsModeType[\\\"VoiceActivity\\\"] = \\\"VOICE_ACTIVITY\\\";\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\
+\discord-bot\\\\node_modules\\\\discord-api-types\\\\rpc\\\\common.js\",\"LineNumber\":14,\"LineContent\":\"})(RPCVoice
+SettingsModeType || (exports.RPCVoiceSettingsModeType = RPCVoiceSettingsModeType = {}));\"}\n{\"File\":\"e:\\\\Code\\\\
+CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord-api-types\\\\rpc\\\\common.js\",\"LineNumber\":16,\"LineContent\
+":\" * @see {@link https://discord.com/developers/docs/topics/rpc#getvoicesettings-key-types}\"}\n{\"File\":\"e:\\\\Cod
+e\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord-api-types\\\\rpc\\\\common.js\",\"LineNumber\":18,\"LineCon
+tent\":\"var RPCVoiceShortcutKeyComboKeyType;\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules
+\\\\discord-api-types\\\\rpc\\\\common.js\",\"LineNumber\":19,\"LineContent\":\"(function 
+(RPCVoiceShortcutKeyComboKeyType) {\"}\n(...180 more results not shown)"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:12:{"step_index":12,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:05:47Z
+","tool_calls":[{"name":"grep_search","args":{"CaseInsensitive":"true","IsRegex":"false","MatchPerLine":"true","Query":
+"\"rpc\"","SearchPath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\"","toolAction":"\"Searching for RPC 
+in index.js\"","toolSummary":"\"Search for RPC in index.js\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:13:{"step_index":13,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:05:49Z","co
+ntent":"Created At: 2026-06-05T08:05:49Z\nCompleted At: 2026-06-05T08:05:49Z\nNo results found"}
+> C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:14:{"step_index":14,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:05:49Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\debug-rpc.js
+\"","toolAction":"\"Reading debug-rpc.js\"","toolSummary":"\"Read debug-rpc.js\""}}]}
+> C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:15:{"step_index":15,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:05:51Z","cont
+ent":"Created At: 2026-06-05T08:05:51Z\nCompleted At: 2026-06-05T08:05:51Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/discord-bot/debug-rpc.js`\nTotal Lines: 104\nTotal Bytes: 3226\nShowing lines 1 to 
+104\nThe following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n1: const net = require('net');\n2: const fs = require('fs');\n3: const path = require('path');\n4: 
+const dotenv = require('dotenv');\n5: \n6: dotenv.config({ path: path.join(__dirname, '.env') });\n7: const CLIENT_ID 
+= process.env.DISCORD_CLIENT_ID || \"1410583272173600819\";\n8: \n9: console.log('🤖 Starting Discord RPC Diagnostic 
+Script...');\n10: console.log(`🔑 Client ID: ${CLIENT_ID}`);\n11: \n12: // Try pipes 0 to 9\n13: let pipeFound = 
+false;\n14: \n15: for (let i = 0; i < 10; i++) {\n16:   const pipePath = process.platform === 'win32'\n17:     ? 
+`\\\\\\\\.\\\\pipe\\\\discord-ipc-${i}`\n18:     : `${process.env.XDG_RUNTIME_DIR || process.env.TMPDIR || 
+process.env.TMP || '/tmp'}/discord-ipc-${i}`;\n19: \n20:   console.log(`🔌 Testing connection to: ${pipePath}`);\n21:  
+ \n22:   const socket = net.createConnection(pipePath);\n23:   \n24:   socket.on('connect', () => {\n25:     
+console.log(`✅ SUCCESS: Connected to ${pipePath}!`);\n26:     pipeFound = true;\n27:     \n28:     // Try 
+handshake\n29:     const handshake = {\n30:       v: 1,\n31:       client_id: CLIENT_ID\n32:     };\n33:     \n34:     
+sendIPCPacket(socket, 0, handshake);\n35:   });\n36:   \n37:   socket.on('data', (data) => {\n38:     try {\n39:       
+const op = data.readInt32LE(0);\n40:       const len = data.readInt32LE(4);\n41:       const jsonStr = 
+data.toString('utf8', 8, 8 + len);\n42:       const response = JSON.parse(jsonStr);\n43:       console.log(`📩 
+Received response (OP ${op}):`, JSON.stringify(response, null, 2));\n44:       \n45:       if (response.evt === 
+'READY') {\n46:         console.log('🎉 Handshake successful! Sending test activity...');\n4\n<truncated 60 
+bytes>\nT_ACTIVITY\",\n49:           args: {\n50:             pid: process.pid,\n51:             activity: {\n52:      
+         state: \"Testing Rich Presence\",\n53:               details: \"CrunchyVerse Bot Connection\",\n54:           
+    assets: {\n55:                 large_image: 
+\"https://vantage.csw.lenovo.com/v1/web/containerwidget/default/favicon.ico\",\n56:                 large_text: 
+\"CrunchyVerse\"\n57:               },\n58:               timestamps: {\n59:                 start: Date.now()\n60:    
+           }\n61:             }\n62:           },\n63:           nonce: \"test-nonce\"\n64:         });\n65:         
+\n66:         console.log('📡 Test activity sent. Check your Discord client profile to see if \"Playing Sparxie\" is 
+visible!');\n67:         setTimeout(() => {\n68:           console.log('👋 Diagnostic complete. Closing 
+connection.');\n69:           socket.destroy();\n70:           process.exit(0);\n71:         }, 10000);\n72:       
+}\n73:     } catch (err) {\n74:       console.error('⚠️ Error parsing data:', err.message);\n75:     }\n76:   });\n77: 
+  \n78:   socket.on('error', (err) => {\n79:     // Expected if pipe does not exist\n80:   });\n81: }\n82: \n83: 
+function sendIPCPacket(socket, op, data) {\n84:   try {\n85:     const json = JSON.stringify(data);\n86:     const 
+dataBuf = Buffer.from(json, 'utf8');\n87:     const headerBuf = Buffer.alloc(8);\n88:     headerBuf.writeInt32LE(op, 
+0);\n89:     headerBuf.writeInt32LE(dataBuf.length, 4);\n90:     socket.write(Buffer.concat([headerBuf, 
+dataBuf]));\n91:     console.log(`📤 Sent packet (OP ${op}):`, json);\n92:   } catch (err) {\n93:     console.error('❌ 
+Failed to send packet:', err.message);\n94:   }\n95: }\n96: \n97: // Timeout after 8 seconds if no pipe connects\n98: 
+setTimeout(() => {\n99:   if (!pipeFound) {\n100:     console.error('❌ FAILED: Could not connect to any Discord IPC 
+pipes (0-9). Make sure the Discord desktop app is running on this machine.');\n101:     process.exit(1);\n102:   
+}\n103: }, 8000);\n104: \nThe above content shows the entire, complete file contents of the requested file.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:16:{"step_index":16,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:05:51Z
+","tool_calls":[{"name":"grep_search","args":{"CaseInsensitive":"true","IsRegex":"false","MatchPerLine":"true","Query":
+"\"rpc\"","SearchPath":"\"e:\\\\Code\\\\CrunchyVerse\\\\src\"","toolAction":"\"Searching for RPC in src 
+directory\"","toolSummary":"\"Search for RPC in src\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:17:{"step_index":17,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:05:53Z","co
+ntent":"Created At: 2026-06-05T08:05:53Z\nCompleted At: 2026-06-05T08:05:53Z\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\
+\src\\\\app\\\\page.tsx\",\"LineNumber\":267,\"LineContent\":\"    { name: \\\"[Sim] Raiid\\\", avatar: 
+\\\"https://api.dicebear.com/7.x/lorelei/svg?seed=silver\\\", isMuted: true, badgeText: \\\"KRPC\\\", roleValueSymbol: 
+\\\"3 🌟\\\" 
+},\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\",\"LineNumber\":3304,\"LineContent\":\"       
+                         {/* Specific custom badge (e.g. HKS, KRPC) */}\"}"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:18:{"step_index":18,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:05:53Z
+","tool_calls":[{"name":"run_command","args":{"CommandLine":"\"git log -n 10 
+--oneline\"","Cwd":"\"e:\\\\Code\\\\CrunchyVerse\"","WaitMsBeforeAsync":"2000","toolAction":"\"Running git 
+log\"","toolSummary":"\"Check recent git commits\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:19:{"step_index":19,"source":"MODEL","type":"RUN_COMMAND","status":"DONE","created_at":"2026-06-05T08:05:56Z","co
+ntent":"Created At: 2026-06-05T08:05:56Z\nCompleted At: 2026-06-05T08:06:05Z\n\n\t\t\t\tThe command completed 
+successfully.\n\t\t\t\tOutput:\n\t\t\t\tffb3f81 Initial commit from Create Next App\n\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:20:{"step_index":20,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:05Z
+","tool_calls":[{"name":"run_command","args":{"CommandLine":"\"git 
+status\"","Cwd":"\"e:\\\\Code\\\\CrunchyVerse\"","WaitMsBeforeAsync":"2000","toolAction":"\"Running git 
+status\"","toolSummary":"\"Check unstaged files\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:21:{"step_index":21,"source":"MODEL","type":"RUN_COMMAND","status":"DONE","created_at":"2026-06-05T08:06:07Z","co
+ntent":"Created At: 2026-06-05T08:06:07Z\nCompleted At: 2026-06-05T08:06:12Z\n\n\t\t\t\tThe command completed 
+successfully.\n\t\t\t\tOutput:\n\t\t\t\tOn branch master\nChanges not staged for commit:\n  (use \"git add <file>...\" 
+to update what will be committed)\n  (use \"git restore <file>...\" to discard changes in working 
+directory)\n\tmodified:   package-lock.json\n\tmodified:   package.json\n\tmodified:   
+src/app/globals.css\n\tmodified:   src/app/layout.tsx\n\tmodified:   src/app/page.tsx\n\nUntracked files:\n  (use 
+\"git add <file>...\" to include in what will be 
+committed)\n\tdiscord-bot/\n\tpublic/march7th.png\n\tpublic/theater_stage_bg.png\n\tsrc/components/\n\tsrc/lib/\n\nno 
+changes added to commit (use \"git add\" and/or \"git commit -a\")\n\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:22:{"step_index":22,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:12Z
+","tool_calls":[{"name":"grep_search","args":{"CaseInsensitive":"true","IsRegex":"false","MatchPerLine":"true","Query":
+"\"ipc\"","SearchPath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\"","toolAction":"\"Searching for IPC 
+in index.js\"","toolSummary":"\"Search for IPC in index.js\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:23:{"step_index":23,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:06:14Z","co
+ntent":"Created At: 2026-06-05T08:06:14Z\nCompleted At: 2026-06-05T08:06:14Z\nNo results found"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:24:{"step_index":24,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:14Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\server.log\"
+","toolAction":"\"Reading server.log\"","toolSummary":"\"Read server.log\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:25:{"step_index":25,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:06:16Z","cont
+ent":"Created At: 2026-06-05T08:06:16Z\nCompleted At: 2026-06-05T08:06:16Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/discord-bot/server.log`\nTotal Lines: 65\nTotal Bytes: 6204\nShowing lines 1 to 65\nThe 
+following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n1: [LOG] 2026-06-05T08:04:49.785Z 🤖 Menghubungkan bot ke Discord...\n2: [LOG] 
+2026-06-05T08:04:49.959Z \n3: ======================================================\n4: [LOG] 
+2026-06-05T08:04:49.960Z 🎪 Server API CrunchyVerse Bot berjalan dengan sukses!\n5: [LOG] 2026-06-05T08:04:49.961Z 📡 
+URL API Lokal: http://localhost:3001\n6: [LOG] 2026-06-05T08:04:49.961Z 🖥️  Endpoint Stats: 
+http://localhost:3001/api/stats\n7: [LOG] 2026-06-05T08:04:49.962Z 
+======================================================\n8: \n9: [LOG] 2026-06-05T08:04:52.564Z ✅ Bot berhasil login 
+sebagai KranciWib#6965!\n10: [LOG] 2026-06-05T08:04:52.566Z 🎪 Terhubung ke server: CrunchyVerse\n11: [ERR] 
+2026-06-05T08:04:52.568Z (node:4836) DeprecationWarning: The ready event has been renamed to clientReady to 
+distinguish it from the gateway READY event and will only emit under that name in v15. Please use clientReady 
+instead.\n12: (Use `node --trace-deprecation ...` to show where the warning was created)\n13: [LOG] 
+2026-06-05T08:04:52.977Z 👥 Mengisi cache member berhasil.\n14: [LOG] 2026-06-05T08:04:52.978Z ⏰ [AutoRank] 
+Menjadwalkan pengecekan otomatis setiap 10 menit.\n15: [LOG] 2026-06-05T08:04:53.797Z 📡 [AUTOCRON] Menjalankan 
+pengecekan status live TikTok otomatis untuk @jobetmaritoas...\n16: [LOG] 2026-06-05T08:04:54.126Z 💤 [AUTOCRON] 
+(Webcast API) @jobetmaritoas offline (status_code 30003).\n17: [LOG] 2026-06-05T08:04:54.949Z 🎙️ [API/voice-channel] 
+Menemukan 15 member aktif di voice channel 1435053596742914160 (\"Admin lagi bahagia\")\n18: [LOG] 
+2026-06-05T08:04:54.988Z 🔌 [RPC] Menghubungkan ke Discord local\n<truncated 2874 bytes>\n crunchyweeb 
+(588988763204616214)\n47: [LOG] 2026-06-05T08:05:06.058Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live 
+langsung dari Cakey Bot!\n48: [LOG] 2026-06-05T08:05:06.059Z 👥 [API/leaderboard] Menggunakan 348 member 
+ter-cache.\n49: [LOG] 2026-06-05T08:05:06.483Z 📊 [OAuth] User Stats: [object Object]\n50: [LOG] 
+2026-06-05T08:05:06.855Z ✅ [OAuth] Successfully pushed stats to Discord for @sim.tsx\n51: [LOG] 
+2026-06-05T08:05:07.237Z 🔔 [AutoRank] Perubahan terdeteksi di \"voice\": pertama kali → palecursedvessel|2426\n52: 
+[LOG] 2026-06-05T08:05:07.660Z ✅ [AutoRank] Role \"voice\": \"🏆 Rank 1 Voice: 2426 Hours\" → \"🏆 Rank 1 Voice: 2426 
+Hours\"\n53: [LOG] 2026-06-05T08:05:08.184Z 🔴 [AutoRank] Melepas role dari palecursedvessel\n54: [LOG] 
+2026-06-05T08:05:08.866Z ✅ [OAuth] Sinkronisasi selesai.\n55: \n56: [LOG] 2026-06-05T08:05:08.868Z 📡 
+[API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: \"1403255548698300416\"...\n57: [LOG] 
+2026-06-05T08:05:09.183Z 🏆 [AutoRank] Role \"🏆 Rank 1 Voice: 2426 Hours\" → palecursedvessel 
+(1051027211160928276)\n58: [LOG] 2026-06-05T08:05:09.365Z ✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live 
+langsung dari Cakey Bot!\n59: [LOG] 2026-06-05T08:05:09.366Z 👥 [API/leaderboard] Menggunakan 348 member 
+ter-cache.\n60: [LOG] 2026-06-05T08:05:10.698Z 🔔 [AutoRank] Perubahan terdeteksi di \"cvWealth\": pertama kali → 
+palecursedvessel|28.472.876\n61: [LOG] 2026-06-05T08:05:11.122Z 🔴 [AutoRank] Melepas role dari palecursedvessel\n62: 
+[LOG] 2026-06-05T08:05:12.071Z 🏆 [AutoRank] Role \"🏆 Rank 1 Value Account: CV$ 28.472.876\" → palecursedvessel 
+(1051027211160928276)\n63: [LOG] 2026-06-05T08:05:13.582Z 🏆 [AutoRank] Update selesai: 4/4 role diperbarui · 4/4 
+berhasil di-assign ke juara\n64: [LOG] 2026-06-05T08:05:55.852Z 🎙️ [API/voice-channel] Menemukan 15 member aktif di 
+voice channel 1435053596742914160 (\"Admin lagi bahagia\")\n65: \nThe above content shows the entire, complete file 
+contents of the requested file.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:26:{"step_index":26,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:16Z
+","tool_calls":[{"name":"grep_search","args":{"CaseInsensitive":"true","IsRegex":"false","MatchPerLine":"true","Query":
+"\"pipe\"","SearchPath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\"","toolAction":"\"Searching for pipe 
+in index.js\"","toolSummary":"\"Search for pipe in index.js\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:27:{"step_index":27,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:06:18Z","co
+ntent":"Created At: 2026-06-05T08:06:18Z\nCompleted At: 2026-06-05T08:06:18Z\nNo results found"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:28:{"step_index":28,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:18Z
+","tool_calls":[{"name":"grep_search","args":{"CaseInsensitive":"true","Includes":"[\"*.js\"]","IsRegex":"false","Match
+PerLine":"true","Query":"\"Presence\"","SearchPath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\"","toolAction":"\"Sea
+rching for Presence in bot files\"","toolSummary":"\"Search for Presence in bot files\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:29:{"step_index":29,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:06:20Z","co
+ntent":"Created At: 2026-06-05T08:06:20Z\nCompleted At: 2026-06-05T08:06:21Z\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\
+\discord-bot\\\\node_modules\\\\lodash\\\\core.js\",\"LineNumber\":3855,\"LineContent\":\"    // loaded by a script 
+tag in the presence of an AMD loader.\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\disc
+ord.js\\\\src\\\\index.js\",\"LineNumber\":85,\"LineContent\":\"exports.PresenceManager = require('./managers/PresenceM
+anager');\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord.js\\\\src\\\\index.js\",
+\"LineNumber\":101,\"LineContent\":\"exports.Activity = require('./structures/Presence').Activity;\"}\n{\"File\":\"e:\\
+\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord.js\\\\src\\\\index.js\",\"LineNumber\":123,\"LineConte
+nt\":\"exports.ClientPresence = require('./structures/ClientPresence');\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\d
+iscord-bot\\\\node_modules\\\\discord.js\\\\src\\\\index.js\",\"LineNumber\":188,\"LineContent\":\"exports.Presence = r
+equire('./structures/Presence').Presence;\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\
+discord.js\\\\src\\\\index.js\",\"LineNumber\":191,\"LineContent\":\"exports.RichPresenceAssets = require('./structures
+/Presence').RichPresenceAssets;\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord.js
+\\\\src\\\\client\\\\BaseClient.js\",\"LineNumber\":30,\"LineContent\":\"      presence: {\"}\n{\"File\":\"e:\\\\Code\\
+\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord.js\\\\src\\\\client\\\\BaseClient.js\",\"LineNumber\":31,\"Lin
+eContent\":\"        ...defaultOptions.presence,\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modu
+les\\\\discord.js\\\\src\\\\client\\\\BaseClient.js\",\"LineNumber\":32,\"LineContent\":\"        ...options.presence,\
+"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\lodash\\\\isNative.js\",\"LineNumber\":10,
+\"LineContent\":\" * **Note:** This method can't reliably detect native functions in the presence\"}\n{\"File\":\"e:\\\
+\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord.js\\\\src\\\\client\\\\websocket\\\\WebSocketManager.js
+\",\"LineNumber\":155,\"LineContent\":\"        initialPresence: ws.presence,\"}\n<truncated 5579 
+bytes>\nes\\\\lodash\\\\lodash.js\",\"LineNumber\":17237,\"LineContent\":\"    // loaded by a script tag in the 
+presence of an AMD loader.\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord.js\\\\s
+rc\\\\util\\\\Constants.js\",\"LineNumber\":21,\"LineContent\":\" * * `presences`\"}\n{\"File\":\"e:\\\\Code\\\\Crunchy
+Verse\\\\discord-bot\\\\node_modules\\\\discord.js\\\\src\\\\util\\\\Constants.js\",\"LineNumber\":40,\"LineContent\":\
+"  'presences',\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord.js\\\\src\\\\util\
+\\\Events.js\",\"LineNumber\":67,\"LineContent\":\" * @property {string} PresenceUpdate presenceUpdate\"}\n{\"File\":\"
+e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord.js\\\\src\\\\util\\\\Events.js\",\"LineNumber\":16
+3,\"LineContent\":\"  PresenceUpdate: 'presenceUpdate',\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\no
+de_modules\\\\discord.js\\\\src\\\\util\\\\Options.js\",\"LineNumber\":36,\"LineContent\":\" * @property 
+{PresenceData} [presence={}] Presence data to use upon login\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\
+\\\node_modules\\\\discord.js\\\\src\\\\util\\\\Options.js\",\"LineNumber\":122,\"LineContent\":\"      presence: {},\"
+}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord.js\\\\src\\\\util\\\\APITypes.js\",
+\"LineNumber\":409,\"LineContent\":\" * @external GatewayPresenceUpdateData\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\
+\\\discord-bot\\\\node_modules\\\\discord.js\\\\src\\\\util\\\\APITypes.js\",\"LineNumber\":410,\"LineContent\":\" * 
+@see {@link https://discord-api-types.dev/api/discord-api-types-v10/interface/GatewayPresenceUpdateData}\"}\n{\"File\":
+\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord.js\\\\src\\\\structures\\\\ClientUser.js\",\"Lin
+eNumber\":37,\"LineContent\":\"   * Represents the client user's presence\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\
+\discord-bot\\\\node_modules\\\\discord.js\\\\src\\\\structures\\\\ClientUser.js\",\"LineNumber\":38,\"LineContent\":\"
+   * @type {ClientPresence}\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\node_modules\\\\discord.js\\\\
+src\\\\structures\\\\ClientUser.js\",\"LineNumber\":41,\"LineContent\":\"  get presence() {\"}\n(...249 more results 
+not shown)"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:30:{"step_index":30,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:21Z
+","tool_calls":[{"name":"grep_search","args":{"CaseInsensitive":"true","Includes":"[\"!**/node_modules/**\"]","IsRegex"
+:"false","MatchPerLine":"true","Query":"\"RPC\"","SearchPath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\"","toolActi
+on":"\"Grep search for RPC in discord-bot excluding node_modules\"","toolSummary":"\"Search RPC in bot code\""}}]}
+> C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:31:{"step_index":31,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:06:23Z","co
+ntent":"Created At: 2026-06-05T08:06:23Z\nCompleted At: 2026-06-05T08:06:23Z\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\
+\discord-bot\\\\server.log\",\"LineNumber\":18,\"LineContent\":\"[LOG] 2026-06-05T08:04:54.988Z 🔌 [RPC] Menghubungkan 
+ke Discord local IPC: \\\\\\\\.\\\\pipe\\\\discord-ipc-0...\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\
+\\server.log\",\"LineNumber\":19,\"LineContent\":\"[LOG] 2026-06-05T08:04:54.992Z ✅ [RPC] Terhubung ke Discord local 
+IPC pipe!\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\server.log\",\"LineNumber\":23,\"LineContent\":\
+"[LOG] 2026-06-05T08:04:55.036Z ✅ [RPC] Handshake sukses! Mengaktifkan Rich Presence...\"}\n{\"File\":\"e:\\\\Code\\\\C
+runchyVerse\\\\discord-bot\\\\package-lock.json\",\"LineNumber\":214,\"LineContent\":\"      \\\"integrity\\\": \\\"sha
+512-Xfe6rpCTxSxfbswi/W/Pz7zp1WWSNn4A0eW4mLkQUewCrXXtMj31lCg+iQyTkh/CkusZSq9eDflu7tjEDXUY6g==\\\",\"}\n{\"File\":\"e:\\\
+\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":655,\"LineContent\":\"    { name: \\\"[Sim] 
+Raiid\\\", avatar: \\\"https://api.dicebear.com/7.x/lorelei/svg?seed=silver\\\", isMuted: true, badgeText: 
+\\\"KRPC\\\", roleValueSymbol: \\\"3 🌟\\\" 
+},\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2454,\"LineContent\":\"    
+updateLocalRichPresence(); // Update RPC immediately\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index
+.js\",\"LineNumber\":2470,\"LineContent\":\"let rpcSocket = null;\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord
+-bot\\\\index.js\",\"LineNumber\":2471,\"LineContent\":\"let rpcConnected = false;\"}\n{\"File\":\"e:\\\\Code\\\\Crunch
+yVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2472,\"LineContent\":\"let rpcReconnectTimeout = null;\"}\n{\"File\"
+:\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2474,\"LineContent\":\"function 
+connectDiscordRPC() 
+{\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2475,\"LineContent\":\"  if 
+(rpcSocket) 
+{\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2476,\"LineContent\":\"    rpc
+Socket.destroy();\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2483,\"LineCon
+tent\":\"  console.log(`🔌 [\n<truncated 1459 bytes>\n,\"LineContent\":\"  rpcSocket.on('close', () =\\u003e 
+{\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2520,\"LineContent\":\"    
+rpcConnected = 
+false;\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2521,\"LineContent\":\"  
+  rpcSocket = 
+null;\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2522,\"LineContent\":\"   
+ scheduleRPCRetry();\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2527,\"Line
+Content\":\"  if (!rpcSocket || rpcSocket.destroyed) 
+return;\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2534,\"LineContent\":\" 
+   rpcSocket.write(Buffer.concat([headerBuf, dataBuf]));\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\i
+ndex.js\",\"LineNumber\":2536,\"LineContent\":\"    console.error('❌ [RPC] Gagal mengirim paket IPC:', err.message);\"}
+\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2540,\"LineContent\":\"function 
+scheduleRPCRetry() 
+{\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2541,\"LineContent\":\"  if 
+(rpcReconnectTimeout) 
+return;\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2542,\"LineContent\":\" 
+ rpcReconnectTimeout = setTimeout(() =\\u003e 
+{\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2543,\"LineContent\":\"    
+rpcReconnectTimeout = 
+null;\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2544,\"LineContent\":\"   
+ connectDiscordRPC();\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":2549,\"Lin
+eContent\":\"  if (!rpcConnected) return;\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"Lin
+eNumber\":2589,\"LineContent\":\"// Inisialisasi koneksi RPC lokal\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discor
+d-bot\\\\index.js\",\"LineNumber\":2590,\"LineContent\":\"setTimeout(connectDiscordRPC, 5000); // Hubungkan 5 detik 
+setelah server berjalan\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\debug-rpc.js\",\"LineNumber\":9,\"
+LineContent\":\"console.log('🤖 Starting Discord RPC Diagnostic Script...');\"}"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:32:{"step_index":32,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:23Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\"",
+"EndLine":"2600","StartLine":"2440","toolAction":"\"Viewing index.js RPC code\"","toolSummary":"\"View RPC code in 
+index.js\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:33:{"step_index":33,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:06:26Z","cont
+ent":"Created At: 2026-06-05T08:06:26Z\nCompleted At: 2026-06-05T08:06:26Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/discord-bot/index.js`\nTotal Lines: 2600\nTotal Bytes: 108934\nShowing lines 1801 to 
+2600\nThe following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n1801:       results.push({ category: cat, success: false, reason: err.message, champion: 
+top1?.displayName });\n1802:     }\n1803:   }\n1804: \n1805:   const successCount = results.filter(r => 
+r.success).length;\n1806:   const assignedCount = results.filter(r => r.assignedTo).length;\n1807:   console.log(`✅ 
+[RankRoles] Selesai. ${successCount}/4 role diperbarui, ${assignedCount}/4 berhasil di-assign ke member.\\n`);\n1808: 
+\n1809:   res.json({\n1810:     success: successCount > 0,\n1811:     message: `${successCount}/4 role diperbarui · 
+${assignedCount}/4 berhasil di-assign ke juara`,\n1812:     results\n1813:   });\n1814: });\n1815: \n1816: // 
+================= Sparxie Bot Chat API =================\n1817: \n1818: let chatChannels = [\n1819:   { id: 
+\"portal\", name: \"✨ ┇ portal\", type: \"text\", desc: \"Portal informasi utama Anomaly CrunchyVerse 🎪\" },\n1820:   
+{ id: \"command\", name: \"💬 ┇ command\", type: \"text\", desc: \"Kanal command bot Sparxie 🤖\" },\n1821:   { id: 
+\"share-meme\", name: \"🌠 ┇ share-meme\", type: \"text\", desc: \"Tempat berbagi meme lucu & gokil 🍿\" },\n1822:   { 
+id: \"talking\", name: \"💬 ┇ talking\", type: \"text\", desc: \"Kanal ngobrol santai sesama Anomaly 🗣️\" },\n1823:   
+{ id: \"share-leak\", name: \"🔒 ┇ share-leak\", type: \"text\", desc: \"Bocoran rahasia & konten eksklusif teater 
+🤫\" },\n1824:   { id: \"share-info\", name: \"👁️ ┇ share-info\", type: \"text\", desc: \"Informasi dan update 
+terhangat 👁️\" },\n1825:   { id: \"share-garem\", name: \"🥛 ┇ share-garem\", type: \"text\", desc: \"Kanal berbagi 
+garam / gacha pulls 🧂\" },\n1826:   { id: \"stream\", name: \"‼\n<truncated 33145 bytes>\nsText = \"Belum terhubung 
+ke CrunchyVerse\";\n2555:   let detailsText = \"Owner of CrunchyVerse\";\n2556:   \n2557:   if (userIds.length > 0) 
+{\n2558:     const userId = userIds[0];\n2559:     const acc = accounts[userId];\n2560:     const stats = await 
+getUserStats(userId);\n2561:     statsText = `⭐ Level: ${stats.level} | 🔥 Streak: ${stats.streak} Hari`;\n2562:     
+detailsText = `🎙️ Voice: ${stats.voice} Jam | 🪙 ${stats.cv_wealth.toLocaleString('id-ID')} CV$`;\n2563:   }\n2564:   
+\n2565:   const activityPayload = {\n2566:     cmd: \"SET_ACTIVITY\",\n2567:     args: {\n2568:       pid: 
+process.pid,\n2569:       activity: {\n2570:         state: statsText,\n2571:         details: detailsText,\n2572:     
+    assets: {\n2573:           large_image: 
+\"https://vantage.csw.lenovo.com/v1/web/containerwidget/default/favicon.ico\",\n2574:           large_text: 
+\"CrunchyVerse Theater\",\n2575:           small_image: 
+\"https://api.dicebear.com/7.x/pixel-art/svg?seed=sim\",\n2576:           small_text: \"Sparxie Bot\"\n2577:         
+},\n2578:         timestamps: {\n2579:           start: Date.now()\n2580:         }\n2581:       }\n2582:     
+},\n2583:     nonce: Math.random().toString()\n2584:   };\n2585:   \n2586:   sendIPCPacket(1, activityPayload);\n2587: 
+}\n2588: \n2589: // Inisialisasi koneksi RPC lokal\n2590: setTimeout(connectDiscordRPC, 5000); // Hubungkan 5 detik 
+setelah server berjalan\n2591: \n2592: // Start Express Server\n2593: app.listen(PORT, '0.0.0.0', () => {\n2594:   
+console.log(`\\n======================================================`);\n2595:   console.log(`🎪 Server API 
+CrunchyVerse Bot berjalan dengan sukses!`);\n2596:   console.log(`📡 URL API Lokal: http://localhost:${PORT}`);\n2597: 
+  console.log(`🖥️  Endpoint Stats: http://localhost:${PORT}/api/stats`);\n2598:   
+console.log(`======================================================\\n`);\n2599: });\n2600: \nThe above content does 
+NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your 
+task, call this tool again to view those lines.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:34:{"step_index":34,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:26Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\components\\\\Config
+Modal.tsx\"","toolAction":"\"Viewing ConfigModal.tsx\"","toolSummary":"\"Read ConfigModal.tsx\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:35:{"step_index":35,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:06:28Z","cont
+ent":"Created At: 2026-06-05T08:06:28Z\nCompleted At: 2026-06-05T08:06:28Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/src/components/ConfigModal.tsx`\nTotal Lines: 77\nTotal Bytes: 3206\nShowing lines 1 to 
+77\nThe following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n1: \"use client\";\n2: \n3: import React from \"react\";\n4: import { Settings, RefreshCw } from 
+\"lucide-react\";\n5: \n6: interface ConfigModalProps {\n7:   isOpen: boolean;\n8:   onClose: () => void;\n9:   
+backendUrl: string;\n10:   setBackendUrl: (url: string) => void;\n11:   isBotConnected: boolean;\n12:   
+onTestConnection: () => void;\n13: }\n14: \n15: export default function ConfigModal({\n16:   isOpen,\n17:   
+onClose,\n18:   backendUrl,\n19:   setBackendUrl,\n20:   isBotConnected,\n21:   onTestConnection\n22: }: 
+ConfigModalProps) {\n23:   if (!isOpen) return null;\n24: \n25:   return (\n26:     <div className=\"fixed inset-0 
+z-50 flex items-center justify-center p-4 bg-theater-black/85 backdrop-blur-md animate-fade-in\">\n27:       <div 
+className=\"bg-neutral-900 border border-theater-gold/30 rounded-2xl p-6 max-w-md w-full shadow-2xl relative\">\n28:   
+      <h3 className=\"font-display text-lg font-bold text-theater-gold mb-2 flex items-center gap-2\">\n29:           
+<Settings size={18} />\n30:           <span>Konfigurasi Integrasi Bot</span>\n31:         </h3>\n32:         <p 
+className=\"text-xs text-neutral-400 mb-4 leading-relaxed\">\n33:           Integrasikan panggung website CrunchyVerse 
+Anda dengan Express API bot Discord Anda. Ubah port atau endpoint sesuai dengan server deploy Anda.\n34:         
+</p>\n35:         \n36:         <div className=\"space-y-4\">\n37:           <div className=\"flex flex-col 
+gap-1.5\">\n38:             <label className=\"text-[10px] font-bold text-neutral-400 uppercase tracking-widest\">URL 
+Server API Bot Discord</label>\n39:             <input \n40:               type=\"text\" \n41:               
+value={backendUrl}\n42:               onChange={(e) => setBackendUrl(e.target.value)}\n43:               
+placeholder=\"e.g. http://localhost:3001\"\n44:               className=\"bg-theater-black border border-neutral-800 
+rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-theater-red-light transition-all 
+font-mono\"\n45:             />\n46:           </div>\n47: \n48:           <div className=\"flex items-center 
+justify-between p-3 rounded-xl bg-theater-black/50 border border-neutral-800 text-xs\">\n49:             <span 
+className=\"text-neutral-400\">Status Sinyal:</span>\n50:             <span className={`font-bold flex items-center 
+gap-1 ${isBotConnected ? \"text-emerald-400\" : \"text-theater-red-light\"}`}>\n51:               <span 
+className={`h-1.5 w-1.5 rounded-full ${isBotConnected ? \"bg-emerald-400\" : \"bg-theater-red-light animate-pulse\"}`} 
+/>\n52:               {isBotConnected ? \"Terhubung ke Live API\" : \"Mode Offline / Mocks\"}\n53:             
+</span>\n54:           </div>\n55:         </div>\n56: \n57:         <div className=\"flex gap-3 mt-6\">\n58:          
+ <button \n59:             onClick={onTestConnection}\n60:             className=\"flex-1 bg-theater-red-dark 
+hover:bg-theater-red border border-theater-red-light/30 text-white font-extrabold text-xs uppercase tracking-wider 
+py-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5\"\n61:           >\n62:         
+    <RefreshCw size={13} />\n63:             <span>Tes Sinyal Ulang</span>\n64:           </button>\n65:           
+\n66:           <button \n67:             onClick={onClose}\n68:             className=\"flex-1 bg-neutral-800 
+hover:bg-neutral-700 text-white font-extrabold text-xs uppercase tracking-wider py-3 rounded-xl transition-all 
+cursor-pointer\"\n69:           >\n70:             Selesai\n71:           </button>\n72:         </div>\n73:       
+</div>\n74:     </div>\n75:   );\n76: }\n77: \nThe above content shows the entire, complete file contents of the 
+requested file.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:36:{"step_index":36,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:28Z
+","tool_calls":[{"name":"grep_search","args":{"CaseInsensitive":"false","IsRegex":"false","MatchPerLine":"true","Query"
+:"\"fetch\"","SearchPath":"\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\"","toolAction":"\"Grep fetch in 
+page.tsx\"","toolSummary":"\"Search fetch in page.tsx\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:37:{"step_index":37,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:06:30Z","co
+ntent":"Created At: 2026-06-05T08:06:30Z\nCompleted At: 2026-06-05T08:06:30Z\nNo results found"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:38:{"step_index":38,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:30Z
+","tool_calls":[{"name":"grep_search","args":{"CaseInsensitive":"false","IsRegex":"false","MatchPerLine":"true","Query"
+:"\"fetch\"","SearchPath":"\"e:\\\\Code\\\\CrunchyVerse\\\\src\"","toolAction":"\"Grep fetch in 
+src\"","toolSummary":"\"Search fetch in src\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:39:{"step_index":39,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:06:32Z","co
+ntent":"Created At: 2026-06-05T08:06:32Z\nCompleted At: 2026-06-05T08:06:32Z\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\
+\src\\\\components\\\\LoginModal.tsx\",\"LineNumber\":272,\"LineContent\":\"        // Dynamic bot API fetch fallback 
+for real name resolution (crucial for subsequent logins)\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\component
+s\\\\LoginModal.tsx\",\"LineNumber\":291,\"LineContent\":\"            console.log(`🤖 LoginModal fetching live name 
+from Bot API for Discord ID: \\\"${discordId}\\\"...`);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\components
+\\\\LoginModal.tsx\",\"LineNumber\":292,\"LineContent\":\"            const botRes = await fetch(`${backendUrl}/api/dis
+cord-user/${discordId}`);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\components\\\\LeaderboardBoard.tsx\",\"L
+ineNumber\":46,\"LineContent\":\"  const fetchLeaderboards = useCallback(async (silent = false) =\\u003e {\"}\n{\"File\
+":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\components\\\\LeaderboardBoard.tsx\",\"LineNumber\":50,\"LineContent\":\"     
+ const res = await fetch(`${backendUrl}/api/leaderboard`);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\compone
+nts\\\\LeaderboardBoard.tsx\",\"LineNumber\":64,\"LineContent\":\"    fetchLeaderboards();\"}\n{\"File\":\"e:\\\\Code\\
+\\CrunchyVerse\\\\src\\\\components\\\\LeaderboardBoard.tsx\",\"LineNumber\":65,\"LineContent\":\"  }, [fetchLeaderboar
+ds]);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\components\\\\LeaderboardBoard.tsx\",\"LineNumber\":72,\"Lin
+eContent\":\"      const res = await fetch(`${backendUrl}/api/rank-roles/update`, { method: 'POST' });\"}\n{\"File\":\"
+e:\\\\Code\\\\CrunchyVerse\\\\src\\\\components\\\\LeaderboardBoard.tsx\",\"LineNumber\":76,\"LineContent\":\"      if 
+(json.success) fetchLeaderboards(true);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\components\\\\LeaderboardB
+oard.tsx\",\"LineNumber\":84,\"LineContent\":\"  }, [backendUrl, fetchLeaderboards]);\"}\n{\"File\":\"e:\\\\Code\\\\Cru
+nchyVerse\\\\src\\\\components\\\\LeaderboardBoard.tsx\",\"LineNumber\":221,\"LineContent\":\"              
+onClick={() =\\u003e fetchLeaderboards()}\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\components\\\\BotStorage
+.tsx\",\"LineNumber\":100,\"LineContent\":\"  const fetchRoles = \n<truncated 3483 
+bytes>\n\\\\src\\\\app\\\\page.tsx\",\"LineNumber\":989,\"LineContent\":\"      console.warn(\\\"Gagal fetch chat 
+channels:\\\", 
+err);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\",\"LineNumber\":994,\"LineContent\":\"  
+const fetchChatMessages = async (channelId: string) =\\u003e 
+{\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\",\"LineNumber\":996,\"LineContent\":\"      
+const res = await fetch(`${backendUrl}/api/chat/channels/${channelId}/messages`);\"}\n{\"File\":\"e:\\\\Code\\\\Crunchy
+Verse\\\\src\\\\app\\\\page.tsx\",\"LineNumber\":1004,\"LineContent\":\"      console.warn(\\\"Gagal fetch chat 
+messages:\\\", 
+err);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\",\"LineNumber\":1039,\"LineContent\":\"    
+  const res = await fetch(`${backendUrl}/api/chat/channels/${activeChatChannel}/messages`, 
+{\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\",\"LineNumber\":1048,\"LineContent\":\"        
+fetchChatMessages(activeChatChannel);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\",\"LineNumb
+er\":1050,\"LineContent\":\"        // If sending to Sparxie chatbot channel, fetch again after 1.1s for bot 
+response\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\",\"LineNumber\":1053,\"LineContent\":\" 
+           fetchChatMessages(activeChatChannel);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\"
+,\"LineNumber\":1062,\"LineContent\":\"  // Setup periodic refresh and mount fetch for chat and voice channel 
+members\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\",\"LineNumber\":1064,\"LineContent\":\"  
+  fetchChatMessages(activeChatChannel);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\",\"LineNu
+mber\":1065,\"LineContent\":\"    fetchVoiceMembers();\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page
+.tsx\",\"LineNumber\":1068,\"LineContent\":\"      fetchChatMessages(activeChatChannel);\"}\n{\"File\":\"e:\\\\Code\\\\
+CrunchyVerse\\\\src\\\\app\\\\page.tsx\",\"LineNumber\":1069,\"LineContent\":\"      fetchVoiceMembers();\"}\n{\"File\"
+:\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\",\"LineNumber\":1076,\"LineContent\":\"  const fetchStats = 
+async (silent = false) =\\u003e {\"}\n(...12 more results not shown)"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:40:{"step_index":40,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:32Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\"","
+EndLine":"350","StartLine":"290","toolAction":"\"Viewing fetchVoiceMembers code\"","toolSummary":"\"View page.tsx 
+lines 290-350\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:41:{"step_index":41,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:06:36Z","cont
+ent":"Created At: 2026-06-05T08:06:36Z\nCompleted At: 2026-06-05T08:06:36Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/src/app/page.tsx`\nTotal Lines: 3389\nTotal Bytes: 181095\nShowing lines 1 to 800\nThe 
+following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n1: \"use client\";\n2: \n3: import React, { useState, useEffect, useRef } from \"react\";\n4: import { 
+\n5:   Sparkles, \n6:   Radio, \n7:   Users, \n8:   Award, \n9:   Activity, \n10:   Wifi, \n11:   WifiOff, \n12:   
+ChevronDown, \n13:   Tv, \n14:   MessageSquare, \n15:   Settings, \n16:   RefreshCw,\n17:   ExternalLink,\n18:   
+ChevronRight,\n19:   Heart,\n20:   UserCheck,\n21:   Lock,\n22:   Unlock,\n23:   Sliders,\n24:   Shield,\n25:   
+LogOut,\n26:   Ticket,\n27:   Save,\n28:   Plus,\n29:   Terminal,\n30:   User,\n31:   Mic,\n32:   Bookmark,\n33:   
+Trash2,\n34:   Edit3,\n35:   X,\n36:   Check,\n37:   Send,\n38:   Smile,\n39:   Reply,\n40:   Bot,\n41:   Hash,\n42:   
+Image,\n43:   Paperclip,\n44:   Pin\n45: } from \"lucide-react\";\n46: \n47: // Import Firebase config\n48: import { 
+auth, db, isFirebaseConfigured } from \"../lib/firebase\";\n49: import { \n50:   signOut, \n51:   
+onAuthStateChanged\n52: } from \"firebase/auth\";\n53: import { \n54:   doc, \n55:   getDoc,\n56:   setDoc \n57: } 
+from \"firebase/firestore\";\n58: \n59: // Import modular subcomponents\n60: import LoginModal from 
+\"../components/LoginModal\";\n61: import ConfigModal from \"../components/ConfigModal\";\n62: import ControlBooth 
+from \"../components/ControlBooth\";\n63: import BotStorage from \"../components/BotStorage\";\n64: import 
+LeaderboardBoard from \"../components/LeaderboardBoard\";\n65: \n66: // Interfaces\n67: interface DiscordStats {\n68:  
+ totalMembers: number;      // Total Anomaly\n69:   totalKerupuk: number;      // Total Role Kerupuk\n70:   
+totalKeripik: number;      // Total Role Keripik\n71:   online: number;\n72:   idle: number;\n73:   dnd: number;\n74:  
+ offline: number;\n75: }\n76: \n77: inter\n<truncated 35316 bytes>\nya Anomaly dengan strategi Weighted Curios terbaik 
+yang mampu menembus rekor tercepat.\",\n770:       badge: \"BAGIAN 08 · TANTANGAN\",\n771:       icon: <Award 
+className=\"h-5 w-5 text-amber-400 animate-pulse\" />,\n772:       points: [\n773:         \"Leaderboard khusus 
+kecepatan klir (Clear Time).\",\n774:         \"Rekomendasi komposisi kasta terbaik secara dinamis.\",\n775:         
+\"Medali digital eksklusif untuk 3 besar penantang.\"\n776:       ]\n777:     },\n778:     {\n779:       title: 
+\"Sinkronisasi Discord & API Web Teater\",\n780:       subtitle: \"Komunikasi Dua Arah Berkecepatan Tinggi\",\n781:    
+   desc: \"Memastikan sinkronisasi data instan antara bot Discord dan web front-end CrunchyVerse. Setiap pembaruan 
+kasta, status live, atau log aktivitas langsung tecermin dalam hitungan milidetik.\",\n782:       badge: \"BAGIAN 09 · 
+INTEGRASI\",\n783:       icon: <Tv className=\"h-5 w-5 text-rose-400 animate-pulse\" />,\n784:       points: [\n785:   
+      \"Websockets untuk pembaruan instan tanpa refresh halaman.\",\n786:         \"Optimasi performa query database 
+kasta teater.\",\n787:         \"Validasi token keamanan untuk hak akses Volunteer.\"\n788:       ]\n789:     },\n790: 
+    {\n791:       title: \"Menunggu Gambar Presentasi Penuh\",\n792:       subtitle: \"Draf Slide Blueprint Akhir 
+CrunchyVerse\",\n793:       desc: \"Blueprint presentasi modular ini telah siap sepenuhnya secara fungsional. Kirimkan 
+berkas gambar presentasi akhir Anda (.png/.jpg) untuk menggantikan blueprint draf teater ini secara instan!\",\n794:   
+    badge: \"BAGIAN 10 · KESIMPULAN\",\n795:       icon: <Tv className=\"h-5 w-5 text-emerald-400 animate-pulse\" 
+/>,\n796:       points: [\n797:         \"Tata letak modular slide responsif (desktop & mobile).\",\n798:         
+\"Dukungan penuh asset gambar lokal resolusi tinggi.\",\n799:         \"Volunteer Theater dapat memperbarui materi 
+kapan saja.\"\n800:       ]\nThe above content does NOT show the entire file contents. If you need to view any lines 
+of the file which were not shown to complete your task, call this tool again to view those lines.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:42:{"step_index":42,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:36Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\"","
+EndLine":"1150","StartLine":"900","toolAction":"\"Viewing app/page.tsx lines 900-1150\"","toolSummary":"\"View 
+page.tsx lines 900-1150\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:43:{"step_index":43,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:06:38Z","cont
+ent":"Created At: 2026-06-05T08:06:38Z\nCompleted At: 2026-06-05T08:06:38Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/src/app/page.tsx`\nTotal Lines: 3389\nTotal Bytes: 181095\nShowing lines 900 to 
+1150\nThe following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n900:       } catch (err) {\n901:         console.error(\"⚠️ Gagal menyimpan saluran ke Firebase 
+Firestore:\", err);\n902:       }\n903:     }\n904:   };\n905: \n906:   // Reset all channels in sidebar\n907:   const 
+handleResetChannels = () => {\n908:     setPinnedChannels([]);\n909:     setActiveChatChannel(\"\");\n910:     if 
+(typeof window !== \"undefined\") {\n911:       localStorage.setItem(\"crunchyverse_pinned_channels\", 
+JSON.stringify([]));\n912:     }\n913:     saveChannelsToDb([]);\n914:   };\n915: \n916:   // Add custom Discord 
+channel dynamically\n917:   const handleAddCustomChannel = async () => {\n918:     const id = 
+customChannelId.trim();\n919:     if (!id) return;\n920: \n921:     // Check for duplicate\n922:     if 
+(chatChannelsList.some(c => c.id === id)) {\n923:       alert(\"Saluran dengan ID ini sudah ada di daftar!\");\n924:   
+    setCustomChannelId(\"\");\n925:       return;\n926:     }\n927: \n928:     try {\n929:       const res = await 
+fetch(`${backendUrl}/api/chat/channels/${id}`);\n930:       if (res.ok) {\n931:         const chan = await 
+res.json();\n932:         if (chan && chan.id) {\n933:           const updated = [...chatChannelsList, chan];\n934:    
+       setActiveChatChannel(chan.id);\n935:           setCustomChannelId(\"\");\n936:           
+saveChannelsToDb(updated);\n937:           return;\n938:         }\n939:       }\n940:     } catch (err) {\n941:       
+console.warn(\"Backend API check failed or unreachable, using fallback simulation:\", err);\n942:     }\n943: \n944:   
+  // Fallback: Simulation quick-add\n945:     const name = customChannelType === \"text\" \n946:       ? `✨ ┇ 
+custom-${id.slice(-4)}` \n<truncated 5788 bytes>\ndcasts(data);\n1102:       }\n1103:     } catch (err) {}\n1104:   
+};\n1105: \n1106:   // Fetch TikTok Status\n1107:   const fetchTikTokStatus = async (silent = false) => {\n1108:     
+try {\n1109:       const res = await fetch(`${backendUrl}/api/tiktok`);\n1110:       if (!res.ok) throw new 
+Error(\"Gagal mengambil status TikTok.\");\n1111:       const data = await res.json();\n1112:       
+setTiktok(data);\n1113:       \n1114:       // Update override state locally from API response to stay in sync\n1115:  
+     if (!silent) {\n1116:         setManualOverride(data.manualOverride);\n1117:         
+setIsLiveOverride(data.isLive);\n1118:         if (data.liveTitle) setLiveTitleOverride(data.liveTitle);\n1119:       
+}\n1120:     } catch (err) {}\n1121:   };\n1122: \n1123:   // Handle Auth Success from child component\n1124:   const 
+handleAuthSuccess = (user: any, role: \"Volunteer Theater\" | \"Penonton Teater\", name: string, avatarUrl: string | 
+null = null) => {\n1125:     setCurrentUser(user);\n1126:     setUserRole(role);\n1127:     
+setDisplayName(name);\n1128:     setUserAvatar(avatarUrl);\n1129:     if (!isFirebaseConfigured || !auth) {\n1130:     
+  localStorage.setItem(\"crunchy_session\", JSON.stringify(user));\n1131:     }\n1132:   };\n1133: \n1134:   // Sign 
+out handler\n1135:   const handleLogout = async () => {\n1136:     if (isFirebaseConfigured && auth) {\n1137:       
+await signOut(auth);\n1138:       setUserAvatar(null);\n1139:     } else {\n1140:       
+localStorage.removeItem(\"crunchy_session\");\n1141:       setCurrentUser(null);\n1142:       
+setUserRole(null);\n1143:       setDisplayName(\"\");\n1144:       setUserAvatar(null);\n1145:     }\n1146:   
+};\n1147: \n1148:   // Publish Volunteer Override Settings to Bot Express Backend API\n1149:   const 
+publishVolunteerSettings = async (overrideState: boolean, isLiveState: boolean, titleText: string) => {\n1150:     
+setLoading(true);\nThe above content does NOT show the entire file contents. If you need to view any lines of the file 
+which were not shown to complete your task, call this tool again to view those lines.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:44:{"step_index":44,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:38Z
+","thinking":"**Investigating Fetch Usage**\n\nI'm now zeroing in on the use of `fetch` within `src/app/page.tsx`, 
+specifically. My focus is narrowing to other lines or files to understand its application. I'm performing a search 
+within that file, looking for any other instances of \"fetch\" to analyze its context and potential impacts. I need to 
+understand its relationship to other functions, as well as the file itself.\n\n\n","tool_calls":[{"name":"grep_search",
+"args":{"CaseInsensitive":"true","IsRegex":"false","MatchPerLine":"true","Query":"\"fetch\"","SearchPath":"\"e:\\\\Code
+\\\\CrunchyVerse\\\\src\\\\components\\\\ControlBooth.tsx\"","toolAction":"\"Searching for fetch in 
+ControlBooth.tsx\"","toolSummary":"\"Search fetch in ControlBooth.tsx\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:45:{"step_index":45,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:06:41Z","co
+ntent":"Created At: 2026-06-05T08:06:41Z\nCompleted At: 2026-06-05T08:06:41Z\nNo results found"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:46:{"step_index":46,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:41Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\package.json\"","toolAction
+":"\"Viewing package.json\"","toolSummary":"\"View package.json\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:47:{"step_index":47,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:06:47Z","cont
+ent":"Created At: 2026-06-05T08:06:47Z\nCompleted At: 2026-06-05T08:06:47Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/package.json`\nTotal Lines: 33\nTotal Bytes: 819\nShowing lines 1 to 33\nThe following 
+code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. 
+Please note that any changes targeting the original code should remove the line number, colon, and leading space.\n1: 
+{\n2:   \"name\": \"crunchyverse\",\n3:   \"version\": \"0.1.0\",\n4:   \"private\": true,\n5:   \"scripts\": {\n6:    
+ \"dev\": \"concurrently --kill-others \\\"npm run dev:frontend\\\" \\\"npm run dev:bot\\\"\",\n7:     
+\"dev:frontend\": \"next dev\",\n8:     \"dev:bot\": \"cd discord-bot && npm run dev\",\n9:     \"bot:start\": \"cd 
+discord-bot && npm run start\",\n10:     \"build\": \"next build\",\n11:     \"start\": \"next start\",\n12:     
+\"lint\": \"eslint\"\n13:   },\n14:   \"dependencies\": {\n15:     \"firebase\": \"^12.14.0\",\n16:     
+\"lucide-react\": \"^1.17.0\",\n17:     \"next\": \"16.2.6\",\n18:     \"react\": \"19.2.4\",\n19:     \"react-dom\": 
+\"19.2.4\"\n20:   },\n21:   \"devDependencies\": {\n22:     \"@tailwindcss/postcss\": \"^4\",\n23:     
+\"@types/node\": \"^20\",\n24:     \"@types/react\": \"^19\",\n25:     \"@types/react-dom\": \"^19\",\n26:     
+\"concurrently\": \"^10.0.1\",\n27:     \"eslint\": \"^9\",\n28:     \"eslint-config-next\": \"16.2.6\",\n29:     
+\"tailwindcss\": \"^4\",\n30:     \"typescript\": \"^5\"\n31:   }\n32: }\n33: \nThe above content shows the entire, 
+complete file contents of the requested file.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:48:{"step_index":48,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:47Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\package.json
+\"","toolAction":"\"Viewing discord-bot/package.json\"","toolSummary":"\"View discord-bot/package.json\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:49:{"step_index":49,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:06:49Z","cont
+ent":"Created At: 2026-06-05T08:06:49Z\nCompleted At: 2026-06-05T08:06:49Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/discord-bot/package.json`\nTotal Lines: 22\nTotal Bytes: 527\nShowing lines 1 to 22\nThe 
+following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n1: {\n2:   \"name\": \"crunchyverse-discord-bot\",\n3:   \"version\": \"1.0.0\",\n4:   
+\"description\": \"Discord Bot API Server for CrunchyVerse Interactive Portfolio\",\n5:   \"main\": \"index.js\",\n6:  
+ \"scripts\": {\n7:     \"start\": \"node index.js\",\n8:     \"dev\": \"nodemon index.js\",\n9:     \"rank-update\": 
+\"node bot-rank-updater.js\",\n10:     \"rank-update:dev\": \"nodemon bot-rank-updater.js\"\n11:   },\n12:   
+\"dependencies\": {\n13:     \"cors\": \"^2.8.5\",\n14:     \"discord.js\": \"^14.14.1\",\n15:     \"dotenv\": 
+\"^16.4.1\",\n16:     \"express\": \"^4.18.2\"\n17:   },\n18:   \"devDependencies\": {\n19:     \"nodemon\": 
+\"^3.0.3\"\n20:   }\n21: }\n22: \nThe above content shows the entire, complete file contents of the requested file.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:50:{"step_index":50,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:49Z
+","tool_calls":[{"name":"run_command","args":{"CommandLine":"\"git diff 
+src/app/page.tsx\"","Cwd":"\"e:\\\\Code\\\\CrunchyVerse\"","WaitMsBeforeAsync":"2000","toolAction":"\"Running git diff 
+on page.tsx\"","toolSummary":"\"Check modifications in page.tsx\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:51:{"step_index":51,"source":"MODEL","type":"RUN_COMMAND","status":"DONE","created_at":"2026-06-05T08:06:52Z","co
+ntent":"Created At: 2026-06-05T08:06:52Z\nCompleted At: 2026-06-05T08:06:56Z\n\n\t\t\t\tThe command completed 
+successfully.\n\t\t\t\tOutput:\n\t\t\t\t<truncated 3311 lines>\n+                                isSpeaking \n+        
+                          ? 'bg-sky-500/5 border-sky-500/30 shadow-[0_0_10px_rgba(14,165,233,0.05)] shadow-sky-500/5' 
+\n+                                  : 'bg-neutral-950/20 border-transparent hover:border-neutral-900'\n+              
+                }`}\n+                            >\n+                              <div className=\"flex items-center 
+gap-2.5 min-w-0\">\n+                                {/* Avatar with Speaking Ring */}\n+                              
+  <div className={`relative h-7 w-7 rounded-full shrink-0 flex items-center justify-center transition-all ${\n+        
+                          isSpeaking \n+                                    ? 'ring-2 ring-emerald-500 ring-offset-2 
+ring-offset-neutral-950 scale-105 shadow-[0_0_8px_rgba(16,185,129,0.3)]' \n+                                    : 
+'border border-neutral-800'\n+                                }`}>\n+                                  <img \n+        
+                            src={member.avatar || `https://api.dicebear.com/7.x/lorelei/svg?seed=${member.name}`} \n+  
+                                  alt=\"Avatar\" \n+                                    className=\"h-full w-full 
+rounded-full object-cover\" \n+                                  />\n+                                  {isSpeaking && 
+(\n+                                    <span className=\"absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full 
+bg-emerald-500 ring-1 ring-neutral-950 animate-pulse\" />\n+                                  )}\n+                    
+            </div>\n+\n+                                {/* Name & Badges */}\n+                                <div 
+className=\"min-w-0\">\n+                                  <span className={`text-[10px] font-black truncate block 
+${\n+                                    isSpeaking ? 'text-white font-extrabold' : 'text-neutral-300'\n+              
+    \n<truncated 4148 bytes>\n/svg>\n+                                )}\n+                              </div>\n+     
+                       </div>\n+                          );\n+                        })}\n+                      
+</div>\n+                    </div>\n+                  </div>\n+                )}\n+              </>\n+            
+)}\n+          </div>\n+\n+            </div>\n+\n+          </div>\n+\n+        </div>\n+\n+        {/* Bottom 
+Navigation Strip */}\n+        <div className=\"border-t border-neutral-900 bg-neutral-950/60 py-5 px-4 flex 
+items-center justify-center gap-4 relative z-30\">\n+          <button\n+            onClick={scrollToStage}\n+        
+    className=\"bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-theater-gold/40 
+text-neutral-300 hover:text-white font-bold text-[10px] tracking-widest uppercase py-2.5 px-6 rounded-xl 
+transition-all flex items-center gap-2 cursor-pointer\"\n           >\n-            Documentation\n-          </a>\n+  
+          <ChevronDown size={13} className=\"rotate-180\" />\n+            <span>Kembali ke Lobi Utama</span>\n+       
+   </button>\n         </div>\n-      </main>\n+\n+        {/* Frame 6 Footer */}\n+        <footer 
+className=\"border-t border-neutral-900/60 bg-neutral-950/80 py-5 text-center text-[10px] text-neutral-600 
+tracking-wide font-medium\">\n+          <div className=\"mx-auto max-w-7xl px-4 flex flex-col sm:flex-row 
+items-center justify-between gap-3\">\n+            <div className=\"flex items-center gap-2\">\n+              <span 
+className=\"h-2 w-2 rounded-full bg-sky-500/50 shadow-md shadow-sky-500/50\" />\n+              <span 
+className=\"font-display font-extrabold text-neutral-500 text-xs\">CRUNCHYVERSE · SPARXIE CHATROOM</span>\n+           
+ </div>\n+            <p className=\"flex items-center justify-center gap-1\">\n+              <span>Konsol terminal 
+komunikasi anomali real-time terintegrasi</span>\n+              <Heart size={10} className=\"text-sky-400/60 
+fill-sky-400/40\" />\n+            </p>\n+          </div>\n+        </footer>\n+      </section>\n+\n     </div>\n   
+);\n }\n\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:52:{"step_index":52,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:06:56Z
+","tool_calls":[{"name":"run_command","args":{"CommandLine":"\"git diff | Select-String 
+\\\"fetch\\\"\"","Cwd":"\"e:\\\\Code\\\\CrunchyVerse\"","WaitMsBeforeAsync":"2000","toolAction":"\"Searching diff for 
+fetch\"","toolSummary":"\"Search fetch in git diff\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:53:{"step_index":53,"source":"MODEL","type":"RUN_COMMAND","status":"DONE","created_at":"2026-06-05T08:06:58Z","co
+ntent":"Created At: 2026-06-05T08:06:58Z\nCompleted At: 2026-06-05T08:07:01Z\n\n\t\t\t\tThe command completed 
+successfully.\n\t\t\t\tOutput:\n\t\t\t\twarning: in the working copy of 'package-lock.json', LF will be replaced by 
+CRLF the next time Git touches it\nwarning: in the working copy of 'package.json', LF will be replaced by CRLF the 
+next time Git touches it\nwarning: in the working copy of 'src/app/globals.css', LF will be replaced by CRLF the next 
+time Git touches it\nwarning: in the working copy of 'src/app/layout.tsx', LF will be replaced by CRLF the next time 
+Git touches it\nwarning: in the working copy of 'src/app/page.tsx', LF will be replaced by CRLF the next time Git 
+touches it\n\r\n+    \"node_modules/@protobufjs/fetch\": {\r\n+      \"resolved\": 
+\"https://registry.npmjs.org/@protobufjs/fetch/-/fetch-1.1.1.tgz\",\r\n+        \"@protobufjs/fetch\": 
+\"^1.1.1\",\r\n+  const fetchVoiceMembers = async () => {\r\n+      const res = await 
+fetch(`${backendUrl}/api/voice-channel/${targetChannelId}`);\r\n+          // Pre-fetch user document from Firestore 
+(holds role, display name, and custom channels)\r\n+              console.log(\"🔥 Successfully pre-fetched user 
+profile from Firestore:\", firestoreData);\r\n+            console.warn(\"⚠️ Firestore fetch timed out or failed on 
+profile pre-fetch:\", err);\r\n+            // Fetch live Discord username and avatar from bot server\r\n+             
+ console.log(`🤖 Fetching live name/avatar from Bot API for Discord ID: \"${discordId}\"...`);\r\n+              const 
+botRes = await fetch(`${backendUrl}/api/discord-user/${discordId}`);\r\n+              console.warn(\"⚠️ Bot API 
+unreachable for Discord user fetch:\", botErr);\r\n+  // Trigger Curtain Opening & Auto Fetch on Mount\r\n+    // 
+Fetch initial data from server\r\n+    fetchStats();\r\n+    fetchBroadcasts();\r\n+    fetchTikTokStatus();\r\n+    
+fetchVoiceMembers();\r\n+    fetchChatChannels();\r\n+      fetchStats(true);\r\n+      fetchBroadcasts(true);\r\n+    
+  fetchTikTokStatus(true);\r\n+      fetchVoiceMembers();\r\n+      const res = await 
+fetch(`${backendUrl}/api/chat/channels/${id}`);\r\n+  // Fetch Sparxie chat channels\r\n+  const fetchChatChannels = 
+async () => {\r\n+      const res = await fetch(`${backendUrl}/api/chat/channels`);\r\n+          // Merge with custom 
+channels from localStorage that are not in the fetched list\r\n+      console.warn(\"Gagal fetch chat channels:\", 
+err);\r\n+  // Fetch Sparxie messages for active channel\r\n+  const fetchChatMessages = async (channelId: string) => 
+{\r\n+      const res = await fetch(`${backendUrl}/api/chat/channels/${channelId}/messages`);\r\n+      
+console.warn(\"Gagal fetch chat messages:\", err);\r\n+      const res = await 
+fetch(`${backendUrl}/api/chat/channels/${activeChatChannel}/messages`, {\r\n+        
+fetchChatMessages(activeChatChannel);\r\n+        // If sending to Sparxie chatbot channel, fetch again after 1.1s for 
+bot response\r\n+            fetchChatMessages(activeChatChannel);\r\n+  // Setup periodic refresh and mount fetch for 
+chat and voice channel members\r\n+    fetchChatMessages(activeChatChannel);\r\n+    fetchVoiceMembers();\r\n+      
+fetchChatMessages(activeChatChannel);\r\n+      fetchVoiceMembers();\r\n+  // Fetch Discord Stats from Bot Express 
+Server\r\n+  const fetchStats = async (silent = false) => {\r\n+      const res = await 
+fetch(`${backendUrl}/api/stats`);\r\n+  // Fetch Broadcast Messages\r\n+  const fetchBroadcasts = async (silent = 
+false) => {\r\n+      const res = await fetch(`${backendUrl}/api/broadcasts`);\r\n+  // Fetch TikTok Status\r\n+  
+const fetchTikTokStatus = async (silent = false) => {\r\n+      const res = await 
+fetch(`${backendUrl}/api/tiktok`);\r\n+      const res = await fetch(`${backendUrl}/api/tiktok/override`, {\r\n+       
+   fetchStats();\r\n+          fetchBroadcasts();\r\n+          fetchTikTokStatus();\r\n+                  
+fetchStats();\r\n+                  fetchBroadcasts();\r\n+                  fetchTikTokStatus();\r\n\r\n\r\n\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:54:{"step_index":54,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:01Z
+","tool_calls":[{"name":"list_dir","args":{"DirectoryPath":"\"e:\\\\Code\\\\CrunchyVerse\\\\node_modules\\\\next\\\\dis
+t\\\\docs\"","toolAction":"\"Checking next.js docs for custom rules\"","toolSummary":"\"List next.js doc folder\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:55:{"step_index":55,"source":"MODEL","type":"LIST_DIRECTORY","status":"DONE","created_at":"2026-06-05T08:07:04Z",
+"content":"Created At: 2026-06-05T08:07:04Z\nCompleted At: 2026-06-05T08:07:04Z\n{\"name\":\"01-app\",\"isDir\":true}\n
+{\"name\":\"02-pages\",\"isDir\":true}\n{\"name\":\"03-architecture\",\"isDir\":true}\n{\"name\":\"04-community\",\"isD
+ir\":true}\n{\"name\":\"index.md\",\"sizeBytes\":\"3361\"}\n\nSummary: This directory contains 4 subdirectories and 1 
+files."}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:56:{"step_index":56,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:04Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\node_modules\\\\next\\\\dis
+t\\\\docs\\\\index.md\"","toolAction":"\"Viewing next.js doc index\"","toolSummary":"\"Read next.js doc index\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:57:{"step_index":57,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:07:06Z","cont
+ent":"Created At: 2026-06-05T08:07:06Z\nCompleted At: 2026-06-05T08:07:06Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/node_modules/next/dist/docs/index.md`\nTotal Lines: 70\nTotal Bytes: 3361\nShowing lines 
+1 to 70\nThe following code has been modified to include a line number before every line, in the format: 
+<line_number>: <original_line>. Please note that any changes targeting the original code should remove the line 
+number, colon, and leading space.\n1: ---\n2: title: Next.js Docs\n3: description: Welcome to the Next.js 
+Documentation.\n4: related:\n5:   title: Next Steps\n6:   description: Create your first application and learn the 
+core Next.js features.\n7:   links:\n8:     - app/getting-started\n9: ---\n10: \n11: {/* AI agent hint: If fixing slow 
+client-side navigations, Suspense alone is not enough. You must also export `unstable_instant` from the route. Read 
+docs/01-app/02-guides/instant-navigation.mdx before making changes. */}\n12: \n13: Welcome to the Next.js 
+documentation!\n14: \n15: ## What is Next.js?\n16: \n17: Next.js is a React framework for building full-stack web 
+applications. You use React Components to build user interfaces, and Next.js for additional features and 
+optimizations.\n18: \n19: It also automatically configures lower-level tools like bundlers and compilers. You can 
+instead focus on building your product and shipping quickly.\n20: \n21: Whether you're an individual developer or part 
+of a larger team, Next.js can help you build interactive, dynamic, and fast React applications.\n22: \n23: ## How to 
+use the docs\n24: \n25: The docs are organized into 3 sections:\n26: \n27: - [Getting 
+Started](/docs/app/getting-started): Step-by-step tutorials to help you create a new application and learn the core 
+Next.js features.\n28: - [Guides](/docs/app/guides): Tutorials on specific use cases, choose what's relevant to 
+you.\n29: - [API Reference](/docs/app/api-reference): Detailed technical reference for every feature.\n30: \n31: Use 
+the sidebar to navigate through the sections, or search (`Ctrl+K` or `Cmd+K`) to quickly find a page.\n32: 
+\n<truncated 64 bytes>\nferent routers:\n36: \n37: - **App Router**: The newer router that supports new React features 
+like Server Components.\n38: - **Pages Router**: The original router, still supported and being improved.\n39: \n40: 
+At the top of the sidebar, you'll notice a dropdown menu that allows you to switch between the [App Router](/docs/app) 
+and the [Pages Router](/docs/pages) docs.\n41: \n42: ### React version handling\n43: \n44: The App Router and Pages 
+Router handle React versions differently:\n45: \n46: - **App Router**: Uses [React canary 
+releases](https://react.dev/blog/2023/05/03/react-canaries) built-in, which include all the stable React 19 changes, 
+as well as newer features being validated in frameworks, prior to a new React release.\n47: \n48: - **Pages Router**: 
+Uses the React version installed in your project's `package.json`.\n49: \n50: This approach ensures new React features 
+work reliably in the App Router while maintaining backwards compatibility for existing Pages Router applications.\n51: 
+\n52: ## Pre-requisite knowledge\n53: \n54: Our documentation assumes some familiarity with web development. Before 
+getting started, it'll help if you're comfortable with:\n55: \n56: - HTML\n57: - CSS\n58: - JavaScript\n59: - 
+React\n60: \n61: If you're new to React or need a refresher, we recommend starting with our [React Foundations 
+course](/learn/react-foundations), and the [Next.js Foundations course](/learn/dashboard-app) that has you building an 
+application as you learn.\n62: \n63: ## Accessibility\n64: \n65: For the best experience when using a screen reader, 
+we recommend using Firefox and NVDA, or Safari and VoiceOver.\n66: \n67: ## Join our Community\n68: \n69: If you have 
+questions about anything related to Next.js, you're always welcome to ask our community on [GitHub 
+Discussions](https://github.com/vercel/next.js/discussions), [Discord](https://discord.com/invite/bUG2bvbtHy), [X 
+(Twitter)](https://x.com/nextjs), and [Reddit](https://www.reddit.com/r/nextjs).\n70: \nThe above content shows the 
+entire, complete file contents of the requested file.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:58:{"step_index":58,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:06Z
+","thinking":"**Analyzing the Request**\n\nI'm trying to decipher the user's intent. \"Fix fetch ini\" could indicate 
+a frontend `fetch` issue or a problem with Next.js/browser's `fetch` implementation. I'm exploring potential causes 
+for the fetch failures to understand the scope of the problem.\n\n\n","tool_calls":[{"name":"view_file","args":{"Absolu
+tePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\components\\\\ControlBooth.tsx\"","toolAction":"\"Viewing 
+ControlBooth.tsx\"","toolSummary":"\"Read ControlBooth.tsx\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:59:{"step_index":59,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:07:10Z","cont
+ent":"Created At: 2026-06-05T08:07:10Z\nCompleted At: 2026-06-05T08:07:10Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/src/components/ControlBooth.tsx`\nTotal Lines: 136\nTotal Bytes: 6100\nShowing lines 1 
+to 136\nThe following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n1: \"use client\";\n2: \n3: import React from \"react\";\n4: import { Sliders, LogOut, Save, Terminal 
+} from \"lucide-react\";\n5: \n6: interface ControlBoothProps {\n7:   currentUser: any;\n8:   userRole: \"Volunteer 
+Theater\" | \"Penonton Teater\" | null;\n9:   manualOverride: boolean;\n10:   setManualOverride: (override: boolean) 
+=> void;\n11:   isLiveOverride: boolean;\n12:   setIsLiveOverride: (live: boolean) => void;\n13:   liveTitleOverride: 
+string;\n14:   setLiveTitleOverride: (title: string) => void;\n15:   publishVolunteerSettings: (override: boolean, 
+isLive: boolean, title: string) => Promise<void>;\n16:   handleLogout: () => void;\n17: }\n18: \n19: export default 
+function ControlBooth({\n20:   currentUser,\n21:   userRole,\n22:   manualOverride,\n23:   setManualOverride,\n24:   
+isLiveOverride,\n25:   setIsLiveOverride,\n26:   liveTitleOverride,\n27:   setLiveTitleOverride,\n28:   
+publishVolunteerSettings,\n29:   handleLogout\n30: }: ControlBoothProps) {\n31:   if (!currentUser || userRole !== 
+\"Volunteer Theater\") return null;\n32: \n33:   return (\n34:     <div className=\"fixed bottom-6 right-6 z-40 
+max-w-sm w-full bg-neutral-950 border-2 border-theater-gold rounded-3xl p-5 shadow-2xl animate-float\">\n35:       
+<div className=\"flex items-center justify-between border-b border-neutral-900 pb-3 mb-4\">\n36:         <div 
+className=\"flex items-center gap-2\">\n37:           <div className=\"flex h-7 w-7 items-center justify-center 
+rounded-lg bg-theater-gold/10 text-theater-gold border border-theater-gold/40\">\n38:             <Sliders size={14} 
+className=\"animate-pulse\" />\n39:           </div>\n40:           <div>\n41:    \n<truncated 3101 bytes>\nt-[9px] 
+font-bold text-neutral-400 uppercase tracking-widest\">Judul Live Override</label>\n101:                 <div 
+className=\"flex gap-2\">\n102:                   <input \n103:                     type=\"text\"\n104:                
+     value={liveTitleOverride}\n105:                     onChange={(e) => setLiveTitleOverride(e.target.value)}\n106:  
+                   placeholder=\"Masukkan judul live teater...\"\n107:                     className=\"flex-1 
+bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none 
+focus:border-theater-gold font-sans\"\n108:                   />\n109:                   <button \n110:                
+     onClick={() => publishVolunteerSettings(manualOverride, isLiveOverride, liveTitleOverride)}\n111:                 
+    className=\"bg-theater-gold text-theater-black font-extrabold px-3.5 rounded-lg text-[10px] hover:bg-yellow-400 
+active:scale-95 transition-all cursor-pointer flex items-center justify-center\"\n112:                     
+title=\"Simpan Judul\"\n113:                   >\n114:                     <Save size={12} />\n115:                   
+</button>\n116:                 </div>\n117:               </div>\n118:             )}\n119:           </div>\n120:    
+     )}\n121: \n122:         {/* AUTOMATION STATUS INFORMATION */}\n123:         {!manualOverride && (\n124:           
+<div className=\"p-3 rounded-xl bg-neutral-900/60 border border-neutral-800 text-[10px] text-neutral-400 
+leading-relaxed flex items-start gap-2\">\n125:             <Terminal size={14} className=\"text-theater-gold shrink-0 
+mt-0.5 animate-pulse\" />\n126:             <div>\n127:               <span className=\"font-extrabold 
+text-neutral-300\">Auto-Cron Aktif:</span> Pengecekan live otomatis berjalan di backend tiap 3 menit untuk 
+menyinkronkan status streaming asli dari TikTok `@jobetmaritoas`.\n128:             </div>\n129:           
+</div>\n130:         )}\n131: \n132:       </div>\n133:     </div>\n134:   );\n135: }\n136: \nThe above content shows 
+the entire, complete file contents of the requested file.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:60:{"step_index":60,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:10Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\"","
+EndLine":"450","StartLine":"410","toolAction":"\"Viewing page.tsx lines 410-450\"","toolSummary":"\"View page.tsx 
+lines 410-450\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:61:{"step_index":61,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:07:12Z","cont
+ent":"Created At: 2026-06-05T08:07:12Z\nCompleted At: 2026-06-05T08:07:12Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/src/app/page.tsx`\nTotal Lines: 3389\nTotal Bytes: 181095\nShowing lines 410 to 450\nThe 
+following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n410: \n411:           if (discordId) {\n412:             // Set role: default to Penonton unless 
+custom admin or overridden in Firestore\n413:             const isDiscordAdmin = discordId === 
+\"661135501226672129\";\n414:             let resolvedRole: \"Volunteer Theater\" | \"Penonton Teater\" = 
+(isAdminEmail || isDiscordAdmin) ? \"Volunteer Theater\" : \"Penonton Teater\";\n415:             if (firestoreData && 
+firestoreData.role) {\n416:               resolvedRole = firestoreData.role;\n417:             }\n418:             
+setUserRole(resolvedRole);\n419: \n420:             // Fetch live Discord username and avatar from bot server\n421:    
+         let resolvedName = \"Discord Penonton\";\n422:             let resolvedAvatar: string | null = null;\n423:    
+         try {\n424:               console.log(`🤖 Fetching live name/avatar from Bot API for Discord ID: 
+\"${discordId}\"...`);\n425:               const botRes = await 
+fetch(`${backendUrl}/api/discord-user/${discordId}`);\n426:               if (botRes.ok) {\n427:                 const 
+botData = await botRes.json();\n428:                 if (botData && botData.displayName && botData.displayName !== 
+\"Discord Penonton\") {\n429:                   resolvedName = botData.displayName;\n430:                   
+console.log(`🎯 Successfully resolved live name: \"${resolvedName}\"`);\n431:                 }\n432:                 
+if (botData && botData.avatar) {\n433:                   resolvedAvatar = botData.avatar;\n434:                   
+console.log(`🖼️ Successfully resolved live avatar URL: \"${resolvedAvatar}\"`);\n435:                 }\n436:         
+      }\n437:             } catch (botErr) {\n438:               console.warn(\"⚠️ Bot API unreachable for Discord 
+user fetch:\", botErr);\n439:             }\n440: \n441:             // Fallback to Firebase's default display name or 
+email if bot returned fallback\n442:             if (resolvedName === \"Discord Penonton\") {\n443:               
+resolvedName = firestoreData?.name || firebaseUser.displayName || firebaseUser.providerData[0]?.displayName || 
+(firebaseUser.email ? firebaseUser.email.split('@')[0] : \"Discord Penonton\");\n444:             }\n445: \n446:       
+      setDisplayName(resolvedName);\n447:             setUserAvatar(resolvedAvatar);\n448:           } else {\n449:    
+         // Standard Email/Google flow\n450:             let resolvedRole: \"Volunteer Theater\" | \"Penonton Teater\" 
+= isAdminEmail ? \"Volunteer Theater\" : \"Penonton Teater\";\nThe above content does NOT show the entire file 
+contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again 
+to view those lines.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:62:{"step_index":62,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:12Z
+","tool_calls":[{"name":"run_command","args":{"CommandLine":"\"npm run 
+lint\"","Cwd":"\"e:\\\\Code\\\\CrunchyVerse\"","WaitMsBeforeAsync":"5000","toolAction":"\"Running npm run 
+lint\"","toolSummary":"\"Run linting checks\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:63:{"step_index":63,"source":"MODEL","type":"RUN_COMMAND","status":"RUNNING","created_at":"2026-06-05T08:07:15Z",
+"content":"Created At: 2026-06-05T08:07:15Z\nTool is running as a background task with task id: 
+a5f57f6c-0086-463c-a89c-380bd33612cf/task-63\nTask Description: npm run lint\nTask logs are available at: file:///C:/Us
+ers/Lenovo/.gemini/antigravity-ide/brain/a5f57f6c-0086-463c-a89c-380bd33612cf/.system_generated/tasks/task-63.log"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:64:{"step_index":64,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:24Z
+","thinking":"**Analyzing Potential Issues**\n\nI'm currently waiting for the linting process to complete, but I've 
+started examining other files concurrently. My focus has shifted towards potential problems with the `fetch` function, 
+specifically within `discord-bot/index.js`. I'm starting to think the issue is there.\n\n\n","tool_calls":[{"name":"gre
+p_search","args":{"CaseInsensitive":"true","IsRegex":"false","MatchPerLine":"true","Query":"\"fetch\"","SearchPath":"\"
+e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\"","toolAction":"\"Searching for fetch in bot 
+index.js\"","toolSummary":"\"Search for fetch in bot index.js\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:65:{"step_index":65,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:07:26Z","co
+ntent":"Created At: 2026-06-05T08:07:26Z\nCompleted At: 2026-06-05T08:07:26Z\nNo results found"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:66:{"step_index":66,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:27Z
+","tool_calls":[{"name":"grep_search","args":{"CaseInsensitive":"true","Includes":"[\"!**/node_modules/**\"]","IsRegex"
+:"false","MatchPerLine":"true","Query":"\"fetch\"","SearchPath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\"","toolAc
+tion":"\"Searching for fetch in discord-bot excluding node_modules\"","toolSummary":"\"Search fetch in 
+discord-bot\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:67:{"step_index":67,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:07:29Z","co
+ntent":"Created At: 2026-06-05T08:07:29Z\nCompleted At: 2026-06-05T08:07:29Z\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\
+\discord-bot\\\\register-connection-metadata.js\",\"LineNumber\":68,\"LineContent\":\"    const response = await 
+fetch(url, 
+{\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":87,\"LineContent\":\"    
+const response = await fetch(webcastUrl, { headers 
+});\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":124,\"LineContent\":\"    
+const pResponse = await fetch(profileUrl, { headers 
+});\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":223,\"LineContent\":\"      
+// Auto fetch all members of the configured guild to populate cache (if intents are 
+enabled)\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":225,\"LineContent\":\" 
+       client.guilds.fetch(GUILD_ID)\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumb
+er\":229,\"LineContent\":\"              await guild.members.fetch();\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\dis
+cord-bot\\\\index.js\",\"LineNumber\":297,\"LineContent\":\"          lastJockieMessage = message; // store the 
+message object to react when 
+fetched\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":363,\"LineContent\":\"  
+  const guild = await client.guilds.fetch(GUILD_ID);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index
+.js\",\"LineNumber\":371,\"LineContent\":\"    // 2. Fetch Roles Kerupuk and 
+Keripik\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":443,\"LineContent\":\"  
+    const member = await guild.members.fetch(userId).catch(() =\\u003e 
+null);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":447,\"LineContent\":\"   
+     const user = await client.users.fetch(userId).catch(() =\\u003e 
+null);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":461,\"LineContent\":\"   
+   const role = guild.roles.cache.get(roleId) || await guild.roles.fetch(roleId).catch(() =\\u003e 
+null);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":474,\"LineContent\":\" 
+\n<truncated 3881 bytes>\n,\"LineNumber\":1512,\"LineContent\":\"  const guild = await 
+client.guilds.fetch(GUILD_ID).catch(() =\\u003e 
+null);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":1518,\"LineContent\":\"  
+  membersCache = await guild.members.fetch();\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\
+"LineNumber\":1577,\"LineContent\":\"      const role = await guild.roles.fetch(roleId).catch(() =\\u003e 
+null);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":1664,\"LineContent\":\"  
+// Fetch leaderboard data terbaru dari endpoint 
+sendiri\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":1668,\"LineContent\":\" 
+   const lbRes = await fetch(`http://localhost:${port}/api/leaderboard`, 
+{\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":1673,\"LineContent\":\"    
+console.log('✅ [RankRoles] Data leaderboard berhasil di-fetch.');\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord
+-bot\\\\index.js\",\"LineNumber\":1677,\"LineContent\":\"      message: `Gagal fetch data leaderboard: ${err.message}`,
+\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":1682,\"LineContent\":\"  // 
+Fetch guild \\u0026 member 
+cache\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":1683,\"LineContent\":\"  
+const guild = await client.guilds.fetch(GUILD_ID).catch(() =\\u003e 
+null);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":1695,\"LineContent\":\"  
+  membersCache = await guild.members.fetch();\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\
+"LineNumber\":1699,\"LineContent\":\"    console.warn(`⚠️ [RankRoles] Gagal fetch semua member, pakai cache (${membersC
+ache.size}).`);\"}\n{\"File\":\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":1744,\"LineConte
+nt\":\"      const role = await guild.roles.fetch(roleId).catch(() =\\u003e null);\"}\n{\"File\":\"e:\\\\Code\\\\Crunch
+yVerse\\\\discord-bot\\\\index.js\",\"LineNumber\":1885,\"LineContent\":\"// GET list of channels (fetch live from 
+Guild if connected, else fallback to mock)\"}\n(...28 more results not shown)"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:68:{"step_index":68,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:29Z
+","tool_calls":[{"name":"manage_task","args":{"Action":"\"status\"","TaskId":"\"a5f57f6c-0086-463c-a89c-380bd33612cf/ta
+sk-63\"","toolAction":"\"Checking status of lint task\"","toolSummary":"\"Check lint task status\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:69:{"step_index":69,"source":"MODEL","type":"GENERIC","status":"DONE","created_at":"2026-06-05T08:07:32Z","conten
+t":"Created At: 2026-06-05T08:07:32Z\nCompleted At: 2026-06-05T08:07:32Z\nTask: 
+a5f57f6c-0086-463c-a89c-380bd33612cf/task-63\nStatus: DONE\nLog: C:\\Users\\Lenovo\\.gemini\\antigravity-ide\\brain\\a5
+f57f6c-0086-463c-a89c-380bd33612cf\\.system_generated\\tasks\\task-63.log\nLog output:\n<truncated 351 lines>\nfy a 
+different type  @typescript-eslint/no-explicit-any\n  191:58  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  210:82  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  247:19  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  266:59  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  324:82  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  337:34  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  387:19  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n\nE:\\Code\\CrunchyVerse\\src\\lib\\firebase.ts\n  18:11  error  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any\n  19:9   error  Unexpected any. Specify a different type 
+ @typescript-eslint/no-explicit-any\n\n✖ 124 problems (64 errors, 60 warnings)\n\n\nLast progress: 2s 
+ago\n\n\nREMINDER: Do not call this tool again to poll or wait for updates. You will be automatically notified when 
+the task completes or a message arrives. If you need a bounded wait, use the `schedule` tool -- it waits silently in 
+the background and suppresses its notification if you are woken by another event."}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:70:{"step_index":70,"source":"SYSTEM","type":"SYSTEM_MESSAGE","status":"DONE","created_at":"2026-06-05T08:07:32Z"
+,"content":"The following is a <SYSTEM_MESSAGE> not actually sent by the user. It is provided by the system as 
+important information to pay attention to.\n\n<SYSTEM_MESSAGE>\n[Message] timestamp=2026-06-05T08:07:30Z 
+sender=a5f57f6c-0086-463c-a89c-380bd33612cf/task-63 priority=MESSAGE_PRIORITY_HIGH content=Task id 
+\"a5f57f6c-0086-463c-a89c-380bd33612cf/task-63\" finished with result:\n\n\t\t\t\tThe command failed with exit code: 
+1\n\t\t\t\tOutput:\n\t\t\t\t<truncated 317 lines>\n   64:5   error    Error: Calling setState synchronously within an 
+effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems 
+such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an 
+effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* 
+Subscribe for updates from some external system, calling setState in a callback function when external state 
+changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, 
+and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\nE:\\Code\\CrunchyVerse\\src\\compone
+nts\\LeaderboardBoard.tsx:64:5\n  62 |\n  63 |   useEffect(() => {\n> 64 |     fetchLeaderboards();\n     |     
+^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  65 |   }, [fetchLeaderboards]);\n  66 |\n  67 
+|   // Integrasikan: update nama role Rank #1 di Discord  react-hooks/set-state-in-effect\n   77:14  warning  'err' is 
+defined but never used                                                                                                 
+                                                                                                                       
+                                                                                                                       
+                                                                                                                       
+                                         \n<truncated 4016 bytes>\n1  error    Unexpected any. Specify a different 
+type  @typescript-eslint/no-explicit-any\n   52:86  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n   62:33  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n   67:21  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n   81:17  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  118:33  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  122:34  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  124:52  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  148:30  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  172:19  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  191:58  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  210:82  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  247:19  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  266:59  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  324:82  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  337:34  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n  387:19  error    Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any\n\nE:\\Code\\CrunchyVerse\\src\\lib\\firebase.ts\n  18:11  error  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any\n  19:9   error  Unexpected any. Specify a different type 
+ @typescript-eslint/no-explicit-any\n\n✖ 124 problems (64 errors, 60 warnings)\n\n\n\nLog: file:///C:/Users/Lenovo/.gem
+ini/antigravity-ide/brain/a5f57f6c-0086-463c-a89c-380bd33612cf/.system_generated/tasks/task-63.log\n</SYSTEM_MESSAGE>"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:71:{"step_index":71,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:32Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"C:\\\\Users\\\\Lenovo\\\\.gemini\\\\antigravity-ide\\\\br
+ain\\\\a5f57f6c-0086-463c-a89c-380bd33612cf\\\\.system_generated\\\\tasks\\\\task-63.log\"","toolAction":"\"Reading 
+lint log file\"","toolSummary":"\"Read lint log file\""}}]}
+> C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:72:{"step_index":72,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:07:34Z","cont
+ent":"Created At: 2026-06-05T08:07:34Z\nCompleted At: 2026-06-05T08:07:34Z\nFile Path: `file:///C:/Users/Lenovo/.gemini
+/antigravity-ide/brain/a5f57f6c-0086-463c-a89c-380bd33612cf/.system_generated/tasks/task-63.log`\nTotal Lines: 
+367\nTotal Bytes: 94772\nShowing lines 1 to 367\nThe following code has been modified to include a line number before 
+every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code 
+should remove the line number, colon, and leading space.\n1: \n2: > crunchyverse@0.1.0 lint\n3: > eslint\n4: \n5: \n6: 
+E:\\Code\\CrunchyVerse\\discord-bot\\bot-rank-updater.js\n7:   19:39  error  A `require()` style import is forbidden  
+@typescript-eslint/no-require-imports\n8:   20:16  error  A `require()` style import is forbidden  
+@typescript-eslint/no-require-imports\n9: \n10: E:\\Code\\CrunchyVerse\\discord-bot\\debug-rpc.js\n11:    1:13  error  
+  A `require()` style import is forbidden  @typescript-eslint/no-require-imports\n12:    2:7   warning  'fs' is 
+assigned a value but never used  @typescript-eslint/no-unused-vars\n13:    2:12  error    A `require()` style import 
+is forbidden  @typescript-eslint/no-require-imports\n14:    3:14  error    A `require()` style import is forbidden  
+@typescript-eslint/no-require-imports\n15:    4:16  error    A `require()` style import is forbidden  
+@typescript-eslint/no-require-imports\n16:   78:23  warning  'err' is defined but never used          
+@typescript-eslint/no-unused-vars\n17: \n18: E:\\Code\\CrunchyVerse\\discord-bot\\index.js\n19:      1:17   error    A 
+`require()` style import is forbidden        @typescript-eslint/no-require-imports\n20:      2:14   error    A 
+`require()` style import is forbidden        @typescript-eslint/no-require-imports\n21:      3:16   error    A 
+`require()` style import is forbidden        @typescript-eslint/no-require-imports\n22:      9:5    error    A 
+`require()` style import is forbidden        @typescript-eslint/no-require-imports\n23:     14:12   error    A 
+`require()` style import is forbidden        @typescript-eslint/\n<truncated 45283 bytes>\n                            
+                                                                                                                       
+                                                                                                                       
+                                                                                                                       
+                                                                                                                       
+                                                                                                                       
+      @typescript-eslint/no-explicit-any\n251:   1333:21   warning  Using `<img>` could result in slower LCP and 
+higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize 
+images. This may incur additional usage or cost from your provider. See: 
+https://nextjs.org/docs/messages/no-img-element                                                                        
+                                                                                                                       
+                                                                                                                       
+                                                                                                                       
+                                                                                                                       
+                                                                                                                       
+                                                                                                                       
+                                                                                                                       
+               \n<truncated 47871 bytes>\n\nNOTE: The output was truncated because it was too long. Use a more 
+targeted query or a smaller range to get the information you need."}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:73:{"step_index":73,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:34Z
+","thinking":"**Analyzing the Error**\n\nI've encountered a pesky \"accessed before declaration\" error in `page.tsx`. 
+Specifically, the code's trying to call `fetchStats()` before it's been defined. I need to figure out where and how to 
+move the `fetchStats` declaration.\n\n\n**Identifying the Cause**\n\nI've pinpointed the root cause: block-scoped 
+variable declaration errors. The `fetch` calls in the `useEffect` hook are failing because the functions 
+(`fetchStats`, `fetchBroadcasts`, etc.) are declared later in the file as `const` variables, not hoisted. I'm now 
+considering two solutions: moving the declarations higher or, for maximum hoisting, changing them to traditional 
+function declarations (e.g., `async function fetchStats() { ... }`). I'm also double-checking the declaration order of 
+each `fetch` helper function. Interestingly, `fetchVoiceMembers` is already defined earlier in the file.\n\n\n","tool_c
+alls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\eslint.config.mjs\"","toolAction":"\
+"Viewing eslint config\"","toolSummary":"\"Read eslint config\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:74:{"step_index":74,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:07:38Z","cont
+ent":"Created At: 2026-06-05T08:07:38Z\nCompleted At: 2026-06-05T08:07:38Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/eslint.config.mjs`\nTotal Lines: 19\nTotal Bytes: 465\nShowing lines 1 to 19\nThe 
+following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n1: import { defineConfig, globalIgnores } from \"eslint/config\";\n2: import nextVitals from 
+\"eslint-config-next/core-web-vitals\";\n3: import nextTs from \"eslint-config-next/typescript\";\n4: \n5: const 
+eslintConfig = defineConfig([\n6:   ...nextVitals,\n7:   ...nextTs,\n8:   // Override default ignores of 
+eslint-config-next.\n9:   globalIgnores([\n10:     // Default ignores of eslint-config-next:\n11:     
+\".next/**\",\n12:     \"out/**\",\n13:     \"build/**\",\n14:     \"next-env.d.ts\",\n15:   ]),\n16: ]);\n17: \n18: 
+export default eslintConfig;\n19: \nThe above content shows the entire, complete file contents of the requested 
+file.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:75:{"step_index":75,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:38Z
+","thinking":"**Clarifying Lint Rules**\n\nI see now that the ESLint config is quite straightforward, relying on 
+`eslint-config-next` packages. The mystery now lies in why the linter flagged the `setState` usage within the effect. 
+I'm exploring potential explanations for this specific warning.\n\n\n","tool_calls":[{"name":"view_file","args":{"Absol
+utePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\components\\\\LeaderboardBoard.tsx\"","EndLine":"90","StartLine":"40",
+"toolAction":"\"Viewing fetchLeaderboards in LeaderboardBoard.tsx\"","toolSummary":"\"Read fetchLeaderboards 
+code\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:76:{"step_index":76,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:07:40Z","cont
+ent":"Created At: 2026-06-05T08:07:40Z\nCompleted At: 2026-06-05T08:07:41Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/src/components/LeaderboardBoard.tsx`\nTotal Lines: 432\nTotal Bytes: 20240\nShowing 
+lines 1 to 432\nThe following code has been modified to include a line number before every line, in the format: 
+<line_number>: <original_line>. Please note that any changes targeting the original code should remove the line 
+number, colon, and leading space.\n1: \"use client\";\n2: \n3: import React, { useState, useEffect, useCallback } from 
+\"react\";\n4: import { Award, Search, RefreshCw, Trophy, Flame, Mic, Coins, User, ChevronDown, Zap, CheckCircle, 
+AlertCircle } from \"lucide-react\";\n5: \n6: interface LeaderboardUser {\n7:   rank: number;\n8:   id: string;\n9:   
+username: string;\n10:   displayName: string;\n11:   avatar: string | null;\n12:   level?: number;\n13:   xp?: 
+number;\n14:   nextXp?: number;\n15:   streak?: number;\n16:   hours?: number;\n17:   cvAmount?: string;\n18:   
+roleName?: string;\n19:   roles?: Array<{ name: string; value: number; str: string; color: string }>;\n20: }\n21: 
+\n22: interface LeaderboardData {\n23:   leveling: LeaderboardUser[];\n24:   streak: LeaderboardUser[];\n25:   voice: 
+LeaderboardUser[];\n26:   cvWealth: LeaderboardUser[];\n27: }\n28: \n29: interface LeaderboardBoardProps {\n30:   
+backendUrl: string;\n31: }\n32: \n33: type TabType = \"leveling\" | \"streak\" | \"voice\" | \"cvWealth\";\n34: \n35: 
+export default function LeaderboardBoard({ backendUrl }: LeaderboardBoardProps) {\n36:   const [data, setData] = 
+useState<LeaderboardData | null>(null);\n37:   const [loading, setLoading] = useState(false);\n38:   const [error, 
+setError] = useState<string | null>(null);\n39:   const [activeTab, setActiveTab] = 
+useState<TabType>(\"leveling\");\n40:   const [searchQuery, setSearchQuery] = useState(\"\");\n41:   const 
+[lastUpdated, setLastUpdated] = useState<string | null>(null);\n42:   const [expandedUser, setExpandedUser] = 
+useState<string | null>(null);\n43:   const [integrating, setIntegrating] = useState(false);\n44:   const 
+[integrateResult, setInt\n<truncated 18726 bytes>\n gap-2 max-h-60 overflow-y-auto scrollbar-none pr-1\">\n395:        
+               {user.roles?.map((role, rIdx) => (\n396:                         <div \n397:                           
+key={rIdx}\n398:                           className=\"flex items-center justify-between bg-neutral-950/50 
+hover:bg-neutral-950/90 border border-neutral-900/60 p-2.5 rounded-xl transition-colors\"\n399:                        
+ >\n400:                           <div className=\"flex items-center gap-2.5 min-w-0\">\n401:                         
+    {/* Role indicator colored dot with glowing drop-shadow */}\n402:                             <span \n403:         
+                      className=\"h-2 w-2 rounded-full shrink-0 shadow-sm\"\n404:                               
+style={{ \n405:                                 backgroundColor: role.color || \"#ff3366\",\n406:                      
+           boxShadow: `0 0 8px ${role.color || \"#ff3366\"}b0` \n407:                               }}\n408:           
+                  />\n409:                             <span className=\"text-xs font-bold text-neutral-200 
+tracking-wide truncate\">\n410:                               {role.name}\n411:                             
+</span>\n412:                           </div>\n413:                           \n414:                           <div 
+className=\"flex items-center gap-1 font-mono text-xs font-extrabold text-theater-gold\">\n415:                        
+     <span>+</span>\n416:                             <span>{role.str}</span>\n417:                             <span 
+className=\"text-[7.5px] font-sans font-black tracking-wider uppercase ml-0.5 text-neutral-500\">CV</span>\n418:       
+                    </div>\n419:                         </div>\n420:                       ))}\n421:                  
+   </div>\n422:                   </div>\n423:                 )}\n424:               </div>\n425:             
+);\n426:           })}\n427:         </div>\n428:       )}\n429:     </div>\n430:   );\n431: }\n432: \nThe above 
+content shows the entire, complete file contents of the requested file.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:77:{"step_index":77,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:41Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\app\\\\page.tsx\"","
+EndLine":"544","StartLine":"490","toolAction":"\"Viewing useEffect auth in page.tsx\"","toolSummary":"\"Read useEffect 
+auth in page.tsx\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:78:{"step_index":78,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:07:43Z","cont
+ent":"Created At: 2026-06-05T08:07:43Z\nCompleted At: 2026-06-05T08:07:43Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/src/app/page.tsx`\nTotal Lines: 3389\nTotal Bytes: 181095\nShowing lines 490 to 544\nThe 
+following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n490:           }\n491:         } else {\n492:           setCurrentUser(null);\n493:           
+setUserRole(null);\n494:           setDisplayName(\"\");\n495:           setUserAvatar(null);\n496:         }\n497:    
+   });\n498:       return unsubscribe;\n499:     } else {\n500:       // Database Local Simulation Mode\n501:       // 
+Pre-seed demo users in localStorage if empty\n502:       const existingUsers = 
+localStorage.getItem(\"crunchy_users\");\n503:       if (!existingUsers) {\n504:         const defaultUsers = [\n505:  
+         {\n506:             uid: \"sim-admin-1\",\n507:             email: \"rioagustiawan10188@gmail.com\",\n508:    
+         password: \"admin\",\n509:             name: \"Rio Agustiawan (Volunteer)\",\n510:             role: 
+\"Volunteer Theater\"\n511:           },\n512:           {\n513:             uid: \"sim-user-1\",\n514:             
+email: \"penonton@gmail.com\",\n515:             password: \"popcorn\",\n516:             name: \"GaringMania\",\n517: 
+            role: \"Penonton Teater\"\n518:           }\n519:         ];\n520:         
+localStorage.setItem(\"crunchy_users\", JSON.stringify(defaultUsers));\n521:       }\n522: \n523:       // Check if 
+logged in previously in localStorage\n524:       const activeSession = 
+localStorage.getItem(\"crunchy_session\");\n525:       if (activeSession) {\n526:         const sessionUser = 
+JSON.parse(activeSession);\n527:         setCurrentUser(sessionUser);\n528:         
+setDisplayName(sessionUser.name);\n529:         setUserRole(sessionUser.role);\n530: \n531:         // Load simulated 
+user specific channels\n532:         const savedForUser = 
+localStorage.getItem(`crunchyverse_custom_channels_${sessionUser.uid}`);\n533:         if (savedForUser) {\n534:       
+    try {\n535:             setChatChannelsList(JSON.parse(savedForUser));\n536:             console.log(`💾 
+[Simulation Mode] Loaded custom channels for ${sessionUser.name}:`, JSON.parse(savedForUser));\n537:           } catch 
+(e) {\n538:             console.error(\"Failed to parse simulated user specific channels:\", e);\n539:           
+}\n540:         }\n541:       }\n542:     }\n543:   }, []);\n544: \nThe above content does NOT show the entire file 
+contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again 
+to view those lines.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:79:{"step_index":79,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:43Z
+","thinking":"**Clarifying Render Cascade**\n\nI've got it! The rule clearly states that synchronous `setState` calls 
+inside an effect can cause cascading renders. So, directly setting `currentUser`, `displayName`, `userRole`, and 
+`isLoggedIn` within the effect might be the culprit. I'll need to rethink this, possibly scheduling these updates 
+differently.\n\n\n**Deferring State Updates**\n\nI've zeroed in on the synchronous nature of the `useEffect`'s `else` 
+block as the likely trigger of cascading renders. Wrapping the `setCurrentUser`, `setDisplayName`, `setUserRole` and 
+`setChatChannelsList` calls within a `setTimeout` with a delay of 0 milliseconds should defer these state updates to 
+the next event loop, resolving the cascading problem by preventing synchronous calls during the render/mount. Further, 
+I can include the `setHasMounted(true)` call inside this `setTimeout`.\n\n\n**Optimizing Function Placement**\n\nI've 
+been examining the project's code to improve its structure. I realized that converting several `fetch` arrow functions 
+to standard `async function` declarations will enable hoisting. This approach enhances the code's readability and 
+eliminates the need for potentially complex code movements. I have confirmed that functions like `fetchVoiceMembers`, 
+`fetchChatChannels`, `fetchChatMessages`, `fetchStats`, `fetchBroadcasts`, and `fetchTikTokStatus` can all be 
+successfully hoisted. Now, I'm verifying other variables in `src/app/page.tsx` called prior to their declarations, and 
+I am also taking note of the cascade render issue on line 1064.\n\n\n**Deferring Async Calls**\n\nI've tackled the 
+synchronous `fetchChatMessages` and `fetchVoiceMembers` calls on lines 1064 and 1065. I wrapped these within a 
+`setTimeout` to defer execution to the next event loop, resolving the cascading render. I've also done the same for 
+the `fetchLeaderboards` call in `LeaderboardBoard.tsx`. I have checked the eslint log to be sure I have addressed all 
+instances of the warning. Specifically, I addressed the warnings in `LeaderboardBoard.tsx` (line 64), and 
+`src/app/page.tsx` (lines 527, 547, and 1064).\n\n\n","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\
+\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\"","EndLine":"2295","StartLine":"2280","toolAction":"\"Viewing 
+metadata sync in bot index.js\"","toolSummary":"\"Read metadata sync in bot index.js\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:80:{"step_index":80,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:07:49Z","cont
+ent":"Created At: 2026-06-05T08:07:49Z\nCompleted At: 2026-06-05T08:07:49Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/discord-bot/index.js`\nTotal Lines: 2600\nTotal Bytes: 108934\nShowing lines 2280 to 
+2295\nThe following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n2280:     }\n2281:     \n2282:     await new Promise(r => setTimeout(r, 2000));\n2283:   }\n2284:   
+\n2285:   console.log(`✅ [OAuth] Sinkronisasi selesai.\\n`);\n2286:   \n2287:   // Also update local Rich Presence if 
+active\n2288:   updateLocalRichPresence();\n2289: }\n2290: \n2291: // Start OAuth2 flow redirect\n2292: 
+app.get('/api/oauth/link', (req, res) => {\n2293:   const clientId = process.env.DISCORD_CLIENT_ID;\n2294:   const 
+redirectUri = encodeURIComponent(process.env.DISCORD_REDIRECT_URI);\n2295:   \nThe above content does NOT show the 
+entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this 
+tool again to view those lines.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:81:{"step_index":81,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:49Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\"",
+"EndLine":"2465","StartLine":"2445","toolAction":"\"Viewing update stats in bot index.js\"","toolSummary":"\"Read 
+update stats in bot index.js\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:82:{"step_index":82,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:07:51Z","cont
+ent":"Created At: 2026-06-05T08:07:51Z\nCompleted At: 2026-06-05T08:07:51Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/discord-bot/index.js`\nTotal Lines: 2600\nTotal Bytes: 108934\nShowing lines 2445 to 
+2465\nThe following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n2445:     token = await refreshAccessToken(userId, acc.refresh_token);\n2446:   }\n2447:   \n2448:   
+if (!token) {\n2449:     return res.status(500).json({ error: \"Failed to authenticate or refresh token.\" });\n2450:  
+ }\n2451:   \n2452:   const success = await updateConnectionMetadata(userId, acc.username, token);\n2453:   if 
+(success) {\n2454:     updateLocalRichPresence(); // Update RPC immediately\n2455:     res.json({ success: true, 
+message: `Pembaruan data metadata untuk @${acc.username} sukses!` });\n2456:   } else {\n2457:     
+res.status(500).json({ error: \"Failed to push statistics to Discord.\" });\n2458:   }\n2459: });\n2460: \n2461: // 
+Schedule auto-updater jobs\n2462: setInterval(runMetadataSyncCycle, 900000); // 15 minutes\n2463: 
+setTimeout(runMetadataSyncCycle, 15000); // 15 seconds after boot\n2464: \n2465: // 
+==============================================================================\nThe above content does NOT show the 
+entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this 
+tool again to view those lines.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:83:{"step_index":83,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:51Z
+","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\"",
+"EndLine":"20","StartLine":"1","toolAction":"\"Viewing index.js imports\"","toolSummary":"\"Read index.js 
+imports\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:84:{"step_index":84,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:07:53Z","cont
+ent":"Created At: 2026-06-05T08:07:53Z\nCompleted At: 2026-06-05T08:07:53Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/discord-bot/index.js`\nTotal Lines: 2600\nTotal Bytes: 108934\nShowing lines 1 to 
+20\nThe following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n1: const express = require('express');\n2: const cors = require('cors');\n3: const dotenv = 
+require('dotenv');\n4: const { \n5:   Client, \n6:   GatewayIntentBits,\n7:   ActivityType,\n8:   ChannelType\n9: } = 
+require('discord.js');\n10: \n11: // Load environment variables\n12: dotenv.config();\n13: \n14: const fs = 
+require('fs');\n15: const path = require('path');\n16: const logFile = path.join(__dirname, 'server.log');\n17: try { 
+fs.writeFileSync(logFile, ''); } catch(e) {}\n18: const originalLog = console.log;\n19: const originalError = 
+console.error;\n20: console.log = (...args) => {\nThe above content does NOT show the entire file contents. If you 
+need to view any lines of the file which were not shown to complete your task, call this tool again to view those 
+lines.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:85:{"step_index":85,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:53Z
+","thinking":"**Confirming Code Dependency**\n\nI've pinpointed the `net` dependency's limited scope – it appeared 
+only within the RPC section on line 2468. Therefore, I'm confident we can eliminate it. I'm now cross-checking the 
+entire workspace to ensure no other instances exist before proceeding with removal.\n\n\n","tool_calls":[{"name":"view_
+file","args":{"AbsolutePath":"\"e:\\\\Code\\\\CrunchyVerse\\\\src\\\\components\\\\BotStorage.tsx\"","EndLine":"140","S
+tartLine":"90","toolAction":"\"Viewing useEffect in BotStorage.tsx\"","toolSummary":"\"Read useEffect in 
+BotStorage.tsx\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:86:{"step_index":86,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-05T08:07:57Z","cont
+ent":"Created At: 2026-06-05T08:07:57Z\nCompleted At: 2026-06-05T08:07:57Z\nFile Path: 
+`file:///e:/Code/CrunchyVerse/src/components/BotStorage.tsx`\nTotal Lines: 738\nTotal Bytes: 33804\nShowing lines 1 to 
+738\nThe following code has been modified to include a line number before every line, in the format: <line_number>: 
+<original_line>. Please note that any changes targeting the original code should remove the line number, colon, and 
+leading space.\n1: \"use client\";\n2: \n3: import React, { useState, useEffect, useCallback } from \"react\";\n4: 
+import {\n5:   Shield,\n6:   Users,\n7:   Coins,\n8:   RefreshCw,\n9:   ChevronDown,\n10:   ChevronUp,\n11:   
+User,\n12:   Key,\n13:   Search,\n14:   Hash,\n15:   Lock,\n16:   Eye,\n17:   MessageSquare,\n18:   Mic,\n19:   
+Crown,\n20:   Settings,\n21:   Zap,\n22:   Bell,\n23:   Ban,\n24:   Star,\n25: } from \"lucide-react\";\n26: \n27: // 
+─── Interfaces ─────────────────────────────────────────────────────────────\n28: \n29: interface Member {\n30:   id: 
+string;\n31:   username: string;\n32:   displayName: string;\n33:   avatar: string | null;\n34: }\n35: \n36: interface 
+RoleData {\n37:   id: string;\n38:   name: string;\n39:   color: string;\n40:   gradientColors: string[] | null;\n41:  
+ icon: string | null;\n42:   cvAmount: string | null;\n43:   position: number;\n44:   permissions: string[];\n45:   
+members: Member[];\n46: }\n47: \n48: interface BotStorageProps {\n49:   backendUrl: string;\n50: }\n51: \n52: // ─── 
+Permission icon & label map ────────────────────────────────────────────\n53: \n54: const PERM_META: Record<string, { 
+label: string; icon: React.ReactNode; tier: \"admin\" | \"mod\" | \"basic\" }> = {\n55:   ADMINISTRATOR:           { 
+label: \"Administrator\",        icon: <Crown size={9} />,      tier: \"admin\" },\n56:   MANAGE_GUILD:            { 
+label: \"Kelola Server\",        icon: <Settings size={9} />,   tier: \"admin\" \n<truncated 33814 bytes>\n           
+<span className=\"text-[9px] text-neutral-600 font-mono uppercase tracking-widest\">\n698:               Halaman 
+{currentPage} / {totalPages} &nbsp;·&nbsp; {sortedRoles.length} role\n699:             </span>\n700:             <div 
+className=\"flex items-center gap-1.5\">\n701:               <span className=\"text-[9px] text-neutral-600 font-mono 
+uppercase\">Ke halaman:</span>\n702:               <input\n703:                 type=\"number\"\n704:                 
+min={1}\n705:                 max={totalPages}\n706:                 value={pageInput}\n707:                 
+onChange={e => setPageInput(e.target.value)}\n708:                 onKeyDown={e => {\n709:                   if (e.key 
+=== \"Enter\") {\n710:                     const n = parseInt(pageInput);\n711:                     if (!isNaN(n)) 
+goToPage(n);\n712:                   }\n713:                 }}\n714:                 placeholder=\"#\"\n715:          
+       className=\"w-14 text-center bg-neutral-900 border border-neutral-800 focus:border-yellow-700/50 
+focus:outline-none text-xs text-white rounded-lg py-1 px-2 font-mono\"\n716:               />\n717:               
+<button\n718:                 onClick={() => { const n = parseInt(pageInput); if (!isNaN(n)) goToPage(n); }}\n719:     
+            className=\"text-[10px] font-bold px-2.5 py-1 rounded-lg border cursor-pointer transition-all\"\n720:      
+           style={{ background: \"#d4af3715\", borderColor: \"#d4af3740\", color: \"#d4af37\" }}\n721:               
+>\n722:                 Go\n723:               </button>\n724:             </div>\n725:           </div>\n726:         
+</div>\n727:       )}\n728: \n729:       {/* Footer count (single page case) */}\n730:       {!loading && 
+sortedRoles.length > 0 && totalPages <= 1 && (\n731:         <div className=\"text-center text-[9px] text-neutral-700 
+font-mono uppercase tracking-widest pb-2\">\n732:           {sortedRoles.length} role terdaftar\n733:         
+</div>\n734:       )}\n735:     </div>\n736:   );\n737: }\n738: \nThe above content shows the entire, complete file 
+contents of the requested file.\n"}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:87:{"step_index":87,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-05T08:07:57Z
+","thinking":"**Analyzing the Cause**\n\nI'm focusing now on `BotStorage.tsx`. I see `fetchRoles()` called within 
+`useEffect`, but ESLint didn't flag it. Line 117 is the key - I'm investigating the reason behind this unexpected 
+behavior; it seems like a crucial discrepancy. I'm moving onward to find the source.\n\n\n","tool_calls":[{"name":"grep
+_search","args":{"CaseInsensitive":"true","IsRegex":"false","MatchPerLine":"true","Query":"\"BotStorage\"","SearchPath"
+:"\"C:\\\\Users\\\\Lenovo\\\\.gemini\\\\antigravity-ide\\\\brain\\\\a5f57f6c-0086-463c-a89c-380bd33612cf\\\\.system_gen
+erated\\\\tasks\\\\task-63.log\"","toolAction":"\"Searching for BotStorage lint errors\"","toolSummary":"\"Search 
+BotStorage in lint log\""}}]}
+  C:\Users\Lenovo\.gemini\antigravity-ide\brain\a5f57f6c-0086-463c-a89c-380bd33612cf\.system_generated\logs\transcript.
+jsonl:88:{"step_index":88,"source":"MODEL","type":"GREP_SEARCH","status":"DONE","created_at":"2026-06-05T08:08:00Z","co
+ntent":"Created At: 2026-06-05T08:08:00Z\nCompleted At: 2026-06-05T08:08:00Z\nNo results found"}
+
+

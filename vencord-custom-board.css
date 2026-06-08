@@ -1,0 +1,38 @@
+/**
+ * Vencord QuickCSS - CrunchyVerse Profile Board Widget
+ * 
+ * Cara Penggunaan:
+ * 1. Buka Discord (dengan Vencord terinstall).
+ * 2. Masuk ke User Settings > Vencord > QuickCSS.
+ * 3. Salin seluruh isi file ini dan paste ke sana (timpa yang lama).
+ * 4. Klik Save / Apply.
+ * 
+ * Cara Uji Coba:
+ * - Buka profil kamu sendiri lalu pilih tab "Board".
+ */
+
+/* Mencegah card tersembunyi karena overflow */
+[role="tabpanel"], [class*="board"], [class*="boardPage"], [class*="profilePanel"] {
+    overflow: visible !important;
+}
+
+/* Injeksi Kartu CrunchyVerse di bagian atas tab Board */
+[role="tabpanel"]:has([class*="widget" i]) [class*="scroller" i]::before {
+    content: "🎪  CRUNCHYVERSE THEATER\A\AOwner of CrunchyVerse\ACreated by: Sim 👑\A\A⭐ Level: 122  |  🔥 Streak: 49 Hari\A🎙️ Voice: 995 Jam  |  🪙 CV$ Wealth: 973.000 CV" !important;
+    white-space: pre-wrap !important;
+    display: block !important;
+    margin-bottom: 20px !important;
+    padding: 24px !important;
+    background: linear-gradient(135deg, rgba(220, 20, 60, 0.2) 0%, rgba(13, 8, 0, 0.95) 100%) !important;
+    border: 1.5px solid rgba(220, 20, 60, 0.4) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6) !important;
+    font-family: "gg sans", "Inter", sans-serif !important;
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+    color: #e3e5e8 !important;
+    font-weight: 600 !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+    letter-spacing: 0.3px !important;
+    text-align: left !important;
+}

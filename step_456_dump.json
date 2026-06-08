@@ -1,0 +1,21 @@
+{
+  "step_index": 456,
+  "source": "MODEL",
+  "type": "PLANNER_RESPONSE",
+  "status": "DONE",
+  "created_at": "2026-06-05T08:45:59Z",
+  "thinking": "**Refining Deduplication Logic**\n\nI'm making progress on refactoring `index.js`. My current focus is shifting the `EXCHANGED_CODES` definition to also accommodate `PENDING_EXCHANGES`. Then, I'm refactoring the `/api/oauth/callback` endpoint to use this new map and deduplicate code exchange requests more effectively, instead of using a Set for this purpose.\n\n\n**Implementing Callback Endpoint**\n\nI've crafted a comprehensive replacement for the `/api/oauth/callback` endpoint in `index.js`. It includes robust handling of duplicate requests using both `EXCHANGED_CODES` and a new `PENDING_EXCHANGES` map for concurrent exchanges. I've designed it to be highly resilient, incorporating detailed logging, error handling, and a clear flow for code exchange. It's now clean and ready to integrate.\n\n\n**Finalizing User Information Retrieval**\n\nI've just added the code to retrieve user information from Discord after a successful token exchange. Now, I'm integrating the updated `/api/oauth/callback` endpoint within the main `index.js`. It includes error handling, profile fetching and saving linked accounts. Also, I am crafting the success HTML response for both frontend login and general cases and handling the `PENDING_EXCHANGES` to avoid re-exchanges.\n\n\n",
+  "tool_calls": [
+    {
+      "name": "multi_replace_file_content",
+      "args": {
+        "Description": "\"Add PENDING_EXCHANGES map to prevent duplicate parallel OAuth callback requests from invoking code exchange multiple times. Refactor callback handler to use a cleaner helper for success HTML.\"",
+        "Instruction": "\"Define PENDING_EXCHANGES map and update callback handler to check and await it if duplicate callback requests are received.\"",
+        "ReplacementChunks": "[{\"AllowMultiple\":false,\"EndLine\":2240,\"ReplacementContent\":\"// Cache to prevent errors on duplicate/prefetch OAuth callback requests\\nconst EXCHANGED_CODES = new Map();\\nconst PENDING_EXCHANGES = new Map(); // code -> Promise\\n\",\"StartLine\":2238,\"TargetContent\":\"// Cache to prevent errors on duplicate/prefetch OAuth callback requests\\nconst EXCHANGED_CODES = new Map();\"},{\"AllowMultiple\":false,\"EndLine\":2631,\"ReplacementContent\":\"// OAuth2 Callback receiver\\napp.get('/api/oauth/callback', async (req, res) => {\\n  const { code, state } = req.query;\\n  if (!code) {\\n    return res.status(400).send(\\\"❌ Authorization code is missing!\\\");\\n  }\\n  \\n  // If this code was already successfully exchanged recently (e.g. double request or browser prefetch)\\n  if (EXCHANGED_CODES.has(code)) {\\n    const cached = EXCHANGED_CODES.get(code);\\n    console.log(`ℹ️ [OAuth] Duplicate callback request for code already exchanged. Serving success page for @${cached.username}`);\\n    return res.send(getSuccessHtml(cached.username, state, cached.userId, cached.avatarUrl, cached.globalName));\\n  }\\n\\n  // If there is an active pending exchange for this code, wait for it\\n  if (PENDING_EXCHANGES.has(code)) {\\n    console.log(`⏳ [OAuth] Duplicate request for code ${code.substring(0, 10)}... waiting for existing exchange to finish.`);\\n    try {\\n      const result = await PENDING_EXCHANGES.get(code);\\n      return res.send(getSuccessHtml(result.username, state, result.userId, result.avatarUrl, result.globalName));\\n    } catch (err) {\\n      console.error(`❌ [OAuth] Pending exchange failed for duplicate request:`, err.message);\\n      return res.status(500).send(`❌ Failed to exchange code (pending waiter): ${err.message}`);\\n    }\\n  }\\n\\n  const clientId = process.env.DISCORD_CLIENT_ID;\\n  const clientSecret = process.env.DISCORD_CLIENT_SECRET;\\n  const redirectUri = process.env.DISCORD_REDIRECT_URI;\\n  \\n  if (!clientId || !clientSecret || !redirectUri) {\\n    return res.status(500).send(\\\"❌ OAuth2 credentials not fully co\n<truncated 13457 bytes>",
+        "TargetFile": "\"e:\\\\Code\\\\CrunchyVerse\\\\discord-bot\\\\index.js\"",
+        "toolAction": "\"Updating oauth callback receiver logic\"",
+        "toolSummary": "\"Multi-Replace File Content\""
+      }
+    }
+  ]
+}
