@@ -1786,10 +1786,120 @@ app.get('/api/leaderboard', async (req, res) => {
 
   try {
     const guildId = GUILD_ID || '1403255548698300416';
-    // NOTE: Cakey Bot scraping dihapus — diblokir Cloudflare dari VPS/server IP.
-    // Langsung gunakan data Discord member cache yang sudah tersedia.
     let resolvedCakey = null;
 
+    // ─── Cakey Bot Scraping (dengan proxy fallback untuk bypass Cloudflare) ───
+    try {
+      const cakeyUrl = `https://cakey.bot/leaderboard/id/${guildId}?tab=leveling`;
+      const browserHeaders = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8',
+        'Cache-Control': 'no-cache',
+      };
+
+      // Try direct first (works on localhost/residential IP), then proxy chain for VPS
+      const fetchAttempts = [
+        () => fetch(cakeyUrl, { headers: browserHeaders, signal: AbortSignal.timeout(6000) })
+          .then(r => r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`))),
+        () => fetch(`https://corsproxy.io/?url=${encodeURIComponent(cakeyUrl)}`, { headers: browserHeaders, signal: AbortSignal.timeout(8000) })
+          .then(r => r.ok ? r.text() : Promise.reject(new Error(`proxy1 HTTP ${r.status}`))),
+        () => fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(cakeyUrl)}`, { signal: AbortSignal.timeout(8000) })
+          .then(r => r.ok ? r.json() : Promise.reject(new Error(`proxy2 HTTP ${r.status}`)))
+          .then(data => data.contents),
+        () => fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(cakeyUrl)}`, { signal: AbortSignal.timeout(8000) })
+          .then(r => r.ok ? r.text() : Promise.reject(new Error(`proxy3 HTTP ${r.status}`))),
+      ];
+
+      let html = null;
+      for (let i = 0; i < fetchAttempts.length; i++) {
+        try {
+          console.log(`📡 [API/leaderboard] Mencoba fetch Cakey Bot (attempt ${i + 1}/4)...`);
+          html = await fetchAttempts[i]();
+          console.log(`✅ [API/leaderboard] Berhasil fetch Cakey Bot via attempt ${i + 1}`);
+          break;
+        } catch (attemptErr) {
+          console.warn(`⚠️ [API/leaderboard] Attempt ${i + 1} gagal: ${attemptErr.message}`);
+        }
+      }
+
+      if (!html) throw new Error('Semua proxy gagal');
+
+      const tables = html.split(/<table/gi);
+      if (tables.length < 3) throw new Error("Tidak ada cukup tabel di HTML Cakey Bot");
+
+      const getTdText = (tdStr) => tdStr.substring(tdStr.indexOf('>') + 1).replace(/<[^>]*>/g, '').trim();
+
+      // ─── 1. LEVELING ───
+      const table1 = tables[1];
+      const t1Start = table1.indexOf('<tbody>');
+      const t1End = table1.indexOf('</tbody>', t1Start);
+      if (t1Start === -1 || t1End === -1) throw new Error("Tbody tidak ditemukan di Table 1");
+      const t1Rows = table1.substring(t1Start + 7, t1End).split(/<tr/gi).filter(r => r.includes('<td'));
+
+      const levelingList = [];
+      t1Rows.forEach((row, idx) => {
+        try {
+          const tds = row.split(/<td/gi).filter(td => td.includes('</td>'));
+          if (tds.length < 5) return;
+          let rank = idx + 1;
+          const starMatch = tds[0].match(/\/assets\/images\/(\d+)\.svg/);
+          if (starMatch) rank = parseInt(starMatch[1], 10);
+          const avatarMatch = tds[1].match(/src="([^"]+)"/);
+          const avatar = avatarMatch ? avatarMatch[1] : null;
+          const usernameMatch = tds[1].match(/<span class="text-sm font-semibold">([^<]+)<\/span>/) || tds[1].match(/<span class="text-theme font-medium">([^<]+)<\/span>/) || tds[1].match(/>\s*([a-zA-Z0-9_.-]+)\s*</);
+          const username = usernameMatch ? usernameMatch[1].trim() : 'Unknown';
+          const voiceMinutes = parseInt(getTdText(tds[3]).replace(/,/g, ''), 10) || 0;
+          const levelMatch = tds[4].match(/Level\s*<span[^>]*>(\d+)<\/span>/i) || tds[4].match(/Level\s*(\d+)/i) || tds[4].match(/(\d+)/);
+          const level = levelMatch ? parseInt(levelMatch[1], 10) : 0;
+          const xpMatch = tds[4].match(/>\s*([\d.MK]+)\s*XP/i);
+          const xpStr = xpMatch ? xpMatch[1].trim() : '0';
+          let xpVal = xpStr.endsWith('M') ? parseFloat(xpStr) * 1e6 : xpStr.endsWith('K') ? parseFloat(xpStr) * 1e3 : parseFloat(xpStr) || 0;
+          const pctMatch = tds[4].match(/style="width:\s*([\d.]+)%/i);
+          const pct = pctMatch ? parseFloat(pctMatch[1]) : 0;
+          let userIdVal = `cakey-lvl-${rank}`;
+          if (avatar) { const m = avatar.match(/\/avatars\/(\d+)\//); if (m) userIdVal = m[1]; }
+          levelingList.push({ rank, id: userIdVal, username, displayName: username, avatar, level, xp: xpVal, nextXp: pct > 0 ? Math.round((xpVal / pct) * 100) : Math.round(xpVal * 1.5), voiceMinutes });
+        } catch (e) { console.warn('⚠️ Gagal parse leveling row:', e.message); }
+      });
+
+      // ─── 2. STREAKS ───
+      const table2 = tables[2];
+      const t2Start = table2.indexOf('<tbody>');
+      const t2End = table2.indexOf('</tbody>', t2Start);
+      if (t2Start === -1 || t2End === -1) throw new Error("Tbody tidak ditemukan di Table 2");
+      const t2Rows = table2.substring(t2Start + 7, t2End).split(/<tr/gi).filter(r => r.includes('<td'));
+
+      const streakList = [];
+      t2Rows.forEach((row, idx) => {
+        try {
+          const tds = row.split(/<td/gi).filter(td => td.includes('</td>'));
+          if (tds.length < 3) return;
+          let rank = idx + 1;
+          const starMatch = tds[0].match(/\/assets\/images\/(\d+)\.svg/);
+          if (starMatch) rank = parseInt(starMatch[1], 10);
+          const avatarMatch = tds[1].match(/src="([^"]+)"/);
+          const avatar = avatarMatch ? avatarMatch[1] : null;
+          const usernameMatch = tds[1].match(/<span class="text-sm font-semibold">([^<]+)<\/span>/) || tds[1].match(/<span class="text-theme font-medium">([^<]+)<\/span>/) || tds[1].match(/>\s*([a-zA-Z0-9_.-]+)\s*</);
+          const username = usernameMatch ? usernameMatch[1].trim() : 'Unknown';
+          const streak = parseInt(getTdText(tds[2]).replace(/,/g, ''), 10) || 0;
+          let userIdVal = `cakey-strk-${rank}`;
+          if (avatar) { const m = avatar.match(/\/avatars\/(\d+)\//); if (m) userIdVal = m[1]; }
+          streakList.push({ rank, id: userIdVal, username, displayName: username, avatar, streak });
+        } catch (e) { console.warn('⚠️ Gagal parse streak row:', e.message); }
+      });
+
+      // ─── 3. VOICE (dari leveling) ───
+      const voiceList = [...levelingList]
+        .sort((a, b) => b.voiceMinutes - a.voiceMinutes)
+        .map((item, idx) => ({ rank: idx + 1, id: item.id, username: item.username, displayName: item.displayName, avatar: item.avatar, hours: Math.round(item.voiceMinutes / 60) }));
+
+      resolvedCakey = { leveling: levelingList, streak: streakList, voice: voiceList };
+      console.log(`✅ [API/leaderboard] Sukses parse 3 papan peringkat dari Cakey Bot!`);
+
+    } catch (cakeyErr) {
+      console.warn(`⚠️ [API/leaderboard] Cakey Bot tidak tersedia: ${cakeyErr.message}. Menggunakan fallback Discord member.`);
+    }
 
     // Calculate CV$ Wealth (from live Discord server or mock fallback)
     let finalCvWealth = [];
