@@ -299,11 +299,11 @@ async function connectToVoiceChannel(guildId, channelId) {
       // Reconnected!
     } catch (error) {
       connectionState.isConnectedToVoice = false;
-      connectionState.guildId = null;
-      connectionState.channelId = null;
       connectionState.status = 'ready';
-      addVoiceAfkLog('Bot terputus sepenuhnya dari voice channel.', 'warning');
-      saveVoiceAfkConfig({ guildId, channelId, isConnected: false });
+      // PENTING: Simpan guildId & channelId agar watchdog bisa reconnect otomatis!
+      // Jangan set isConnected: false agar config tetap tahu channel tujuan.
+      addVoiceAfkLog(`Bot terputus dari voice channel. Watchdog akan mencoba reconnect otomatis dalam 3 menit...`, 'warning');
+      saveVoiceAfkConfig({ guildId, channelId, isConnected: true });
       try {
         voiceConnection.destroy();
       } catch (e) { }
@@ -592,6 +592,22 @@ function initializeBot(token) {
             console.error(`❌ Gagal terhubung ke Guild ID ${GUILD_ID}: ${err.message}`);
           });
       }
+
+      // ===== VOICE WATCHDOG: Auto-reconnect setiap 3 menit =====
+      const VOICE_WATCHDOG_INTERVAL_MS = 3 * 60 * 1000;
+      setInterval(async () => {
+        const savedCfg = loadVoiceAfkConfig();
+        if (!savedCfg || !savedCfg.isConnected || !savedCfg.guildId || !savedCfg.channelId) return;
+        if (connectionState.isConnectedToVoice) return;
+        addVoiceAfkLog(`[Watchdog] Voice channel terputus. Mencoba reconnect ke channel ${savedCfg.channelId}...`, 'warning');
+        try {
+          await connectToVoiceChannel(savedCfg.guildId, savedCfg.channelId);
+          addVoiceAfkLog(`[Watchdog] ✅ Berhasil reconnect ke voice channel ${savedCfg.channelId}!`, 'success');
+        } catch (err) {
+          addVoiceAfkLog(`[Watchdog] ❌ Gagal reconnect: ${err.message}. Mencoba lagi dalam 3 menit.`, 'error');
+        }
+      }, VOICE_WATCHDOG_INTERVAL_MS);
+      console.log('⏰ [VoiceWatchdog] Auto-reconnect watchdog aktif (interval: 3 menit).');
     });
 
     client.on('error', (err) => {
@@ -4300,6 +4316,54 @@ app.post('/api/voice-afk/logs/clear', (req, res) => {
   connectionState.logs = [];
   addVoiceAfkLog('Log konsol dibersihkan oleh web client.', 'info');
   res.json({ success: true });
+});
+
+// ==============================================================================
+// ========== ENDPOINT KEEPALIVE (dipanggil cron job untuk 24/7) ================
+// ==============================================================================
+
+// GET /api/voice-afk/keepalive
+// Dipanggil oleh cron-job.org / UptimeRobot setiap 10 menit.
+// Tugasnya: (1) buat server tidak tidur, (2) reconnect voice kalau putus.
+app.get('/api/voice-afk/keepalive', async (req, res) => {
+  const savedCfg = loadVoiceAfkConfig();
+  const status = {
+    botOnline: isDiscordReady,
+    voiceConnected: connectionState.isConnectedToVoice,
+    guildId: connectionState.guildId || savedCfg?.guildId || null,
+    channelId: connectionState.channelId || savedCfg?.channelId || null,
+    action: 'none',
+    timestamp: new Date().toISOString()
+  };
+
+  // Kalau bot offline, tidak bisa reconnect voice
+  if (!isDiscordReady || !client) {
+    status.action = 'skipped_bot_offline';
+    return res.json({ ...status, message: 'Bot Discord offline. Tidak bisa reconnect.' });
+  }
+
+  // Kalau sudah connected, tidak perlu apa-apa
+  if (connectionState.isConnectedToVoice) {
+    status.action = 'already_connected';
+    return res.json({ ...status, message: '✅ Voice 24/7 aktif. Tidak perlu reconnect.' });
+  }
+
+  // Kalau disconnected tapi ada config tersimpan → reconnect!
+  if (savedCfg && savedCfg.isConnected && savedCfg.guildId && savedCfg.channelId) {
+    try {
+      addVoiceAfkLog(`[Keepalive/CronJob] Reconnecting ke voice channel ${savedCfg.channelId}...`, 'warning');
+      await connectToVoiceChannel(savedCfg.guildId, savedCfg.channelId);
+      status.action = 'reconnected';
+      status.voiceConnected = true;
+      return res.json({ ...status, message: `✅ [Keepalive] Berhasil reconnect ke voice channel ${savedCfg.channelId}!` });
+    } catch (err) {
+      status.action = 'reconnect_failed';
+      return res.status(500).json({ ...status, message: `❌ [Keepalive] Gagal reconnect: ${err.message}` });
+    }
+  }
+
+  status.action = 'no_config';
+  return res.json({ ...status, message: 'Tidak ada konfigurasi voice tersimpan. Silakan connect manual dari Control Booth.' });
 });
 
 setInterval(runMetadataSyncCycle, 900000);
