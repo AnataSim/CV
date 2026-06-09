@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 const {
   Client,
   GatewayIntentBits,
@@ -76,9 +78,195 @@ console.error = (...args) => {
 };
 
 const app = express();
-app.use(cors());
+
+// ================== SECURITY MIDDLEWARE ==================
+
+// Restricted CORS — hanya izinkan origin dari frontend yang terdaftar
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://127.0.0.1:3000')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, same-server)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    console.warn(`[CORS] Blocked request from unauthorized origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CV-Client-Token', 'X-CV-Timestamp', 'X-CV-Client', 'X-CV-Encoded'],
+}));
+
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // Hapus header yang mengekspos info server
+  res.removeHeader('X-Powered-By');
+  next();
+});
+
+// ================== RATE LIMITING ==================
+
+// Global rate limit — 150 req per 15 menit per IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 150,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Terlalu banyak permintaan. Silahkan coba lagi dalam 15 menit.' },
+  skip: (req) => {
+    // Skip rate limit untuk health checks
+    return req.path === '/health' || req.path === '/api/voice-afk/keepalive';
+  }
+});
+app.use(globalLimiter);
+
+// Ketat untuk submission upload (cegah spam/abuse)
+const submissionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Terlalu banyak pengiriman bukti. Tunggu 15 menit sebelum mencoba lagi.' },
+});
+
+// Ketat untuk OAuth endpoints
+const oauthLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Terlalu banyak percobaan autentikasi. Coba lagi dalam 15 menit.' },
+});
+
+// ================== MEMORY CACHE WITH TTL ==================
+
+class MemoryCache {
+  constructor() {
+    this._store = new Map();
+    // Auto-cleanup setiap 5 menit
+    setInterval(() => this._cleanup(), 5 * 60 * 1000);
+  }
+
+  set(key, value, ttlSeconds) {
+    this._store.set(key, {
+      value,
+      expiry: Date.now() + ttlSeconds * 1000
+    });
+  }
+
+  get(key) {
+    const entry = this._store.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiry) {
+      this._store.delete(key);
+      return null;
+    }
+    return entry.value;
+  }
+
+  delete(key) {
+    this._store.delete(key);
+  }
+
+  _cleanup() {
+    const now = Date.now();
+    for (const [key, entry] of this._store.entries()) {
+      if (now > entry.expiry) this._store.delete(key);
+    }
+  }
+}
+
+const cache = new MemoryCache();
+
+// ================== HMAC TOKEN VALIDATION ==================
+
+const CV_API_SECRET = process.env.CV_API_SECRET || 'crunchyverse-stage-2026-secret';
+const TOKEN_EXPIRY_SECONDS = 60; // Token valid 60 detik (naik dari 30 untuk toleransi latency)
+
+function verifyRequestToken(token, path) {
+  if (!token) return false;
+  const parts = token.split('.');
+  if (parts.length < 2) return false;
+
+  const timestamp = parseInt(parts[0], 10);
+  if (isNaN(timestamp)) return false;
+
+  // Cek timestamp tidak expired
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - timestamp) > TOKEN_EXPIRY_SECONDS) {
+    return false;
+  }
+
+  // Verifikasi HMAC
+  const message = `${path}:${timestamp}`;
+  const expectedSig = crypto
+    .createHmac('sha256', CV_API_SECRET)
+    .update(message)
+    .digest('base64');
+
+  const receivedSig = parts.slice(1).join('.');
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(expectedSig),
+      Buffer.from(receivedSig)
+    );
+  } catch {
+    return false;
+  }
+}
+
+// Middleware HMAC auth untuk endpoint sensitive
+function requireClientToken(req, res, next) {
+  const token = req.headers['x-cv-client-token'];
+  const path = req.path;
+
+  if (!verifyRequestToken(token, path)) {
+    console.warn(`[Security] Invalid/missing client token dari ${req.ip} untuk ${req.method} ${path}`);
+    // Return generic error tanpa detail
+    return res.status(403).json({ error: 'Akses ditolak.' });
+  }
+  next();
+}
+
+// Decode obfuscated payload kalau ada
+function decodePayload(req, res, next) {
+  if (req.headers['x-cv-encoded'] === '1' && req.body && req.body._d) {
+    try {
+      const decoded = decodeURIComponent(atob(req.body._d));
+      req.body = JSON.parse(decoded);
+    } catch (e) {
+      return res.status(400).json({ error: 'Payload tidak valid.' });
+    }
+  }
+  next();
+}
+
+// Input sanitasi — strip HTML dan limit panjang string
+function sanitizeString(str, maxLen = 500) {
+  if (typeof str !== 'string') return str;
+  return str
+    .replace(/<[^>]*>/g, '') // Strip HTML tags
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '') // Strip control chars
+    .trim()
+    .slice(0, maxLen);
+}
+
+// ================== EXPRESS SETUP ==================
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(decodePayload); // Decode obfuscated payloads
+
+// Health check endpoint
+app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
 
 const PORT = process.env.PORT || 3001;
 
@@ -1526,8 +1714,12 @@ app.post('/api/voice-afk/logs/clear', (req, res) => {
   res.json({ success: true });
 });
 
-// 1. GET TikTok Status
+// 1. GET TikTok Status — cached 30 detik
 app.get('/api/tiktok', (req, res) => {
+  const cacheKey = 'api:tiktok';
+  const cached = cache.get(cacheKey);
+  if (cached) return res.json(cached);
+  cache.set(cacheKey, tiktokState, 30);
   res.json(tiktokState);
 });
 
@@ -1558,11 +1750,18 @@ app.post('/api/tiktok/override', async (req, res) => {
     console.error("❌ [API/tiktok/override] Gagal mengubah nama channel di Discord:", err.message);
   }
 
+  // Invalidate tiktok cache saat ada override
+  cache.delete('api:tiktok');
+
   res.json({ success: true, state: tiktokState });
 });
 
-// 2. GET Live Discord Server Stats
+// 2. GET Live Discord Server Stats — cached 60 detik
 app.get('/api/stats', async (req, res) => {
+  const cacheKey = 'api:stats';
+  const cached = cache.get(cacheKey);
+  if (cached) return res.json(cached);
+
   // Graceful Fallback mock stats if bot is offline or not configured
   const mockStats = {
     totalMembers: 1337,
@@ -1632,7 +1831,7 @@ app.get('/api/stats', async (req, res) => {
     const finalKerupuk = totalKerupuk || Math.floor(totalMembers * 0.31);
     const finalKeripik = totalKeripik || Math.floor(totalMembers * 0.52);
 
-    res.json({
+    const result = {
       totalMembers,
       totalKerupuk: finalKerupuk,
       totalKeripik: finalKeripik,
@@ -1641,7 +1840,9 @@ app.get('/api/stats', async (req, res) => {
       dnd,
       offline,
       mode: "Live Discord Connection"
-    });
+    };
+    cache.set(cacheKey, result, 60);
+    res.json(result);
 
   } catch (err) {
     console.error(`❌ Gagal mengambil stats dari Guild: ${err.message}`);
@@ -1701,8 +1902,12 @@ async function resolveMentions(content, guild) {
   return result;
 }
 
-// 3. GET Broadcast Messages
+// 3. GET Broadcast Messages — cached 5 menit
 app.get('/api/broadcasts', async (req, res) => {
+  const cacheKey = 'api:broadcasts';
+  const cached = cache.get(cacheKey);
+  if (cached) return res.json(cached);
+
   const mockBroadcasts = [
     {
       id: "b1",
