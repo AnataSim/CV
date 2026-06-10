@@ -329,11 +329,11 @@ export default function ControlBooth({
   useEffect(() => {
     fetchStatus();
     const interval = setInterval(() => {
-      // Poll every 4s if tab is open or bot is connecting/connected
+      // Poll every 10s if tab is open or bot is connecting/connected
       if (activeTab === "voice" || backendState.status === "connecting_voice" || backendState.status === "connected_voice") {
         fetchStatus();
       }
-    }, 4000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [apiEndpoint, activeTab, backendState.status, guildId, channelId]);

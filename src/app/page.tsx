@@ -730,13 +730,13 @@ export default function CrunchyVerseStage() {
       fetchChatChannels();
     }, 0);
 
-    // Auto refresh data every 10 seconds
+    // Auto refresh data every 30 seconds
     const interval = setInterval(() => {
       fetchStats(true);
       fetchBroadcasts(true);
       fetchTikTokStatus(true);
       fetchVoiceMembers();
-    }, 10000);
+    }, 30000);
 
     // Listen to Escape key to close presentation fullscreen
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1301,7 +1301,7 @@ export default function CrunchyVerseStage() {
     const pollInterval = setInterval(() => {
       fetchChatMessages(activeChatChannel);
       fetchVoiceMembers();
-    }, 5000);
+    }, 15000);
     
     return () => {
       clearTimeout(timer);

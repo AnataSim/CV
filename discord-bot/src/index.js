@@ -115,10 +115,10 @@ app.use((req, res, next) => {
 
 // ================== RATE LIMITING ==================
 
-// Global rate limit — 150 req per 15 menit per IP
+// Global rate limit — 2000 req per 15 menit per IP
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 150,
+  max: 2000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Terlalu banyak permintaan. Silahkan coba lagi dalam 15 menit.' },
