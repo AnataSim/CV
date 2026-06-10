@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Award, Search, RefreshCw, Trophy, Flame, Mic, Coins, User, ChevronDown, Zap, CheckCircle, AlertCircle } from "lucide-react";
+import { signedFetch } from "../lib/api";
 
 interface LeaderboardUser {
   rank: number;
@@ -77,7 +78,7 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
     setIntegrating(true);
     setIntegrateResult(null);
     try {
-      const res = await fetch(`${backendUrl}/api/rank-roles/update`, { method: 'POST' });
+      const res = await signedFetch(`${backendUrl}/api/rank-roles/update`, { method: 'POST', sensitive: true });
       const json = await res.json();
       setIntegrateResult({ success: json.success, message: json.message });
       // Also refresh leaderboard after integration

@@ -67,6 +67,7 @@ import BotStorage from "../components/BotStorage";
 import LeaderboardBoard from "../components/LeaderboardBoard";
 import QuestGame from "../components/QuestGame";
 import TiraiCountdown from "../components/TiraiCountdown";
+import { signedFetch } from "../lib/api";
 
 // Interfaces
 interface DiscordStats {
@@ -1114,10 +1115,10 @@ export default function CrunchyVerseStage() {
 
     // 3. Persist to Express Bot Backend API
     try {
-      await fetch(`${backendUrl}/api/chat/channels`, {
+      await signedFetch(`${backendUrl}/api/chat/channels`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channels: updatedList })
+        body: JSON.stringify({ channels: updatedList }),
+        sensitive: true
       });
     } catch (err) {
       console.warn("⚠️ Gagal menyimpan saluran ke bot backend:", err);
@@ -1252,12 +1253,10 @@ export default function CrunchyVerseStage() {
     setShowEmojiTray(false);
 
     try {
-      const res = await fetch(`${backendUrl}/api/chat/channels/${activeChatChannel}/messages`, {
+      const res = await signedFetch(`${backendUrl}/api/chat/channels/${activeChatChannel}/messages`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(bodyData)
+        body: JSON.stringify(bodyData),
+        sensitive: true
       });
 
       if (res.ok) {
@@ -1388,14 +1387,14 @@ export default function CrunchyVerseStage() {
   const publishVolunteerSettings = async (overrideState: boolean, isLiveState: boolean, titleText: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`${backendUrl}/api/tiktok/override`, {
+      const res = await signedFetch(`${backendUrl}/api/tiktok/override`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           manualOverride: overrideState,
           isLive: isLiveState,
           liveTitle: titleText
-        })
+        }),
+        sensitive: true
       });
 
       if (!res.ok) throw new Error("Gagal mempublikasikan override.");

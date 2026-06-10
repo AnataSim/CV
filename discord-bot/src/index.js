@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
+const compression = require('compression');
 const {
   Client,
   GatewayIntentBits,
@@ -55,7 +56,7 @@ if (firebaseConfig.projectId) {
   }
 }
 
-const withTimeout = (promise, timeoutMs = 1500) => {
+const withTimeout = (promise, timeoutMs = 8000) => {
   return Promise.race([
     promise,
     new Promise((_, reject) =>
@@ -176,6 +177,14 @@ class MemoryCache {
     this._store.delete(key);
   }
 
+  deletePrefix(prefix) {
+    for (const key of this._store.keys()) {
+      if (key.startsWith(prefix)) {
+        this._store.delete(key);
+      }
+    }
+  }
+
   _cleanup() {
     const now = Date.now();
     for (const [key, entry] of this._store.entries()) {
@@ -236,14 +245,42 @@ function requireClientToken(req, res, next) {
   next();
 }
 
+// Dekripsi payload terenkripsi AES-256-GCM dari frontend
+function decryptPayload(obfuscatedPayload) {
+  try {
+    const combined = Buffer.from(obfuscatedPayload, 'base64');
+    if (combined.length < 28) {
+      throw new Error("Payload terlalu pendek");
+    }
+
+    const iv = combined.subarray(0, 12);
+    const encryptedWithTag = combined.subarray(12);
+
+    // Auth tag AES-GCM adalah 16 byte terakhir dari data yang dihasilkan Web Crypto API
+    const tag = encryptedWithTag.subarray(encryptedWithTag.length - 16);
+    const ciphertext = encryptedWithTag.subarray(0, encryptedWithTag.length - 16);
+
+    const secretKey = CV_API_SECRET.slice(0, 32).padEnd(32, '0');
+    const decipher = crypto.createDecipheriv('aes-256-gcm', Buffer.from(secretKey), iv);
+    decipher.setAuthTag(tag);
+
+    let decrypted = decipher.update(ciphertext, null, 'utf8');
+    decrypted += decipher.final('utf8');
+    return JSON.parse(decrypted);
+  } catch (err) {
+    console.error("❌ Dekripsi payload gagal:", err.message);
+    throw err;
+  }
+}
+
 // Decode obfuscated payload kalau ada
 function decodePayload(req, res, next) {
   if (req.headers['x-cv-encoded'] === '1' && req.body && req.body._d) {
     try {
-      const decoded = decodeURIComponent(atob(req.body._d));
-      req.body = JSON.parse(decoded);
+      req.body = decryptPayload(req.body._d);
     } catch (e) {
-      return res.status(400).json({ error: 'Payload tidak valid.' });
+      console.error("❌ [Security] Decryption/Parsing payload gagal:", e.message);
+      return res.status(400).json({ error: 'Payload tidak valid atau rusak.' });
     }
   }
   next();
@@ -261,6 +298,7 @@ function sanitizeString(str, maxLen = 500) {
 
 // ================== EXPRESS SETUP ==================
 
+app.use(compression());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(decodePayload); // Decode obfuscated payloads
@@ -1639,7 +1677,7 @@ app.get('/api/voice-afk/status', (req, res) => {
   });
 });
 
-app.post('/api/voice-afk/connect', async (req, res) => {
+app.post('/api/voice-afk/connect', requireClientToken, async (req, res) => {
   const { guildId, channelId } = req.body;
 
   if (!guildId || !channelId) {
@@ -1667,7 +1705,7 @@ app.post('/api/voice-afk/connect', async (req, res) => {
   }
 });
 
-app.post('/api/voice-afk/disconnect', (req, res) => {
+app.post('/api/voice-afk/disconnect', requireClientToken, (req, res) => {
   if (!connectionState.isConnectedToVoice || !connectionState.guildId) {
     return res.json({
       success: true,
@@ -1708,7 +1746,7 @@ app.post('/api/voice-afk/disconnect', (req, res) => {
   }
 });
 
-app.post('/api/voice-afk/logs/clear', (req, res) => {
+app.post('/api/voice-afk/logs/clear', requireClientToken, (req, res) => {
   connectionState.logs = [];
   addVoiceAfkLog('Log konsol dibersihkan oleh web client.', 'info');
   res.json({ success: true });
@@ -1724,7 +1762,7 @@ app.get('/api/tiktok', (req, res) => {
 });
 
 // POST to update TikTok status with manual Volunteer overrides
-app.post('/api/tiktok/override', async (req, res) => {
+app.post('/api/tiktok/override', requireClientToken, async (req, res) => {
   const { isLive, liveTitle, manualOverride } = req.body;
 
   if (manualOverride !== undefined) {
@@ -2403,6 +2441,11 @@ function getDeterministicValue(id, key, min, max) {
 
 // 7. GET Leaderboards (Cakey Bot & CV$ Wealth)
 app.get('/api/leaderboard', async (req, res) => {
+  const cacheKey = 'api:leaderboard';
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    return res.json(cached);
+  }
   const mockLeaderboard = {
     leveling: [
       { rank: 1, id: "661135501226672129", username: "sim.tsx", displayName: "[Raiid] Sim | 46 ⭐", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=sim", level: 64, xp: 14200, nextXp: 15000 },
@@ -2796,12 +2839,14 @@ app.get('/api/leaderboard', async (req, res) => {
       if (finalStreak.length === 0) finalStreak = mockLeaderboard.streak;
       if (finalVoice.length === 0) finalVoice = mockLeaderboard.voice;
 
-      res.json({
+      const finalResult = {
         leveling: finalLeveling,
         streak: finalStreak,
         voice: finalVoice,
         cvWealth: finalCvWealth
-      });
+      };
+      cache.set(cacheKey, finalResult, 30); // Cache selama 30 detik
+      res.json(finalResult);
     }
   } catch (err) {
     console.error(`❌ [API/leaderboard] Gagal meresolusi leaderboard: ${err.message}`);
@@ -3017,7 +3062,7 @@ async function autoRankRoleCheck() {
 }
 
 // POST /api/rank-roles/update — trigger dari tombol web "Integrasikan"
-app.post('/api/rank-roles/update', async (req, res) => {
+app.post('/api/rank-roles/update', requireClientToken, async (req, res) => {
   console.log('\n🔄 [RankRoles] Memulai pembaruan nama + assignment role Rank #1 dari Web...');
 
   if (!isDiscordReady || !client || !GUILD_ID) {
@@ -3347,7 +3392,7 @@ app.get('/api/volunteerables/:id', (req, res) => {
 });
 
 // POST add a volunteerable
-app.post('/api/volunteerables', async (req, res) => {
+app.post('/api/volunteerables', requireClientToken, async (req, res) => {
   const { discordId, addedBy } = req.body;
   if (!discordId) {
     return res.status(400).json({ error: "discordId wajib diisi" });
@@ -3400,7 +3445,7 @@ app.post('/api/volunteerables', async (req, res) => {
 });
 
 // DELETE a volunteerable
-app.delete('/api/volunteerables/:id', async (req, res) => {
+app.delete('/api/volunteerables/:id', requireClientToken, async (req, res) => {
   const { id } = req.params;
   let list = loadLocalVolunteerables();
   list = list.filter(v => v.discordId !== id);
@@ -3664,7 +3709,7 @@ function saveActiveChannels(channels) {
 }
 
 // POST list of channels to save custom channel list
-app.post('/api/chat/channels', (req, res) => {
+app.post('/api/chat/channels', requireClientToken, (req, res) => {
   const { channels } = req.body;
   if (!Array.isArray(channels)) {
     return res.status(400).json({ error: "Channels must be an array" });
@@ -3776,7 +3821,7 @@ app.get('/api/chat/channels/:channelId/messages', async (req, res) => {
 });
 
 // POST send message to channel
-app.post('/api/chat/channels/:channelId/messages', async (req, res) => {
+app.post('/api/chat/channels/:channelId/messages', requireClientToken, async (req, res) => {
   const { channelId } = req.params;
   const { content, mediaUrl, replyToMsgId, authorName, authorAvatar } = req.body;
 
@@ -4361,7 +4406,7 @@ app.get('/api/discord-role/:roleId', async (req, res) => {
 });
 
 // POST Submissions approve manually via Web Admin
-app.post('/api/submissions/approve', async (req, res) => {
+app.post('/api/submissions/approve', requireClientToken, async (req, res) => {
   const { submissionId, userId, discordId, roleId, points, questId, username, userEmail, discordMessageId } = req.body;
   if (!submissionId) {
     return res.status(400).json({ error: "Missing submissionId parameter." });
@@ -4378,12 +4423,15 @@ app.post('/api/submissions/approve', async (req, res) => {
       saveLocalSubmissions(localSubs);
     }
 
-    // Update local user decks card status to "Completed"
+    // Update local user decks card status to "Completed" and delete/remove the quest from cards
     if (userId && questId) {
       const decks = loadLocalDecks();
       if (decks[userId]) {
         decks[userId].statuses = decks[userId].statuses || {};
         decks[userId].statuses[questId] = "Completed";
+        if (decks[userId].cards) {
+          decks[userId].cards = decks[userId].cards.filter(c => c.id !== questId);
+        }
         saveLocalDecks(decks);
       }
     }
@@ -4438,14 +4486,18 @@ app.post('/api/submissions/approve', async (req, res) => {
           }));
         }
 
-        // Update card status inside user's hand to "Completed"
+        // Update card status inside user's hand to "Completed" and remove the card
         if (questId) {
           const deckRef = doc(db, "user_decks", userId);
           const deckDoc = await withTimeout(getDoc(deckRef));
           if (deckDoc.exists()) {
             const deckData = deckDoc.data();
             const updatedStatuses = { ...deckData.statuses, [questId]: "Completed" };
-            await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
+            const updatedCards = (deckData.cards || []).filter(c => c.id !== questId);
+            await withTimeout(updateDoc(deckRef, { 
+              statuses: updatedStatuses,
+              cards: updatedCards
+            }));
           }
         }
       } catch (fsErr) {
@@ -4531,6 +4583,9 @@ app.post('/api/submissions/approve', async (req, res) => {
       }
     }
 
+    // Invalidate submissions cache
+    cache.deletePrefix('api:submissions:');
+
     res.json({ success: true, roleAssigned, roleName });
   } catch (err) {
     console.error("❌ [API/Approve] Gagal memproses persetujuan:", err.message);
@@ -4539,7 +4594,7 @@ app.post('/api/submissions/approve', async (req, res) => {
 });
 
 // POST Submissions reject manually via Web Admin
-app.post('/api/submissions/reject', async (req, res) => {
+app.post('/api/submissions/reject', requireClientToken, async (req, res) => {
   const { submissionId, userId, questId, discordMessageId, username } = req.body;
   if (!submissionId) {
     return res.status(400).json({ error: "Missing submissionId parameter." });
@@ -4602,6 +4657,9 @@ app.post('/api/submissions/reject', async (req, res) => {
       }
     }
 
+    // Invalidate submissions cache
+    cache.deletePrefix('api:submissions:');
+
     res.json({ success: true });
   } catch (err) {
     console.error("❌ [API/Reject] Gagal memproses penolakan:", err.message);
@@ -4610,23 +4668,95 @@ app.post('/api/submissions/reject', async (req, res) => {
 });
 
 // POST Submissions upload
-app.post('/api/submissions/submit', async (req, res) => {
+app.post('/api/submissions/submit', requireClientToken, async (req, res) => {
   const {
     questId,
-    questTitle,
-    questDescription,
-    points,
     userId,
     username,
     userEmail,
     fileName,
-    mediaData,
-    roleId,
-    roleName
+    mediaData
   } = req.body;
 
-  if (!questTitle || !userId || !username || !mediaData) {
-    return res.status(400).json({ error: "Missing required fields: questTitle, userId, username, or mediaData" });
+  if (!questId || !userId || !username || !mediaData) {
+    return res.status(400).json({ error: "Missing required fields: questId, userId, username, or mediaData" });
+  }
+
+  // 1. Resolve originalQuestId dari user's deck
+  let originalQuestId = questId;
+  const decks = loadLocalDecks();
+  const userDeck = decks[userId];
+  if (userDeck && userDeck.cards) {
+    const card = userDeck.cards.find(c => c.id === questId);
+    if (card) {
+      originalQuestId = card.originalQuestId || card.id;
+    }
+  }
+
+  if (db) {
+    try {
+      const deckRef = doc(db, "user_decks", userId);
+      const deckSnap = await withTimeout(getDoc(deckRef));
+      if (deckSnap.exists()) {
+        const deckData = deckSnap.data();
+        if (deckData.cards) {
+          const card = deckData.cards.find(c => c.id === questId);
+          if (card) {
+            originalQuestId = card.originalQuestId || card.id;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("⚠️ [API/Submission] Gagal mengambil user deck dari Firestore:", err.message);
+    }
+  }
+
+  // 2. Resolve detail quest dari database lokal atau Firestore untuk mencegah pemalsuan nilai poin/role
+  let quest = null;
+  const localQuests = loadLocalQuests();
+  quest = localQuests.find(q => q.id === originalQuestId);
+
+  if (db) {
+    try {
+      const questRef = doc(db, "quests", originalQuestId);
+      const questSnap = await withTimeout(getDoc(questRef));
+      if (questSnap.exists()) {
+        quest = { id: originalQuestId, ...questSnap.data() };
+      }
+    } catch (err) {
+      console.warn("⚠️ [API/Submission] Gagal mengambil detail quest dari Firestore:", err.message);
+    }
+  }
+
+  if (!quest) {
+    return res.status(404).json({ error: "Tantangan tidak ditemukan di database." });
+  }
+
+  const { title: questTitle, description: questDescription, points, roleId, roleName } = quest;
+
+  // 3. Validasi keamanan: pastikan user belum pernah menyelesaikan tantangan ini sebelumnya
+  if (decks[userId] && decks[userId].statuses && (decks[userId].statuses[questId] === "Completed" || decks[userId].statuses[originalQuestId] === "Completed")) {
+    return res.status(400).json({ error: "Tantangan ini sudah Anda selesaikan!" });
+  }
+  const localSubs = loadLocalSubmissions();
+  const alreadyCompleted = localSubs.some(s => s.userId === userId && (s.questId === questId || s.questId === originalQuestId) && s.status === "approved");
+  if (alreadyCompleted) {
+    return res.status(400).json({ error: "Tantangan ini sudah Anda selesaikan!" });
+  }
+
+  if (db) {
+    try {
+      const deckRef = doc(db, "user_decks", userId);
+      const deckSnap = await withTimeout(getDoc(deckRef));
+      if (deckSnap.exists()) {
+        const deckData = deckSnap.data();
+        if (deckData.statuses && (deckData.statuses[questId] === "Completed" || deckData.statuses[originalQuestId] === "Completed")) {
+          return res.status(400).json({ error: "Tantangan ini sudah Anda selesaikan!" });
+        }
+      }
+    } catch (err) {
+      console.warn("⚠️ [API/Submission] Gagal verifikasi deck di Firestore:", err.message);
+    }
   }
 
   console.log(`📥 [API/Submission] Menerima upload media dari pemain: ${username} (UID: ${userId}) untuk quest: "${questTitle}"`);
@@ -4685,8 +4815,6 @@ app.post('/api/submissions/submit', async (req, res) => {
   }
 
   try {
-    // Save to local submissions database
-    const localSubs = loadLocalSubmissions();
     const submissionId = `sub-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const submissionDoc = {
       id: submissionId,
@@ -4704,18 +4832,39 @@ app.post('/api/submissions/submit', async (req, res) => {
       roleId: roleId || "",
       roleName: roleName || ""
     };
+    
+    // Simpan ke local database submissions.json
     localSubs.push(submissionDoc);
     saveLocalSubmissions(localSubs);
 
-    // Update user's deck card status to "pending" in user_decks.json
-    if (userId && questId) {
-      const decks = loadLocalDecks();
-      if (decks[userId]) {
-        decks[userId].statuses = decks[userId].statuses || {};
-        decks[userId].statuses[questId] = "pending";
-        saveLocalDecks(decks);
+    // Simpan ke local database user_decks.json
+    if (decks[userId]) {
+      decks[userId].statuses = decks[userId].statuses || {};
+      decks[userId].statuses[questId] = "pending";
+      saveLocalDecks(decks);
+    }
+
+    // Tulis submission & update status deck langsung ke Firestore dari backend
+    if (db) {
+      try {
+        const subRef = doc(db, "submissions", submissionId);
+        await withTimeout(setDoc(subRef, submissionDoc));
+
+        const deckRef = doc(db, "user_decks", userId);
+        const deckDoc = await withTimeout(getDoc(deckRef));
+        if (deckDoc.exists()) {
+          const deckData = deckDoc.data();
+          const updatedStatuses = { ...deckData.statuses, [questId]: "pending" };
+          await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
+        }
+        console.log(`🔥 [Firebase] Backend berhasil menulis submission ${submissionId} dan memperbarui deck ke pending.`);
+      } catch (fsErr) {
+        console.warn("⚠️ [Firebase] Backend gagal menulis ke Firestore pada submit:", fsErr.message);
       }
     }
+
+    // Hapus cache submissions
+    cache.delete('api:submissions');
 
     res.json({
       success: true,
@@ -4728,14 +4877,18 @@ app.post('/api/submissions/submit', async (req, res) => {
   }
 });
 
-// GET /api/submissions
+// GET /api/submissions dengan cache
 app.get('/api/submissions', (req, res) => {
   const status = req.query.status;
-  const submissions = loadLocalSubmissions();
-  if (status) {
-    return res.json(submissions.filter(s => s.status === status));
+  const cacheKey = `api:submissions:${status || 'all'}`;
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    return res.json(cached);
   }
-  res.json(submissions);
+  const submissions = loadLocalSubmissions();
+  const result = status ? submissions.filter(s => s.status === status) : submissions;
+  cache.set(cacheKey, result, 15); // Cache selama 15 detik
+  res.json(result);
 });
 
 // GET /api/decks/:uid
@@ -4746,8 +4899,8 @@ app.get('/api/decks/:uid', (req, res) => {
   res.json(deck);
 });
 
-// POST /api/decks/deal
-app.post('/api/decks/deal', (req, res) => {
+// POST /api/decks/deal dengan sinkronisasi Firestore
+app.post('/api/decks/deal', requireClientToken, async (req, res) => {
   const { uid, cards, statuses } = req.body;
   if (!uid) {
     return res.status(400).json({ error: "Missing uid" });
@@ -4760,11 +4913,22 @@ app.post('/api/decks/deal', (req, res) => {
     statuses: statuses || {}
   };
   saveLocalDecks(decks);
+
+  // Sinkronisasi ke Firestore langsung dari backend
+  if (db) {
+    try {
+      await withTimeout(setDoc(doc(db, "user_decks", uid), decks[uid]));
+      console.log(`🔥 [Firebase] Backend sukses update deal deck untuk user ${uid} di Firestore.`);
+    } catch (fsErr) {
+      console.warn("⚠️ [Firebase] Backend gagal update deal deck di Firestore:", fsErr.message);
+    }
+  }
+
   res.json({ success: true, deck: decks[uid] });
 });
 
-// POST /api/decks/update-status
-app.post('/api/decks/update-status', (req, res) => {
+// POST /api/decks/update-status dengan sinkronisasi Firestore
+app.post('/api/decks/update-status', requireClientToken, async (req, res) => {
   const { uid, questId, status } = req.body;
   if (!uid || !questId || !status) {
     return res.status(400).json({ error: "Missing uid, questId or status" });
@@ -4774,19 +4938,42 @@ app.post('/api/decks/update-status', (req, res) => {
     decks[uid].statuses = decks[uid].statuses || {};
     decks[uid].statuses[questId] = status;
     saveLocalDecks(decks);
+
+    // Sinkronisasi ke Firestore langsung dari backend
+    if (db) {
+      try {
+        const deckRef = doc(db, "user_decks", uid);
+        const deckDoc = await withTimeout(getDoc(deckRef));
+        if (deckDoc.exists()) {
+          const deckData = deckDoc.data();
+          const updatedStatuses = { ...deckData.statuses, [questId]: status };
+          await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
+          console.log(`🔥 [Firebase] Backend sukses update status quest ${questId} menjadi ${status} di Firestore.`);
+        }
+      } catch (fsErr) {
+        console.warn("⚠️ [Firebase] Backend gagal update status deck di Firestore:", fsErr.message);
+      }
+    }
+
     return res.json({ success: true, deck: decks[uid] });
   }
   res.status(404).json({ error: "Deck not found" });
 });
 
-// GET /api/quests
+// GET /api/quests dengan cache TTL 60 detik
 app.get('/api/quests', (req, res) => {
+  const cacheKey = 'api:quests';
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    return res.json(cached);
+  }
   const quests = loadLocalQuests();
+  cache.set(cacheKey, quests, 60); // Cache selama 60 detik
   res.json(quests);
 });
 
 // POST /api/quests
-app.post('/api/quests', (req, res) => {
+app.post('/api/quests', requireClientToken, (req, res) => {
   const { akt, title, description, difficulty, points, roleId, roleName, roleColor, roleCv } = req.body;
   if (!title || !description) {
     return res.status(400).json({ error: "Missing title or description" });
@@ -4806,27 +4993,31 @@ app.post('/api/quests', (req, res) => {
   };
   quests.push(newQuest);
   saveLocalQuests(quests);
+  cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true, quest: newQuest });
 });
 
 // DELETE /api/quests/:id
-app.delete('/api/quests/:id', (req, res) => {
+app.delete('/api/quests/:id', requireClientToken, (req, res) => {
   const { id } = req.params;
   const quests = loadLocalQuests();
   const filtered = quests.filter(q => q.id !== id);
   saveLocalQuests(filtered);
+  cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true });
 });
 
 // POST /api/quests/load-defaults
-app.post('/api/quests/load-defaults', (req, res) => {
+app.post('/api/quests/load-defaults', requireClientToken, (req, res) => {
   saveLocalQuests(DEFAULT_QUESTS);
+  cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true, quests: DEFAULT_QUESTS });
 });
 
 // POST /api/quests/delete-all
-app.post('/api/quests/delete-all', (req, res) => {
+app.post('/api/quests/delete-all', requireClientToken, (req, res) => {
   saveLocalQuests([]);
+  cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true, quests: [] });
 });
 
@@ -4894,7 +5085,7 @@ app.get('/api/voice-afk/status', (req, res) => {
   });
 });
 
-app.post('/api/voice-afk/connect', async (req, res) => {
+app.post('/api/voice-afk/connect', requireClientToken, async (req, res) => {
   const { guildId, channelId } = req.body;
 
   if (!guildId || !channelId) {
@@ -4928,7 +5119,7 @@ app.post('/api/voice-afk/connect', async (req, res) => {
   }
 });
 
-app.post('/api/voice-afk/disconnect', (req, res) => {
+app.post('/api/voice-afk/disconnect', requireClientToken, (req, res) => {
   if (!connectionState.isConnectedToVoice || !connectionState.guildId) {
     return res.json({
       success: true,
@@ -4966,7 +5157,7 @@ app.post('/api/voice-afk/disconnect', (req, res) => {
   }
 });
 
-app.post('/api/voice-afk/logs/clear', (req, res) => {
+app.post('/api/voice-afk/logs/clear', requireClientToken, (req, res) => {
   connectionState.logs = [];
   addVoiceAfkLog('Log konsol dibersihkan oleh web client.', 'info');
   res.json({ success: true });

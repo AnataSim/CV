@@ -38,12 +38,37 @@ async function generateRequestToken(endpoint: string): Promise<string> {
 }
 
 /**
- * Obfuscate payload — encode body ke base64 layer supaya tidak langsung terbaca di DevTools Preview
- * Backend decode sebelum proses
+ * Encrypt payload — enkripsi body dengan AES-256-GCM supaya tersembunyi di DevTools
+ * Backend melakukan dekripsi sebelum memproses data
  */
-function obfuscatePayload(data: Record<string, unknown>): string {
+async function encryptPayload(data: Record<string, unknown>): Promise<string> {
   const jsonStr = JSON.stringify(data);
-  return btoa(encodeURIComponent(jsonStr));
+  const encoder = new TextEncoder();
+  const rawKey = encoder.encode(API_SECRET.slice(0, 32).padEnd(32, '0')); // Memastikan panjang key 32 byte untuk AES-256
+  const iv = crypto.getRandomValues(new Uint8Array(12)); // 12-byte IV acak untuk GCM
+
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    rawKey,
+    { name: "AES-GCM" },
+    false,
+    ["encrypt"]
+  );
+
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    cryptoKey,
+    encoder.encode(jsonStr)
+  );
+
+  // Gabungkan IV dan ciphertext untuk pengiriman
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+
+  // Ubah ke format Base64
+  const array = Array.from(combined);
+  return btoa(String.fromCharCode(...array));
 }
 
 /**
@@ -72,11 +97,11 @@ export async function signedFetch(
     "X-CV-Client": "crunchyverse-web",
   };
 
-  // Kalau sensitive & ada body JSON, obfuscate payload
+  // Kalau sensitive & ada body JSON, enkripsi payload dengan AES-GCM
   if (options.sensitive && options.body && typeof options.body === "string") {
     try {
       const parsed = JSON.parse(options.body);
-      const obfuscated = obfuscatePayload(parsed);
+      const encrypted = await encryptPayload(parsed);
       return fetch(url, {
         ...options,
         headers: {
@@ -84,10 +109,11 @@ export async function signedFetch(
           "Content-Type": "application/json",
           "X-CV-Encoded": "1",
         },
-        body: JSON.stringify({ _d: obfuscated }),
+        body: JSON.stringify({ _d: encrypted }),
       });
-    } catch {
-      // Fallback ke normal jika parse gagal
+    } catch (e) {
+      console.error("⚠️ Gagal mengenkripsi payload:", e);
+      // Fallback ke normal jika enkripsi gagal
     }
   }
 

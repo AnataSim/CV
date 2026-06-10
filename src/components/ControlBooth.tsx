@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Sliders, LogOut, Save, Terminal, Volume2, RefreshCw, Trash2, ExternalLink, Activity, X, UserPlus } from "lucide-react";
 import { db, isFirebaseConfigured } from "../lib/firebase";
 import { doc, setDoc, deleteDoc, collection, getDocs, query, where, updateDoc } from "firebase/firestore";
+import { signedFetch } from "../lib/api";
 
 interface LogEntry {
   timestamp: string;
@@ -129,7 +130,7 @@ export default function ControlBooth({
     let list: any[] = [];
     let fetchedFromBackend = false;
     try {
-      const res = await fetch(`${apiEndpoint}/api/volunteerables`);
+      const res = await signedFetch(`${apiEndpoint}/api/volunteerables`);
       if (res.ok) {
         list = await res.json();
         fetchedFromBackend = true;
@@ -178,10 +179,10 @@ export default function ControlBooth({
       // 1. Post to bot server backend
       let savedToBackend = false;
       try {
-        const res = await fetch(`${apiEndpoint}/api/volunteerables`, {
+        const res = await signedFetch(`${apiEndpoint}/api/volunteerables`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ discordId: cleanId, addedBy })
+          body: JSON.stringify({ discordId: cleanId, addedBy }),
+          sensitive: true
         });
         if (res.ok) {
           savedToBackend = true;
@@ -256,8 +257,9 @@ export default function ControlBooth({
       // 1. Delete on bot server backend
       let deletedFromBackend = false;
       try {
-        const res = await fetch(`${apiEndpoint}/api/volunteerables/${cleanId}`, {
-          method: "DELETE"
+        const res = await signedFetch(`${apiEndpoint}/api/volunteerables/${cleanId}`, {
+          method: "DELETE",
+          sensitive: true
         });
         if (res.ok) {
           deletedFromBackend = true;
@@ -343,7 +345,7 @@ export default function ControlBooth({
   // Sync / Poll Backend Status
   const fetchStatus = async () => {
     try {
-      const res = await fetch(`${apiEndpoint}/api/voice-afk/status`);
+      const res = await signedFetch(`${apiEndpoint}/api/voice-afk/status`);
       if (res.ok) {
         const data: BackendState = await res.json();
         setBackendState(data);
@@ -433,10 +435,10 @@ export default function ControlBooth({
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const res = await fetch(`${apiEndpoint}/api/voice-afk/connect`, {
+      const res = await signedFetch(`${apiEndpoint}/api/voice-afk/connect`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guildId, channelId })
+        body: JSON.stringify({ guildId, channelId }),
+        sensitive: true
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -458,9 +460,9 @@ export default function ControlBooth({
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const res = await fetch(`${apiEndpoint}/api/voice-afk/disconnect`, {
+      const res = await signedFetch(`${apiEndpoint}/api/voice-afk/disconnect`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" }
+        sensitive: true
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -478,7 +480,7 @@ export default function ControlBooth({
 
   const handleClearLogs = async () => {
     try {
-      await fetch(`${apiEndpoint}/api/voice-afk/logs/clear`, { method: "POST" });
+      await signedFetch(`${apiEndpoint}/api/voice-afk/logs/clear`, { method: "POST", sensitive: true });
       setBackendState(prev => ({ ...prev, logs: [] }));
     } catch (err) {
       console.warn("Gagal membersihkan log server:", err);

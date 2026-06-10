@@ -11,9 +11,11 @@ import {
   collection, addDoc, deleteDoc, doc, onSnapshot, query,
   where, setDoc, getDoc, updateDoc
 } from "firebase/firestore";
+import { signedFetch } from "../lib/api";
 
 interface Quest {
   id: string;
+  originalQuestId?: string;
   akt: string;
   title: string;
   description: string;
@@ -270,162 +272,130 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
     return () => clearInterval(interval);
   }, [timeMode]);
 
+  // 1. fetchCv
+  const fetchCv = async () => {
+    if (!currentUser?.uid) return;
+    try {
+      const res = await signedFetch(`${BACKEND_URL}/api/users/${currentUser.uid}`);
+      if (res.ok) {
+        const data = await res.json();
+        setUserCv(data.cv || data.points || 0);
+      }
+    } catch (err) {
+      console.warn("⚠️ Failed to sync user CV points from backend API:", err);
+    }
+  };
+
+  // 2. fetchDeckFromApi
+  const fetchDeckFromApi = async () => {
+    if (!currentUser?.uid) return;
+    try {
+      const res = await signedFetch(`${BACKEND_URL}/api/decks/${currentUser.uid}`);
+      if (res.ok) {
+        const data = await res.json();
+        setDealtQuests(data.cards || []);
+        setDealt(data.dealt || false);
+        
+        const statuses = data.statuses || {};
+        setCardStatuses(statuses);
+
+        // Save to LocalStorage as cache
+        const key = `crunchyverse_user_deck_${currentUser.uid}`;
+        localStorage.setItem(key, JSON.stringify(data));
+        
+        setCardFlipped(prev => {
+          const nextFlips = { ...prev };
+          (data.cards || []).forEach((q: Quest) => {
+            if (statuses[q.id] && statuses[q.id] !== "active") {
+              nextFlips[q.id] = true;
+            }
+          });
+          return nextFlips;
+        });
+      }
+    } catch (apiErr) {
+      const key = `crunchyverse_user_deck_${currentUser.uid}`;
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          setDealtQuests(data.cards || []);
+          setDealt(data.dealt || false);
+          setCardStatuses(data.statuses || {});
+        } catch (e) {}
+      }
+    }
+  };
+
+  // 3. fetchSubmissionsFromApi
+  const fetchSubmissionsFromApi = async () => {
+    if (!isAdmin) return;
+    try {
+      const res = await signedFetch(`${BACKEND_URL}/api/submissions`);
+      if (res.ok) {
+        const list = await res.json();
+        setAllSubmissions(list);
+        localStorage.setItem("crunchy_all_submissions", JSON.stringify(list));
+      }
+    } catch (apiErr) {
+      const stored = localStorage.getItem("crunchy_all_submissions");
+      if (stored) {
+        try {
+          const list = JSON.parse(stored);
+          setAllSubmissions(list);
+        } catch (e) {}
+      }
+    }
+  };
+
+  // 4. fetchQuestsFromApi
+  const fetchQuestsFromApi = async () => {
+    try {
+      const res = await signedFetch(`${BACKEND_URL}/api/quests`);
+      if (res.ok) {
+        const list = await res.json();
+        setQuests(list);
+        localStorage.setItem("crunchy_quests", JSON.stringify(list));
+      }
+    } catch (apiErr) {
+      const stored = localStorage.getItem("crunchy_quests");
+      if (stored) {
+        try {
+          setQuests(JSON.parse(stored));
+        } catch (e) {}
+      }
+    }
+  };
+
   // Real-time synchronization of player's CV points from Bot API
   useEffect(() => {
     if (!currentUser?.uid) return;
-
-    let isMounted = true;
-    let interval: any = null;
-
-    const fetchCv = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/users/${currentUser.uid}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted) {
-            setUserCv(data.cv || data.points || 0);
-          }
-        }
-      } catch (err) {
-        console.warn("⚠️ Failed to sync user CV points from backend API:", err);
-      }
-    };
-
     fetchCv();
-    interval = setInterval(fetchCv, 3000);
-
-    return () => {
-      isMounted = false;
-      if (interval) clearInterval(interval);
-    };
+    const interval = setInterval(fetchCv, 15000); // Polling setiap 15 detik
+    return () => clearInterval(interval);
   }, [currentUser]);
 
   // Real-time synchronization of player's Quest Deck (drawn cards, status)
   useEffect(() => {
     if (!currentUser?.uid) return;
-
-    let isMounted = true;
-    let interval: any = null;
-
-    const fetchDeckFromApi = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/decks/${currentUser.uid}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted) {
-            setDealtQuests(data.cards || []);
-            setDealt(data.dealt || false);
-            
-            const statuses = data.statuses || {};
-            setCardStatuses(statuses);
-
-            // Save to LocalStorage as cache
-            const key = `crunchyverse_user_deck_${currentUser.uid}`;
-            localStorage.setItem(key, JSON.stringify(data));
-            
-            setCardFlipped(prev => {
-              const nextFlips = { ...prev };
-              (data.cards || []).forEach((q: Quest) => {
-                if (statuses[q.id] && statuses[q.id] !== "active") {
-                  nextFlips[q.id] = true;
-                }
-              });
-              return nextFlips;
-            });
-          }
-        }
-      } catch (apiErr) {
-        const key = `crunchyverse_user_deck_${currentUser.uid}`;
-        const stored = localStorage.getItem(key);
-        if (stored && isMounted) {
-          try {
-            const data = JSON.parse(stored);
-            setDealtQuests(data.cards || []);
-            setDealt(data.dealt || false);
-            setCardStatuses(data.statuses || {});
-          } catch (e) {}
-        }
-      }
-    };
-
     fetchDeckFromApi();
-    interval = setInterval(fetchDeckFromApi, 2000);
-
-    return () => {
-      isMounted = false;
-      if (interval) clearInterval(interval);
-    };
+    const interval = setInterval(fetchDeckFromApi, 10000); // Polling setiap 10 detik
+    return () => clearInterval(interval);
   }, [currentUser]);
 
   // Sync All Submissions for Admin Progress Panel
   useEffect(() => {
     if (!isAdmin) return;
-
-    let isMounted = true;
-    let interval: any = null;
-
-    const fetchSubmissionsFromApi = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/submissions`);
-        if (res.ok) {
-          const list = await res.json();
-          if (isMounted) {
-            setAllSubmissions(list);
-            localStorage.setItem("crunchy_all_submissions", JSON.stringify(list));
-          }
-        }
-      } catch (apiErr) {
-        const stored = localStorage.getItem("crunchy_all_submissions");
-        if (stored && isMounted) {
-          try {
-            const list = JSON.parse(stored);
-            setAllSubmissions(list);
-          } catch (e) {}
-        }
-      }
-    };
-
     fetchSubmissionsFromApi();
-    interval = setInterval(fetchSubmissionsFromApi, 2000);
-
-    return () => {
-      isMounted = false;
-      if (interval) clearInterval(interval);
-    };
+    const interval = setInterval(fetchSubmissionsFromApi, 15000); // Polling setiap 15 detik
+    return () => clearInterval(interval);
   }, [isAdmin]);
 
   // Sync Quests Database
   useEffect(() => {
-    let isMounted = true;
-    let interval: any = null;
-
-    const fetchQuestsFromApi = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/quests`);
-        if (res.ok) {
-          const list = await res.json();
-          if (isMounted) {
-            setQuests(list);
-            localStorage.setItem("crunchy_quests", JSON.stringify(list));
-          }
-        }
-      } catch (apiErr) {
-        const stored = localStorage.getItem("crunchy_quests");
-        if (stored && isMounted) {
-          try {
-            setQuests(JSON.parse(stored));
-          } catch (e) {}
-        }
-      }
-    };
-
     fetchQuestsFromApi();
-    interval = setInterval(fetchQuestsFromApi, 2000);
-
-    return () => {
-      isMounted = false;
-      if (interval) clearInterval(interval);
-    };
+    const interval = setInterval(fetchQuestsFromApi, 30000); // Polling setiap 30 detik
+    return () => clearInterval(interval);
   }, []);
 
   // Auto-reset activeQuestId if it is completed (filtered out from hand)
@@ -447,7 +417,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
     setAdminError(null);
     setAdminSuccess(null);
     try {
-      const response = await fetch(`${BACKEND_URL}/api/discord-role/${roleId.trim()}`);
+      const response = await signedFetch(`${BACKEND_URL}/api/discord-role/${roleId.trim()}`);
       if (!response.ok) {
         const errJson = await response.json().catch(() => ({}));
         throw new Error(errJson.error || `HTTP error! status: ${response.status}`);
@@ -508,10 +478,10 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
 
     let apiSuccess = false;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/quests`, {
+      const res = await signedFetch(`${BACKEND_URL}/api/quests`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(questData)
+        body: JSON.stringify(questData),
+        sensitive: true
       });
       if (res.ok) apiSuccess = true;
     } catch (err: any) {
@@ -545,6 +515,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
     setRoleColor("");
     setRoleCv(null);
     setAdminSuccess("Quest berhasil ditambahkan ke database!");
+    fetchQuestsFromApi();
   };
 
   // Admin: Delete quest
@@ -557,8 +528,9 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
 
       let apiSuccess = false;
       try {
-        const res = await fetch(`${BACKEND_URL}/api/quests/${id}`, {
-          method: "DELETE"
+        const res = await signedFetch(`${BACKEND_URL}/api/quests/${id}`, {
+          method: "DELETE",
+          sensitive: true
         });
         if (res.ok) apiSuccess = true;
       } catch (err: any) {
@@ -574,6 +546,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
           console.warn("⚠️ Gagal menghapus quest dari Firestore:", err.message);
         }
       }
+      fetchQuestsFromApi();
     }
   };
 
@@ -595,8 +568,9 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
 
       let apiSuccess = false;
       try {
-        const res = await fetch(`${BACKEND_URL}/api/quests/load-defaults`, {
-          method: "POST"
+        const res = await signedFetch(`${BACKEND_URL}/api/quests/load-defaults`, {
+          method: "POST",
+          sensitive: true
         });
         if (res.ok) apiSuccess = true;
       } catch (err: any) {
@@ -623,6 +597,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
       }
 
       setAdminSuccess("Quest default teater berhasil dimuat!");
+      fetchQuestsFromApi();
     }
   };
 
@@ -638,8 +613,9 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
 
       let apiSuccess = false;
       try {
-        const res = await fetch(`${BACKEND_URL}/api/quests/delete-all`, {
-          method: "POST"
+        const res = await signedFetch(`${BACKEND_URL}/api/quests/delete-all`, {
+          method: "POST",
+          sensitive: true
         });
         if (res.ok) apiSuccess = true;
       } catch (err: any) {
@@ -659,6 +635,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
       }
 
       setAdminSuccess("Semua quest terdaftar berhasil dihapus!");
+      fetchQuestsFromApi();
     }
   };
 
@@ -688,25 +665,17 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
         
         const payload = {
           questId: quest.id,
-          questTitle: quest.title,
-          questDescription: quest.description,
-          points: quest.points,
-          akt: quest.akt || "Akt I",
           userId: currentUser?.uid || `sim-user-${Date.now()}`,
           username: displayName || currentUser?.displayName || currentUser?.name || currentUser?.email || "Pemain Teater",
           userEmail: currentUser?.email || "",
           fileName: mediaFile.name,
-          mediaData: base64Data,
-          roleId: quest.roleId || "",
-          roleName: quest.roleName || ""
+          mediaData: base64Data
         };
 
         try {
-          const response = await fetch(`${BACKEND_URL}/api/submissions/submit`, {
+          const response = await signedFetch(`${BACKEND_URL}/api/submissions/submit`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
+            sensitive: true,
             body: JSON.stringify(payload)
           });
 
@@ -715,63 +684,12 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
             throw new Error(errJson.error || `HTTP error! status: ${response.status}`);
           }
 
-          const resData = await response.json();
-          
-          const submissionDoc = {
-            questId: quest.id,
-            questTitle: quest.title,
-            questDescription: quest.description,
-            points: quest.points,
-            akt: quest.akt || "Akt I",
-            userId: payload.userId,
-            username: payload.username,
-            userEmail: payload.userEmail,
-            discordMessageId: resData.discordMessageId || `sim-msg-${Date.now()}`,
-            mediaUrl: resData.mediaUrl || base64Data,
-            status: "pending",
-            createdAt: new Date().toISOString(),
-            roleId: quest.roleId || "",
-            roleName: quest.roleName || ""
-          };
-
-          let firestoreSuccess = false;
-          if (isFirebaseConfigured && db) {
-            try {
-              await withTimeout(addDoc(collection(db, "submissions"), submissionDoc));
-              
-              // Set user deck card status to "pending" in Firestore
-              const deckRef = doc(db, "user_decks", payload.userId);
-              const deckSnap = await withTimeout(getDoc(deckRef));
-              if (deckSnap.exists()) {
-                const deckData = deckSnap.data();
-                const updatedStatuses = { ...deckData.statuses, [quest.id]: "pending" };
-                await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
-              }
-              firestoreSuccess = true;
-            } catch (fsErr: any) {
-              console.warn("⚠️ Gagal menulis submission ke Firestore:", fsErr.message);
-            }
-          }
-
-          if (!firestoreSuccess) {
-            const stored = localStorage.getItem("crunchy_submissions");
-            const submissionsList = stored ? JSON.parse(stored) : [];
-            submissionsList.push({ id: `local-sub-${Date.now()}`, ...submissionDoc });
-            localStorage.setItem("crunchy_submissions", JSON.stringify(submissionsList));
-
-            // Set user deck card status to "pending" in LocalStorage
-            const deckKey = `crunchyverse_user_deck_${payload.userId}`;
-            const deckStr = localStorage.getItem(deckKey);
-            if (deckStr) {
-              const deckObj = JSON.parse(deckStr);
-              deckObj.statuses = { ...deckObj.statuses, [quest.id]: "pending" };
-              localStorage.setItem(deckKey, JSON.stringify(deckObj));
-            }
-          }
-
           setUploadStatus("✅ Bukti berhasil dikirim! Poin akan ditambahkan setelah disetujui admin.");
           setIsUploading(false);
           setMediaFile(null);
+          
+          // Trigger immediate data refresh
+          fetchDeckFromApi();
           
           setTimeout(() => {
             setActiveQuestId(null);
@@ -812,12 +730,10 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
         discordMessageId: sub.discordMessageId || ""
       };
 
-      const response = await fetch(`${BACKEND_URL}/api/submissions/approve`, {
+      const response = await signedFetch(`${BACKEND_URL}/api/submissions/approve`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        sensitive: true
       });
 
       if (!response.ok) {
@@ -899,11 +815,15 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
           if (deckStr) {
             const deckObj = JSON.parse(deckStr);
             deckObj.statuses = { ...deckObj.statuses, [sub.questId]: "Completed" };
+            if (deckObj.cards) {
+              deckObj.cards = deckObj.cards.filter((c: any) => c.id !== sub.questId);
+            }
             localStorage.setItem(deckKey, JSON.stringify(deckObj));
           }
         }
       }
       alert(`✅ Bukti submission berhasil disetujui!${data.roleAssigned ? ` Role "${data.roleName}" telah diberikan ke Discord.` : ""}`);
+      fetchSubmissionsFromApi();
     } catch (err: any) {
       alert("❌ Gagal menyetujui: " + err.message);
     }
@@ -920,12 +840,10 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
           username: sub.username
         };
 
-        const response = await fetch(`${BACKEND_URL}/api/submissions/reject`, {
+        const response = await signedFetch(`${BACKEND_URL}/api/submissions/reject`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          sensitive: true
         });
 
         if (!response.ok) {
@@ -975,6 +893,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
           }
         }
         alert("❌ Bukti submission berhasil ditolak dan dihapus.");
+        fetchSubmissionsFromApi();
       } catch (err: any) {
         alert("❌ Gagal menolak: " + err.message);
       }
@@ -1062,8 +981,20 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
       }
     }
 
+    const randomId = Math.random().toString(36).substring(2, 10);
+    const finalSelected = selected.map((q, idx) => {
+      if (q.id && q.id.startsWith("quest-")) {
+        return q;
+      }
+      return {
+        ...q,
+        originalQuestId: (q as any).originalQuestId || q.id,
+        id: `quest-${currentUser.uid}.${randomId}_${idx}`
+      };
+    });
+
     const initialStatuses: Record<string, "active" | "pending" | "Completed" | "Denied"> = {};
-    selected.forEach(q => {
+    finalSelected.forEach(q => {
       // Keep existing status if it was retained, otherwise default to "active"
       initialStatuses[q.id] = cardStatuses[q.id] || "active";
     });
@@ -1071,20 +1002,20 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
     const deckData = {
       uid: currentUser.uid,
       dealt: true,
-      cards: selected,
+      cards: finalSelected,
       statuses: initialStatuses
     };
 
     let apiSuccess = false;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/decks/deal`, {
+      const res = await signedFetch(`${BACKEND_URL}/api/decks/deal`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           uid: currentUser.uid,
-          cards: selected,
+          cards: finalSelected,
           statuses: initialStatuses
-        })
+        }),
+        sensitive: true
       });
       if (res.ok) apiSuccess = true;
     } catch (err: any) {
@@ -1105,15 +1036,16 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
       localStorage.setItem(`crunchyverse_user_deck_${currentUser.uid}`, JSON.stringify(deckData));
     }
     
-    setDealtQuests(selected);
+    setDealtQuests(finalSelected);
     // Reset card flips mapping
     const flips: Record<string, boolean> = {};
-    selected.forEach(q => {
+    finalSelected.forEach(q => {
       flips[q.id] = false;
     });
     setCardFlipped(flips);
     setActiveQuestId(null);
     setDealt(true);
+    fetchDeckFromApi();
   };
 
   // Click card handler
