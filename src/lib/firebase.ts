@@ -6,31 +6,45 @@ import { getFirestore } from "firebase/firestore";
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   const originalError = console.error;
   console.error = (...args: any[]) => {
-    // Combine all arguments to check the full message context
-    const fullMsg = args.map(arg => {
-      if (arg === null || arg === undefined) return "";
+    let isFirebaseError = false;
+    
+    for (const arg of args) {
+      if (!arg) continue;
+      
+      let strVal = "";
       if (typeof arg === "object") {
         try {
-          return arg.message || arg.toString() || JSON.stringify(arg);
+          strVal = `${arg.message || ""} ${arg.code || ""} ${arg.name || ""} ${arg.stack || ""} ${JSON.stringify(arg)}`;
         } catch {
-          return "[Object]";
+          try {
+            strVal = `${arg.message || ""} ${arg.toString ? arg.toString() : ""}`;
+          } catch {
+            strVal = "[Unserializable Object]";
+          }
         }
+      } else {
+        strVal = String(arg);
       }
-      return String(arg);
-    }).join(" ");
+      
+      const lower = strVal.toLowerCase();
+      if (
+        lower.includes("permission_denied") ||
+        lower.includes("permission-denied") ||
+        lower.includes("firestore") ||
+        lower.includes("firebase") ||
+        lower.includes("grpcconnection") ||
+        lower.includes("crunchyweb") ||
+        lower.includes("grpc") ||
+        lower.includes("failed to fetch") ||
+        lower.includes("could not reach cloud firestore")
+      ) {
+        isFirebaseError = true;
+        break;
+      }
+    }
 
-    if (
-      fullMsg.includes("Failed to fetch") ||
-      fullMsg.includes("Could not reach Cloud Firestore") ||
-      fullMsg.includes("FirebaseError") ||
-      fullMsg.includes("Gagal menginisialisasi Firebase") ||
-      fullMsg.includes("PERMISSION_DENIED") ||
-      fullMsg.includes("firestore.googleapis.com") ||
-      fullMsg.includes("Cloud Firestore API has not been used") ||
-      fullMsg.includes("GrpcConnection RPC") ||
-      fullMsg.includes("crunchyweb")
-    ) {
-      console.warn(...args);
+    if (isFirebaseError) {
+      console.warn("⚠️ [Intercepted Firestore Error]:", ...args);
       return;
     }
     originalError(...args);
