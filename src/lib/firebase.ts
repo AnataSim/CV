@@ -44,7 +44,7 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     }
 
     if (isFirebaseError) {
-      console.warn("⚠️ [Intercepted Firestore Error]:", ...args);
+      // Completely silence the Firestore error
       return;
     }
     originalError(...args);
@@ -61,7 +61,6 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
       msg.includes("GrpcConnection RPC") ||
       msg.includes("crunchyweb")
     ) {
-      console.warn("⚠️ Intercepted uncaught Firestore rejection:", reason);
       event.preventDefault();
     }
   });
@@ -77,7 +76,6 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
       errorMsg.includes("Cloud Firestore API has not been used") ||
       errorMsg.includes("firestore.googleapis.com")
     ) {
-      console.warn("⚠️ Intercepted uncaught Firestore error:", event.error || msg);
       event.preventDefault();
     }
   });
