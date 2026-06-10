@@ -164,6 +164,23 @@ const isUserAdmin = (role: string | null) => {
   return role === "Volunteer Theater" || role === "Ketua Kerupuk" || role === "Ketua Keripik";
 };
 
+const MOCK_VOICE_MEMBERS = [
+  { name: "[HokBen] SALZ", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=salz", isLive: true, badgeText: "165 🌟" },
+  { name: "[???] \"и@tw|| f@╦w|| K\"", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=natw", badgeText: "192 ..." },
+  { name: "[AFK] T0ddei", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=toddei", badgeText: "HKS", roleValueSymbol: "1 🌟" },
+  { name: "[AFK] ʞNI7B", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=blink", roleValueSymbol: "1 🌟" },
+  { name: "[Doomsday] Yae エヴァ", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=yae", isMuted: true, roleValueSymbol: "1..." },
+  { name: "[Milk] CrunchyWeeb", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=crunchyweeb", isMuted: true },
+  { name: "[Sim] Raiid", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=silver", isMuted: true, badgeText: "KRPC", roleValueSymbol: "3 🌟" },
+  { name: "Dari Kontak Anda", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=kontak", roleValueSymbol: "190 🌟" },
+  { name: "Fuzu's Friend", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=friend", isSpeaking: true },
+  { name: "J.R.R. Tolkienii", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=tolkien", isMuted: true, roleValueSymbol: "29 🌟" },
+  { name: "Jing Liu", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=jingliu", isDeafened: true },
+  { name: "Lofi Girl", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=lofi", isMuted: true, isDeafened: true },
+  { name: "Sparxie | ∞ ✨", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie", isMuted: true, roleValueSymbol: "∞ ✨" },
+  { name: "✨ Alice", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=alice", isMuted: true, isDeafened: true, roleValueSymbol: "1 🌟" }
+];
+
 export default function CrunchyVerseStage() {
   function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 1500): Promise<T> {
     return Promise.race([
@@ -323,24 +340,9 @@ export default function CrunchyVerseStage() {
     return `${hours}:${pad(minutes)}:${pad(seconds)}`;
   };
   // Real-time active voice members from bot API
-  const [voiceMembers, setVoiceMembers] = useState<Array<{ name: string; avatar: string; isMuted?: boolean; isDeafened?: boolean; isSpeaking?: boolean; isLive?: boolean; badgeText?: string; roleValueSymbol?: string }>>([
-    { name: "[HokBen] SALZ", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=salz", isLive: true, badgeText: "165 🌟" },
-    { name: "[???] \"и@tw|| f@╦w|| K\"", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=natw", badgeText: "192 ..." },
-    { name: "[AFK] T0ddei", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=toddei", badgeText: "HKS", roleValueSymbol: "1 🌟" },
-    { name: "[AFK] ʞNI7B", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=blink", roleValueSymbol: "1 🌟" },
-    { name: "[Doomsday] Yae エヴァ", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=yae", isMuted: true, roleValueSymbol: "1..." },
-    { name: "[Milk] CrunchyWeeb", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=crunchyweeb", isMuted: true },
-    { name: "[Sim] Raiid", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=silver", isMuted: true, badgeText: "KRPC", roleValueSymbol: "3 🌟" },
-    { name: "Dari Kontak Anda", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=kontak", roleValueSymbol: "190 🌟" },
-    { name: "Fuzu's Friend", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=friend", isSpeaking: true },
-    { name: "J.R.R. Tolkienii", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=tolkien", isMuted: true, roleValueSymbol: "29 🌟" },
-    { name: "Jing Liu", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=jingliu", isDeafened: true },
-    { name: "Lofi Girl", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=lofi", isMuted: true, isDeafened: true },
-    { name: "Sparxie | ∞ ✨", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie", isMuted: true, roleValueSymbol: "∞ ✨" },
-    { name: "✨ Alice", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=alice", isMuted: true, isDeafened: true, roleValueSymbol: "1 🌟" }
-  ]);
+  const [voiceMembers, setVoiceMembers] = useState<Array<{ name: string; avatar: string; isMuted?: boolean; isDeafened?: boolean; isSpeaking?: boolean; isLive?: boolean; badgeText?: string; roleValueSymbol?: string }>>([]);
 
-  const [voiceTotalCount, setVoiceTotalCount] = useState(14);
+  const [voiceTotalCount, setVoiceTotalCount] = useState(0);
   const [voiceChannelName, setVoiceChannelName] = useState("acheron otw t0");
   const [voiceChannelStatus, setVoiceChannelStatus] = useState<string | null>("[04:00] • Silhouette - Pastel Ghost");
 
@@ -364,29 +366,6 @@ export default function CrunchyVerseStage() {
     };
   };
 
-  async function fetchVoiceMembers() {
-    // Determine target channel ID dynamically
-    const activeChanObj = chatChannelsList.find(c => c.id === activeChatChannel);
-    const isVoice = activeChanObj?.type === "voice";
-    const targetChannelId = isVoice ? activeChatChannel : "1435053596742914160";
-
-    try {
-      const res = await fetch(`${backendUrl}/api/voice-channel/${targetChannelId}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.members) {
-          setVoiceMembers(data.members);
-          setVoiceTotalCount(data.count || data.members.length);
-        }
-        if (data && data.name) {
-          setVoiceChannelName(data.name);
-        }
-        if (data && data.status !== undefined) {
-          setVoiceChannelStatus(data.status);
-        }
-      }
-    } catch (err) {}
-  };
 
   const [broadcasts, setBroadcasts] = useState<BroadcastMessage[]>([
     {
@@ -416,6 +395,260 @@ export default function CrunchyVerseStage() {
     manualOverride: false
   });
 
+  // Shared state for Quest Game sync data to pass as props
+  const [syncGameData, setSyncGameData] = useState<{
+    userCv: number;
+    dealtQuests: any[];
+    dealt: boolean;
+    cardStatuses: Record<string, any>;
+    allSubmissions: any[];
+  }>({
+    userCv: 0,
+    dealtQuests: [],
+    dealt: false,
+    cardStatuses: {},
+    allSubmissions: []
+  });
+
+  const performUnifiedSync = async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const activeChanObj = chatChannelsList.find(c => c.id === activeChatChannel);
+      const isVoice = activeChanObj?.type === "voice";
+      const targetVoiceChannelId = isVoice ? activeChatChannel : "1435053596742914160";
+      const isAdminUser = isUserAdmin(userRole) || currentUser?.email?.toLowerCase() === "rioagustiawan10188@gmail.com";
+
+      const res = await signedFetch(`${backendUrl}/api/sync`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uid: currentUser?.uid || null,
+          chatChannelId: activeChatChannel,
+          voiceChannelId: targetVoiceChannelId,
+          isAdmin: isAdminUser
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        
+        // 1. Stats
+        if (data.stats) {
+          setStats(data.stats);
+          setIsBotConnected(true);
+          setErrorMsg(null);
+        }
+
+        // 2. Broadcasts
+        if (data.broadcasts && data.broadcasts.length > 0) {
+          setBroadcasts(data.broadcasts);
+        }
+
+        // 3. TikTok Status
+        if (data.tiktok) {
+          setTiktok(data.tiktok);
+          if (!silent) {
+            setManualOverride(data.tiktok.manualOverride);
+            setIsLiveOverride(data.tiktok.isLive);
+            if (data.tiktok.liveTitle) setLiveTitleOverride(data.tiktok.liveTitle);
+          }
+        }
+
+        // 4. Voice Channel Details
+        if (data.voiceChannel) {
+          if (data.voiceChannel.members) {
+            setVoiceMembers(data.voiceChannel.members);
+            setVoiceTotalCount(data.voiceChannel.count || data.voiceChannel.members.length);
+          }
+          if (data.voiceChannel.name) {
+            setVoiceChannelName(data.voiceChannel.name);
+          }
+          if (data.voiceChannel.status !== undefined) {
+            setVoiceChannelStatus(data.voiceChannel.status);
+          }
+        }
+
+        // 5. Chat Messages
+        if (data.chatMessages && Array.isArray(data.chatMessages)) {
+          setChatMessagesList(data.chatMessages);
+        }
+
+        // 6. Game Data (user, deck, submissions)
+        const updatedGameData: any = {
+          userCv: data.user?.cv || data.user?.points || 0,
+          dealtQuests: data.deck?.cards || [],
+          dealt: data.deck?.dealt || false,
+          cardStatuses: data.deck?.statuses || {},
+          allSubmissions: data.submissions || []
+        };
+        setSyncGameData(updatedGameData);
+
+      } else {
+        throw new Error("Gagal melakukan sinkronisasi data.");
+      }
+    } catch (err: any) {
+      if (!silent) {
+        setIsBotConnected(false);
+        setErrorMsg(err.message);
+      }
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
+  // ==============================================================================
+  // ========== WEBSOCKET SYNC CLIENT ============================================
+  // ==============================================================================
+  const socketRef = useRef<WebSocket | null>(null);
+  const [wsConnected, setWsConnected] = useState(false);
+
+  const sendWsSync = () => {
+    const socket = socketRef.current;
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      const activeChanObj = chatChannelsList.find(c => c.id === activeChatChannel);
+      const isVoice = activeChanObj?.type === "voice";
+      const targetVoiceChannelId = isVoice ? activeChatChannel : "1435053596742914160";
+      const isAdminUser = isUserAdmin(userRole) || currentUser?.email?.toLowerCase() === "rioagustiawan10188@gmail.com";
+
+      socket.send(JSON.stringify({
+        action: "sync",
+        data: {
+          uid: currentUser?.uid || null,
+          chatChannelId: activeChatChannel,
+          voiceChannelId: targetVoiceChannelId,
+          isAdmin: isAdminUser
+        }
+      }));
+    }
+  };
+
+  useEffect(() => {
+    if (!hasMounted) return;
+
+    let socket: WebSocket;
+    let reconnectTimer: NodeJS.Timeout;
+
+    const connectWs = () => {
+      const wsUrl = backendUrl.replace(/^http/, "ws") + "/sync";
+      console.log("🔌 Connecting to WebSocket:", wsUrl);
+      socket = new WebSocket(wsUrl);
+      socketRef.current = socket;
+
+      socket.onopen = () => {
+        console.log("✅ WebSocket Connected");
+        setWsConnected(true);
+        // Trigger sync registration
+        const activeChanObj = chatChannelsList.find(c => c.id === activeChatChannel);
+        const isVoice = activeChanObj?.type === "voice";
+        const targetVoiceChannelId = isVoice ? activeChatChannel : "1435053596742914160";
+        const isAdminUser = isUserAdmin(userRole) || currentUser?.email?.toLowerCase() === "rioagustiawan10188@gmail.com";
+
+        socket.send(JSON.stringify({
+          action: "sync",
+          data: {
+            uid: currentUser?.uid || null,
+            chatChannelId: activeChatChannel,
+            voiceChannelId: targetVoiceChannelId,
+            isAdmin: isAdminUser
+          }
+        }));
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          if (payload.action === "syncResponse" && payload.data) {
+            const data = payload.data;
+            
+            // 1. Stats
+            if (data.stats) {
+              setStats(data.stats);
+              setIsBotConnected(true);
+              setErrorMsg(null);
+            }
+
+            // 2. Broadcasts
+            if (data.broadcasts && data.broadcasts.length > 0) {
+              setBroadcasts(data.broadcasts);
+            }
+
+            // 3. TikTok Status
+            if (data.tiktok) {
+              setTiktok(data.tiktok);
+              setManualOverride(data.tiktok.manualOverride);
+              setIsLiveOverride(data.tiktok.isLive);
+              if (data.tiktok.liveTitle) setLiveTitleOverride(data.tiktok.liveTitle);
+            }
+
+            // 4. Voice Channel Details
+            if (data.voiceChannel) {
+              if (data.voiceChannel.members) {
+                setVoiceMembers(data.voiceChannel.members);
+                setVoiceTotalCount(data.voiceChannel.count || data.voiceChannel.members.length);
+              }
+              if (data.voiceChannel.name) {
+                setVoiceChannelName(data.voiceChannel.name);
+              }
+              if (data.voiceChannel.status !== undefined) {
+                setVoiceChannelStatus(data.voiceChannel.status);
+              }
+            }
+
+            // 5. Chat Messages
+            if (data.chatMessages && Array.isArray(data.chatMessages)) {
+              setChatMessagesList(data.chatMessages);
+            }
+
+            // 6. Game Data (user, deck, submissions)
+            const updatedGameData = {
+              userCv: data.user?.cv || data.user?.points || 0,
+              dealtQuests: data.deck?.cards || [],
+              dealt: data.deck?.dealt || false,
+              cardStatuses: data.deck?.statuses || {},
+              allSubmissions: data.submissions || []
+            };
+            setSyncGameData(updatedGameData);
+          }
+        } catch (err) {
+          console.error("❌ Error parsing WS message:", err);
+        }
+      };
+
+      socket.onclose = () => {
+        console.log("🔌 WebSocket Disconnected, reconnecting in 3s...");
+        setWsConnected(false);
+        reconnectTimer = setTimeout(connectWs, 3000);
+      };
+
+      socket.onerror = (err) => {
+        console.error("❌ WebSocket Error:", err);
+        socket.close();
+      };
+    };
+
+    connectWs();
+
+    return () => {
+      if (socket) socket.close();
+      clearTimeout(reconnectTimer);
+    };
+  }, [backendUrl, hasMounted, activeChatChannel, chatChannelsList, currentUser, userRole]);
+
+  // Sync state through WebSocket on local changes
+  useEffect(() => {
+    if (hasMounted && wsConnected) {
+      sendWsSync();
+    }
+  }, [currentUser?.uid, activeChatChannel, userRole, hasMounted, wsConnected]);
+
+  const triggerSyncRefresh = () => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      sendWsSync();
+    } else {
+      performUnifiedSync(true);
+    }
+  };
+
   const frame1Ref = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -438,164 +671,209 @@ export default function CrunchyVerseStage() {
       // Monitor real Firebase login state
       const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
         if (firebaseUser) {
-          setCurrentUser(firebaseUser);
-          
-          // Check if the user is the custom admin email
-          const isAdminEmail = firebaseUser.email?.toLowerCase() === "rioagustiawan10188@gmail.com";
-          
-          // Detect if they are a Discord/OIDC user by providerData or UID prefix/pattern
-          const discordProv = firebaseUser.providerData.find((p: any) => 
-            p.providerId.includes("discord") || 
-            p.providerId.includes("oidc") ||
-            firebaseUser.uid.startsWith("oidc:")
-          );
-
-          // Extract a 17-20 digit numeric snowflake ID
-          let discordId: string | null = null;
-          if (discordProv && discordProv.uid) {
-            const match = discordProv.uid.match(/\d{17,20}/);
-            if (match) discordId = match[0];
-          }
-          if (!discordId && firebaseUser.uid) {
-            const match = firebaseUser.uid.match(/\d{17,20}/);
-            if (match) discordId = match[0];
-          }
-
-          // Pre-fetch user document from Firestore (holds role, display name, and custom channels)
-          let firestoreData: any = null;
-          try {
-            const userDocPromise = getDoc(doc(db, "users", firebaseUser.uid));
-            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1500));
-            const userDoc = await Promise.race([userDocPromise, timeoutPromise]) as any;
-            if (userDoc && userDoc.exists()) {
-              firestoreData = userDoc.data();
-              console.log("🔥 Successfully pre-fetched user profile from Firestore:", firestoreData);
-            }
-          } catch (err) {
-            console.warn("⚠️ Firestore fetch timed out or failed on profile pre-fetch:", err);
-          }
-
-          if (discordId) {
-            // Check if discordId is in volunteerables collection
-            let isVolunteerable = false;
-            if (isFirebaseConfigured && db) {
+          // Check if we have cached profile details
+          let cachedProfile: any = null;
+          if (typeof window !== "undefined") {
+            const cached = localStorage.getItem(`crunchy_profile_${firebaseUser.uid}`);
+            if (cached) {
               try {
-                const volDoc = await getDoc(doc(db, "volunteerables", discordId));
-                if (volDoc.exists()) {
-                  isVolunteerable = true;
-                }
-              } catch (e) {
-                console.warn("Gagal fetch volunteerable status on auth state change:", e);
-              }
+                cachedProfile = JSON.parse(cached);
+              } catch (e) {}
             }
+          }
 
-            // Fallback: Check local Bot API
-            if (!isVolunteerable) {
-              try {
-                const res = await fetch(`${backendUrl}/api/volunteerables/${discordId}`);
-                if (res.ok) {
-                  const data = await res.json();
-                  if (data && data.isVolunteerable) {
-                    isVolunteerable = true;
-                  }
-                }
-              } catch (e) {
-                console.warn("Gagal fetch volunteerable dari backend API:", e);
-              }
-            }
+          // If cached profile exists, instantly set UI states to avoid loading screen or latency
+          if (cachedProfile) {
+            console.log("⚡ Instant profile load from localStorage cache:", cachedProfile.name);
+            setCurrentUser(firebaseUser);
+            setDisplayName(cachedProfile.name);
+            setUserRole(cachedProfile.role);
+            setUserAvatar(cachedProfile.avatar || null);
+          } else {
+            // Provide immediate defaults if no cache yet
+            setCurrentUser(firebaseUser);
+            setDisplayName(firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : "Discord Penonton"));
+            setUserAvatar(firebaseUser.photoURL || null);
+            setUserRole("Penonton Teater"); // Safe default role
+          }
 
-            const isDiscordAdmin = discordId === "661135501226672129" || discordId === "1410583272173600819";
-            let resolvedRole: string = (isAdminEmail || isDiscordAdmin || isVolunteerable) ? "Volunteer Theater" : "Penonton Teater";
+          // Define background validation & sync function
+          const resolveProfileBackground = async () => {
+            const isAdminEmail = firebaseUser.email?.toLowerCase() === "rioagustiawan10188@gmail.com";
             
-            if (discordId === "588988763204616214") {
-              resolvedRole = "Ketua Kerupuk";
-            } else if (discordId === "331053654318776320") {
-              resolvedRole = "Ketua Keripik";
+            const discordProv = firebaseUser.providerData.find((p: any) => 
+              p.providerId.includes("discord") || 
+              p.providerId.includes("oidc") ||
+              firebaseUser.uid.startsWith("oidc:")
+            );
+
+            let discordId: string | null = null;
+            if (discordProv && discordProv.uid) {
+              const match = discordProv.uid.match(/\d{17,20}/);
+              if (match) discordId = match[0];
+            }
+            if (!discordId && firebaseUser.uid) {
+              const match = firebaseUser.uid.match(/\d{17,20}/);
+              if (match) discordId = match[0];
             }
 
-            // Sync with Firestore users document if it differs
-            if (isFirebaseConfigured && db && firestoreData && firestoreData.role !== resolvedRole) {
-              try {
-                await setDoc(doc(db, "users", firebaseUser.uid), { role: resolvedRole }, { merge: true });
-                console.log(`🔥 Auto-synced user role in Firestore to: ${resolvedRole}`);
-              } catch (e) {
-                console.warn("Gagal sync user role di Firestore:", e);
+            // Pre-fetch user document from Firestore (holds role, display name, and custom channels)
+            let firestoreData: any = null;
+            try {
+              const userDocPromise = getDoc(doc(db, "users", firebaseUser.uid));
+              const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1500));
+              const userDoc = await Promise.race([userDocPromise, timeoutPromise]) as any;
+              if (userDoc && userDoc.exists()) {
+                firestoreData = userDoc.data();
+                console.log("🔥 Successfully pre-fetched user profile from Firestore:", firestoreData);
               }
+            } catch (err) {
+              console.warn("⚠️ Firestore fetch timed out or failed on profile pre-fetch:", err);
             }
 
-            setUserRole(resolvedRole);
-
-            // Fetch live Discord username and avatar from bot server
+            let resolvedRole = "Penonton Teater";
             let resolvedName = "Discord Penonton";
             let resolvedAvatar: string | null = null;
-            try {
-              console.log(`🤖 Fetching live name/avatar from Bot API for Discord ID: "${discordId}"...`);
-              const botRes = await fetch(`${backendUrl}/api/discord-user/${discordId}`);
-              if (botRes.ok) {
-                const botData = await botRes.json();
-                if (botData && botData.displayName && botData.displayName !== "Discord Penonton") {
-                  resolvedName = botData.displayName;
-                  console.log(`🎯 Successfully resolved live name: "${resolvedName}"`);
-                }
-                if (botData && botData.avatar) {
-                  resolvedAvatar = botData.avatar;
-                  console.log(`🖼️ Successfully resolved live avatar URL: "${resolvedAvatar}"`);
+
+            if (discordId) {
+              // Check if discordId is in volunteerables collection
+              let isVolunteerable = false;
+              if (isFirebaseConfigured && db) {
+                try {
+                  const volDoc = await getDoc(doc(db, "volunteerables", discordId));
+                  if (volDoc.exists()) {
+                    isVolunteerable = true;
+                  }
+                } catch (e) {
+                  console.warn("Gagal fetch volunteerable status on auth state change:", e);
                 }
               }
-            } catch (botErr) {
-              console.warn("⚠️ Bot API unreachable for Discord user fetch:", botErr);
-            }
 
-            // Fallback to Firebase's default display name or email if bot returned fallback
-            if (resolvedName === "Discord Penonton") {
-              resolvedName = firestoreData?.name || firebaseUser.displayName || firebaseUser.providerData[0]?.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : "Discord Penonton");
-            }
+              // Fallback: Check local Bot API
+              if (!isVolunteerable) {
+                try {
+                  const res = await fetch(`${backendUrl}/api/volunteerables/${discordId}`);
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.isVolunteerable) {
+                      isVolunteerable = true;
+                    }
+                  }
+                } catch (e) {
+                  console.warn("Gagal fetch volunteerable dari backend API:", e);
+                }
+              }
 
-            setDisplayName(resolvedName);
-            setUserAvatar(resolvedAvatar);
-          } else {
-            // Standard Email/Google flow
-            let resolvedRole: "Volunteer Theater" | "Penonton Teater" = isAdminEmail ? "Volunteer Theater" : "Penonton Teater";
-            let resolvedName = firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : "Penonton Teater");
-            let resolvedAvatar: string | null = null;
+              const isDiscordAdmin = discordId === "661135501226672129" || discordId === "1410583272173600819";
+              resolvedRole = (isAdminEmail || isDiscordAdmin || isVolunteerable) ? "Volunteer Theater" : "Penonton Teater";
+              
+              if (discordId === "588988763204616214") {
+                resolvedRole = "Ketua Kerupuk";
+              } else if (discordId === "331053654318776320") {
+                resolvedRole = "Ketua Keripik";
+              }
 
-            // Extract Google Avatar URL if present
-            if (firebaseUser.photoURL) {
-              resolvedAvatar = firebaseUser.photoURL;
-            }
+              // Sync with Firestore users document if it differs
+              if (isFirebaseConfigured && db && firestoreData && firestoreData.role !== resolvedRole) {
+                try {
+                  await setDoc(doc(db, "users", firebaseUser.uid), { role: resolvedRole }, { merge: true });
+                  console.log(`🔥 Auto-synced user role in Firestore to: ${resolvedRole}`);
+                } catch (e) {
+                  console.warn("Gagal sync user role di Firestore:", e);
+                }
+              }
 
-            if (firestoreData) {
-              if (firestoreData.role) resolvedRole = firestoreData.role;
-              if (firestoreData.name) resolvedName = firestoreData.name;
-            }
-
-            setUserRole(resolvedRole);
-            setDisplayName(resolvedName);
-            setUserAvatar(resolvedAvatar);
-          }
-
-          // Load custom channels from Firestore if present, otherwise check localStorage
-          let loadedChannels: any[] | null = null;
-          if (firestoreData && firestoreData.customChannels) {
-            loadedChannels = firestoreData.customChannels;
-            console.log("🔥 Successfully loaded custom channels from Firestore:", loadedChannels);
-          }
-
-          if (!loadedChannels && typeof window !== "undefined") {
-            const savedForUser = localStorage.getItem(`crunchyverse_custom_channels_${firebaseUser.uid}`);
-            if (savedForUser) {
+              // Fetch live Discord username and avatar from bot server
               try {
-                loadedChannels = JSON.parse(savedForUser);
-                console.log("💾 Loaded custom channels from localStorage (user specific):", loadedChannels);
-              } catch (e) {
-                console.error("Gagal parse user specific channels:", e);
+                console.log(`🤖 Fetching live name/avatar from Bot API for Discord ID: "${discordId}"...`);
+                const botRes = await fetch(`${backendUrl}/api/discord-user/${discordId}`);
+                if (botRes.ok) {
+                  const botData = await botRes.json();
+                  if (botData && botData.displayName && botData.displayName !== "Discord Penonton") {
+                    resolvedName = botData.displayName;
+                    console.log(`🎯 Successfully resolved live name: "${resolvedName}"`);
+                  }
+                  if (botData && botData.avatar) {
+                    resolvedAvatar = botData.avatar;
+                    console.log(`🖼️ Successfully resolved live avatar URL: "${resolvedAvatar}"`);
+                  }
+                }
+              } catch (botErr) {
+                console.warn("⚠️ Bot API unreachable for Discord user fetch:", botErr);
+              }
+
+              // Fallback to Firebase's default display name or email if bot returned fallback
+              if (resolvedName === "Discord Penonton") {
+                resolvedName = firestoreData?.name || firebaseUser.displayName || firebaseUser.providerData[0]?.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : "Discord Penonton");
+              }
+            } else {
+              // Standard Email/Google flow
+              resolvedRole = isAdminEmail ? "Volunteer Theater" : "Penonton Teater";
+              resolvedName = firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : "Penonton Teater");
+
+              // Extract Google Avatar URL if present
+              if (firebaseUser.photoURL) {
+                resolvedAvatar = firebaseUser.photoURL;
+              }
+
+              if (firestoreData) {
+                if (firestoreData.role) resolvedRole = firestoreData.role;
+                if (firestoreData.name) resolvedName = firestoreData.name;
               }
             }
-          }
 
-          if (loadedChannels) {
-            setChatChannelsList(loadedChannels);
-          }
+            // Load custom channels from Firestore if present, otherwise check localStorage
+            let loadedChannels: any[] | null = null;
+            if (firestoreData && firestoreData.customChannels) {
+              loadedChannels = firestoreData.customChannels;
+              console.log("🔥 Successfully loaded custom channels from Firestore:", loadedChannels);
+            }
+
+            if (!loadedChannels && typeof window !== "undefined") {
+              const savedForUser = localStorage.getItem(`crunchyverse_custom_channels_${firebaseUser.uid}`);
+              if (savedForUser) {
+                try {
+                  loadedChannels = JSON.parse(savedForUser);
+                  console.log("💾 Loaded custom channels from localStorage (user specific):", loadedChannels);
+                } catch (e) {
+                  console.error("Gagal parse user specific channels:", e);
+                }
+              }
+            }
+
+            // Update state and cache in background if there's any mismatch
+            if (
+              !cachedProfile ||
+              cachedProfile.name !== resolvedName ||
+              cachedProfile.role !== resolvedRole ||
+              cachedProfile.avatar !== resolvedAvatar
+            ) {
+              console.log("🔄 Background verification complete, updating user profile states & cache.");
+              setDisplayName(resolvedName);
+              setUserRole(resolvedRole);
+              setUserAvatar(resolvedAvatar);
+
+              const newCachedProfile = {
+                uid: firebaseUser.uid,
+                name: resolvedName,
+                role: resolvedRole,
+                avatar: resolvedAvatar,
+                discordId: discordId,
+                cachedAt: Date.now()
+              };
+              localStorage.setItem(`crunchy_profile_${firebaseUser.uid}`, JSON.stringify(newCachedProfile));
+            }
+
+            if (loadedChannels) {
+              setChatChannelsList(loadedChannels);
+            }
+          };
+
+          // Kick off background updates without awaiting (non-blocking)
+          resolveProfileBackground().catch(err => {
+            console.error("⚠️ Error in background profile resolver:", err);
+          });
+
         } else {
           // Check if we have a simulated/mock user session saved (e.g. from Discord login fallback)
           const activeSession = localStorage.getItem("crunchy_session");
@@ -627,6 +905,7 @@ export default function CrunchyVerseStage() {
           setUserAvatar(null);
         }
       });
+
       return unsubscribe;
     } else {
       // Database Local Simulation Mode
@@ -680,6 +959,8 @@ export default function CrunchyVerseStage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setHasMounted(true);
+      setVoiceMembers(MOCK_VOICE_MEMBERS);
+      setVoiceTotalCount(14);
 
       // Load presentation checkpoints from localStorage
       if (typeof window !== "undefined") {
@@ -723,20 +1004,15 @@ export default function CrunchyVerseStage() {
       setDustParticles(particles);
 
       // Fetch initial data from server
-      fetchStats();
-      fetchBroadcasts();
-      fetchTikTokStatus();
-      fetchVoiceMembers();
+      performUnifiedSync(false);
       fetchChatChannels();
     }, 0);
 
-    // Auto refresh data every 30 seconds
+    // Auto refresh data every 15 seconds (fallback HTTP polling only if WS is disconnected)
     const interval = setInterval(() => {
-      fetchStats(true);
-      fetchBroadcasts(true);
-      fetchTikTokStatus(true);
-      fetchVoiceMembers();
-    }, 30000);
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) return;
+      performUnifiedSync(true);
+    }, 15000);
 
     // Listen to Escape key to close presentation fullscreen
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -752,6 +1028,13 @@ export default function CrunchyVerseStage() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [backendUrl]);
+
+  // Perform immediate sync when active channel, user or role changes (only if WS is not open)
+  useEffect(() => {
+    if (hasMounted && (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN)) {
+      performUnifiedSync(true);
+    }
+  }, [currentUser?.uid, activeChatChannel, userRole, hasMounted]);
 
   // Forward boundary wheel events from ALL scroll-frame-inner sections
   // to the snap container so normal snap navigation is preserved.
@@ -1207,20 +1490,6 @@ export default function CrunchyVerseStage() {
     }
   };
 
-  // Fetch Sparxie messages for active channel
-  async function fetchChatMessages(channelId: string) {
-    try {
-      const res = await fetch(`${backendUrl}/api/chat/channels/${channelId}/messages`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && Array.isArray(data)) {
-          setChatMessagesList(data);
-        }
-      }
-    } catch (err) {
-      console.warn("Gagal fetch chat messages:", err);
-    }
-  };
 
   // Send Chat message
   const handleSendChatMessage = async () => {
@@ -1260,7 +1529,7 @@ export default function CrunchyVerseStage() {
       });
 
       if (res.ok) {
-        fetchChatMessages(activeChatChannel);
+        performUnifiedSync(true);
         
         // Ensure this custom channel is added and saved in database when the user chats in it
         if (activeChatChannel && /^\d{17,20}$/.test(activeChatChannel)) {
@@ -1282,7 +1551,7 @@ export default function CrunchyVerseStage() {
         // If sending to Sparxie chatbot channel, fetch again after 1.1s for bot response
         if (activeChatChannel === "1403255548698300423" || sentText.toLowerCase().includes("sparxie")) {
           setTimeout(() => {
-            fetchChatMessages(activeChatChannel);
+            performUnifiedSync(true);
           }, 1100);
         }
       }
@@ -1291,71 +1560,6 @@ export default function CrunchyVerseStage() {
     }
   };
 
-  // Setup periodic refresh and mount fetch for chat and voice channel members
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchChatMessages(activeChatChannel);
-      fetchVoiceMembers();
-    }, 0);
-    
-    const pollInterval = setInterval(() => {
-      fetchChatMessages(activeChatChannel);
-      fetchVoiceMembers();
-    }, 15000);
-    
-    return () => {
-      clearTimeout(timer);
-      clearInterval(pollInterval);
-    };
-  }, [activeChatChannel, chatChannelsList, backendUrl]);
-
-  // Fetch Discord Stats from Bot Express Server
-  async function fetchStats(silent = false) {
-    if (!silent) setLoading(true);
-    try {
-      const res = await fetch(`${backendUrl}/api/stats`);
-      if (!res.ok) throw new Error("Gagal mengambil data statistik.");
-      const data = await res.json();
-      setStats(data);
-      setIsBotConnected(true);
-      setErrorMsg(null);
-    } catch (err: any) {
-      if (!silent) {
-        setIsBotConnected(false);
-      }
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  };
-
-  // Fetch Broadcast Messages
-  async function fetchBroadcasts(silent = false) {
-    try {
-      const res = await fetch(`${backendUrl}/api/broadcasts`);
-      if (!res.ok) throw new Error("Gagal mengambil data broadcast.");
-      const data = await res.json();
-      if (data && data.length > 0) {
-        setBroadcasts(data);
-      }
-    } catch (err) {}
-  };
-
-  // Fetch TikTok Status
-  async function fetchTikTokStatus(silent = false) {
-    try {
-      const res = await fetch(`${backendUrl}/api/tiktok`);
-      if (!res.ok) throw new Error("Gagal mengambil status TikTok.");
-      const data = await res.json();
-      setTiktok(data);
-      
-      // Update override state locally from API response to stay in sync
-      if (!silent) {
-        setManualOverride(data.manualOverride);
-        setIsLiveOverride(data.isLive);
-        if (data.liveTitle) setLiveTitleOverride(data.liveTitle);
-      }
-    } catch (err) {}
-  };
 
   // Handle Auth Success from child component
   const handleAuthSuccess = (user: any, role: string, name: string, avatarUrl: string | null = null) => {
@@ -1363,6 +1567,19 @@ export default function CrunchyVerseStage() {
     setUserRole(role);
     setDisplayName(name);
     setUserAvatar(avatarUrl);
+    
+    if (user && user.uid) {
+      const cachedProfile = {
+        uid: user.uid,
+        name: name,
+        role: role,
+        avatar: avatarUrl,
+        discordId: user.discordId || (typeof user.uid === "string" && user.uid.startsWith("sim-discord-") ? user.uid.replace("sim-discord-", "") : null),
+        cachedAt: Date.now()
+      };
+      localStorage.setItem(`crunchy_profile_${user.uid}`, JSON.stringify(cachedProfile));
+    }
+
     if (!isFirebaseConfigured || !auth || (user && typeof user.uid === "string" && user.uid.startsWith("sim-"))) {
       localStorage.setItem("crunchy_session", JSON.stringify(user));
     }
@@ -1371,6 +1588,9 @@ export default function CrunchyVerseStage() {
   // Sign out handler
   const handleLogout = async () => {
     localStorage.removeItem("crunchy_session");
+    if (currentUser?.uid) {
+      localStorage.removeItem(`crunchy_profile_${currentUser.uid}`);
+    }
     if (isFirebaseConfigured && auth) {
       try {
         await signOut(auth);
@@ -1768,9 +1988,7 @@ export default function CrunchyVerseStage() {
         setBackendUrl={setBackendUrl} 
         isBotConnected={isBotConnected} 
         onTestConnection={() => {
-          fetchStats();
-          fetchBroadcasts();
-          fetchTikTokStatus();
+          performUnifiedSync(false);
         }} 
       />
 
@@ -1817,9 +2035,7 @@ export default function CrunchyVerseStage() {
               
               <button 
                 onClick={() => {
-                  fetchStats();
-                  fetchBroadcasts();
-                  fetchTikTokStatus();
+                  performUnifiedSync(false);
                 }}
                 disabled={loading}
                 className="bg-neutral-900 border border-neutral-800 hover:border-theater-gold/40 p-2.5 rounded-xl text-neutral-400 hover:text-white transition-all cursor-pointer flex items-center justify-center disabled:opacity-50"
@@ -2090,7 +2306,7 @@ export default function CrunchyVerseStage() {
                         return voiceChannelStatus ? (
                           <div className="flex items-center gap-1.5 mt-1 text-[10px] text-neutral-400 font-medium">
                             <img 
-                              src="https://minecraft.wiki/images/Turtle_Shell_JE1_BE1.png" 
+                              src="/turtle_shell.png" 
                               alt="Track" 
                               className="h-3.5 w-3.5 object-cover shrink-0 animate-pulse" 
                             />
@@ -2122,7 +2338,7 @@ export default function CrunchyVerseStage() {
                   </span>
                   
                   <div className="flex -space-x-2.5 overflow-hidden">
-                    {voiceMembers.map((member, idx) => (
+                    {hasMounted && voiceMembers.slice(0, 5).map((member, idx) => (
                       <div 
                         key={idx}
                         className="h-6 w-6 rounded-full overflow-hidden border-2 border-neutral-950 hover:-translate-y-1 transition-all duration-200 cursor-pointer shadow-sm relative group shrink-0"
@@ -2131,9 +2347,9 @@ export default function CrunchyVerseStage() {
                         <img src={member.avatar} alt={member.name} className="h-full w-full object-cover" />
                       </div>
                     ))}
-                    {voiceTotalCount > voiceMembers.length && (
+                    {hasMounted && (voiceTotalCount > 5 || voiceMembers.length > 5) && (
                       <div className="h-6 w-6 rounded-full bg-neutral-900 border-2 border-neutral-950 flex items-center justify-center text-[8px] font-black text-emerald-400 shrink-0 select-none">
-                        +{voiceTotalCount - voiceMembers.length}
+                        +{voiceTotalCount > 5 ? (voiceTotalCount - 5) : (voiceMembers.length - 5)}
                       </div>
                     )}
                   </div>
@@ -3539,7 +3755,7 @@ export default function CrunchyVerseStage() {
                         <div className="flex items-center gap-2">
                           <div className="h-6 w-6 rounded-lg bg-neutral-900 border border-sky-500/30 flex items-center justify-center shrink-0 overflow-hidden">
                             <img 
-                              src="https://minecraft.wiki/images/Turtle_Shell_JE1_BE1.png" 
+                              src="/turtle_shell.png" 
                               alt="Turtle Shell" 
                               className="h-4.5 w-4.5 object-cover animate-pulse" 
                             />
@@ -3568,7 +3784,7 @@ export default function CrunchyVerseStage() {
 
                       {/* Vertically stacked list */}
                       <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-sky-500/20">
-                        {voiceMembers.map((member: any, mIdx) => {
+                        {hasMounted && voiceMembers.slice(0, 6).map((member: any, mIdx) => {
                           const isSpeaking = member.isSpeaking;
                           const isMuted = member.isMuted;
                           const isDeafened = member.isDeafened;
@@ -3668,6 +3884,12 @@ export default function CrunchyVerseStage() {
                             </div>
                           );
                         })}
+                        {hasMounted && voiceMembers.length > 6 && (
+                          <div className="flex items-center gap-2 p-2 px-3.5 rounded-xl border border-neutral-900 bg-neutral-950/20 text-[9px] text-neutral-500 font-bold select-none">
+                            <Users size={12} className="text-neutral-600 shrink-0" />
+                            <span>+ {voiceMembers.length - 6} Anggota Suara lainnya...</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -3740,6 +3962,8 @@ export default function CrunchyVerseStage() {
             userRole={userRole}
             onScrollToLobby={scrollToStage}
             backendUrl={backendUrl}
+            syncData={syncGameData}
+            onTriggerSync={triggerSyncRefresh}
           />
         )}
       </section>

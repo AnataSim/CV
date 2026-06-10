@@ -306,6 +306,426 @@ app.use(decodePayload); // Decode obfuscated payloads
 // Health check endpoint
 app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
 
+// Helper to gather sync status data in parallel
+async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
+  const response = {};
+
+  try {
+    const promises = [];
+
+    // 1. Stats (Gathers Discord server statistics)
+    promises.push((async () => {
+      const cacheKey = 'api:stats';
+      let statsData = cache.get(cacheKey);
+      if (!statsData) {
+        const mockStats = {
+          totalMembers: 1337,
+          totalKerupuk: 420,
+          totalKeripik: 690,
+          online: 245,
+          idle: 62,
+          dnd: 38,
+          offline: 992,
+          mode: "Simulation (Bot Offline)"
+        };
+        if (!isDiscordReady || !client || !GUILD_ID) {
+          statsData = mockStats;
+        } else {
+          try {
+            const guild = await client.guilds.fetch(GUILD_ID);
+            if (!guild) {
+              statsData = { ...mockStats, mode: "Simulation (Guild Not Found)" };
+            } else {
+              const totalMembers = guild.memberCount;
+              const roleKerupukKey = process.env.ROLE_KERUPUK || 'Kerupuk';
+              const roleKeripikKey = process.env.ROLE_KERIPIK || 'Keripik';
+              const roleKerupuk = guild.roles.cache.find(r => r.id === roleKerupukKey || r.name.toLowerCase() === roleKerupukKey.toLowerCase());
+              const roleKeripik = guild.roles.cache.find(r => r.id === roleKeripikKey || r.name.toLowerCase() === roleKeripikKey.toLowerCase());
+              const totalKerupuk = roleKerupuk ? roleKerupuk.members.size : 0;
+              const totalKeripik = roleKeripik ? roleKeripik.members.size : 0;
+              let online = 0, idle = 0, dnd = 0, offline = 0;
+              let hasPresences = false;
+              guild.members.cache.forEach(member => {
+                if (member.presence) {
+                  hasPresences = true;
+                  const status = member.presence.status;
+                  if (status === 'online') online++;
+                  else if (status === 'idle') idle++;
+                  else if (status === 'dnd') dnd++;
+                }
+              });
+              if (hasPresences) {
+                offline = totalMembers - (online + idle + dnd);
+              } else {
+                const randomFactor = () => Math.floor(Math.random() * 6) - 3;
+                online = Math.floor(totalMembers * 0.18) + randomFactor();
+                idle = Math.floor(totalMembers * 0.05) + randomFactor();
+                dnd = Math.floor(totalMembers * 0.03) + randomFactor();
+                offline = totalMembers - (online + idle + dnd);
+              }
+              const finalKerupuk = totalKerupuk || Math.floor(totalMembers * 0.31);
+              const finalKeripik = totalKeripik || Math.floor(totalMembers * 0.52);
+              statsData = {
+                totalMembers,
+                totalKerupuk: finalKerupuk,
+                totalKeripik: finalKeripik,
+                online,
+                idle,
+                dnd,
+                offline,
+                mode: "Live Discord Connection"
+              };
+              cache.set(cacheKey, statsData, 60);
+            }
+          } catch (e) {
+            statsData = { ...mockStats, mode: `Simulation (Error: ${e.message})` };
+          }
+        }
+      }
+      response.stats = statsData;
+    })());
+
+    // 2. Broadcasts
+    promises.push((async () => {
+      const cacheKey = 'api:broadcasts';
+      let broadcastsData = cache.get(cacheKey);
+      if (!broadcastsData) {
+        const mockBroadcasts = [
+          {
+            id: "b1",
+            content: "🎪 **PERTUNJUKAN AKBAR RESMI DIMULAI!** \n\nHalo para Anomaly sekalian! Malam ini tirai CrunchyVerse resmi dibuka lebar. Persiapkan tempat duduk Anda di barisan terdepan! Kami menghadirkan panggung interaktif baru ini khusus untuk Anda semua. \n\nBagikan keseruan ini ke teman-teman dan dapatkan role eksklusif malam ini!",
+            author: "Pimpinan Produksi",
+            authorAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=stage-manager",
+            timestamp: "Hari Ini pukul 08:30",
+            imageUrl: "/theater_stage_bg.png"
+          },
+          {
+            id: "b2",
+            content: "🍿 **DIVISI KERUPUK & KERIPIK BERTEMPUR!** \n\nPertarungan sengit antara sekte Kerupuk gurih melawan sekte Keripik renyah akan dimulai di panggung koloseum suara malam ini pukul 20.00 WIB. Siapakah yang akan membawa pulang mahkota garing termegah? Pilih kubu Anda sekarang di channel #roles!",
+            author: "Sutradara Event",
+            authorAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=director",
+            timestamp: "Kemarin pukul 18:15",
+            imageUrl: null
+          }
+        ];
+        if (!isDiscordReady || !client || !GUILD_ID) {
+          broadcastsData = mockBroadcasts;
+        } else {
+          try {
+            const guild = await client.guilds.fetch(GUILD_ID);
+            if (!guild) {
+              broadcastsData = mockBroadcasts;
+            } else {
+              const channelKey = process.env.BROADCAST_CHANNEL || 'broadcast';
+              let channel = guild.channels.cache.find(c =>
+                c.id === channelKey ||
+                (c.name.toLowerCase() === channelKey.toLowerCase() && c.type === ChannelType.GuildText)
+              );
+              if (!channel) {
+                try {
+                  const channels = await guild.channels.fetch();
+                  channel = channels.find(c =>
+                    c.id === channelKey ||
+                    (c.name.toLowerCase() === channelKey.toLowerCase() && c.type === ChannelType.GuildText)
+                  );
+                } catch (e) {}
+              }
+              if (channel) {
+                const messages = await channel.messages.fetch({ limit: 10 });
+                const list = [];
+                for (const [, msg] of messages) {
+                  if (msg.content || msg.attachments.size > 0) {
+                    const resolvedContent = await resolveMentions(msg.content, guild);
+                    const attachment = msg.attachments.first();
+                    const imageUrl = (attachment && attachment.contentType?.startsWith('image/')) ? attachment.url : null;
+                    const cleanTimestamp = `Hari Ini pukul ${msg.createdAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
+                    list.push({
+                      id: msg.id,
+                      content: resolvedContent || 'Lampiran Media',
+                      author: msg.member?.displayName || msg.author.globalName || msg.author.username,
+                      authorAvatar: msg.author.displayAvatarURL({ extension: 'webp', size: 64 }) || null,
+                      timestamp: cleanTimestamp,
+                      imageUrl
+                    });
+                  }
+                }
+                broadcastsData = list.length > 0 ? list : mockBroadcasts;
+              } else {
+                broadcastsData = mockBroadcasts;
+              }
+              cache.set(cacheKey, broadcastsData, 300);
+            }
+          } catch (e) {
+            broadcastsData = mockBroadcasts;
+          }
+        }
+      }
+      response.broadcasts = broadcastsData;
+    })());
+
+    // 3. TikTok Status
+    promises.push((async () => {
+      const cacheKey = 'api:tiktok';
+      let tiktokData = cache.get(cacheKey);
+      if (!tiktokData) {
+        tiktokData = tiktokState;
+        cache.set(cacheKey, tiktokData, 30);
+      }
+      response.tiktok = tiktokData;
+    })());
+
+    // 4. VoiceAFK Status
+    promises.push((async () => {
+      let guilds = [];
+      let inviteLink = null;
+      if (client && isDiscordReady) {
+        inviteLink = `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=3145728&scope=bot`;
+        try {
+          guilds = client.guilds.cache.map(g => {
+            const voiceChannels = g.channels.cache
+              .filter(c => c.type === ChannelType.GuildVoice)
+              .map(c => ({ id: c.id, name: c.name }));
+            return { id: g.id, name: g.name, icon: g.iconURL(), channels: voiceChannels };
+          });
+        } catch (err) {}
+      }
+      response.voiceAfkStatus = {
+        ...connectionState,
+        guilds,
+        inviteLink
+      };
+    })());
+
+    // 5. User Data & Deck (if uid is provided)
+    if (uid) {
+      promises.push((async () => {
+        let discordId = null;
+        const match = uid.match(/\d{17,20}/);
+        if (match) discordId = match[0];
+
+        let liveCv = 0;
+        let hasLiveCv = false;
+        if (isDiscordReady && client && discordId) {
+          try {
+            const guild = await client.guilds.fetch(GUILD_ID);
+            const member = await guild.members.fetch(discordId).catch(() => null);
+            if (member) {
+              const roles = await guild.roles.fetch();
+              const roleCvMap = new Map();
+              roles.forEach(role => {
+                if (role.name !== "@everyone" && !role.managed && !EXCLUDED_CV_ROLE_IDS.includes(role.id)) {
+                  const cvMatch = role.name.match(/(?:CV\$|CV|VR|Value\s*Role)\s*([\d.,\s]+)/i);
+                  if (cvMatch) {
+                    const cvStr = cvMatch[1].trim();
+                    const cvVal = parseFloat(cvStr.replace(/[.,\s]/g, "").replace(",", ".")) || 0;
+                    roleCvMap.set(role.id, cvVal);
+                  }
+                }
+              });
+              member.roles.cache.forEach(role => {
+                const roleCv = roleCvMap.get(role.id);
+                if (roleCv) liveCv += roleCv;
+              });
+              hasLiveCv = true;
+            }
+          } catch (err) {}
+        }
+
+        const localUsers = loadLocalUsers();
+        const userData = localUsers[uid] || { uid, name: "Pemain Teater", cv: 0, points: 0 };
+        if (hasLiveCv) {
+          userData.cv = liveCv;
+          userData.points = liveCv;
+          localUsers[uid] = userData;
+          saveLocalUsers(localUsers);
+        }
+        response.user = userData;
+      })());
+
+      promises.push((async () => {
+        const decks = loadLocalDecks();
+        response.deck = decks[uid] || { uid, dealt: false, cards: [], statuses: {} };
+      })());
+    }
+
+    // 6. Chat Messages (if chatChannelId is provided)
+    if (chatChannelId) {
+      promises.push((async () => {
+        if (!chatMessages[chatChannelId]) {
+          chatMessages[chatChannelId] = [
+            { id: "msg-init-" + Date.now(), content: `Selamat datang di saluran #${chatChannelId}! Mulai obrolan seru di sini. ✨`, author: "Sparxie Bot", authorAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie", timestamp: "Hari Ini", isBot: true }
+          ];
+        }
+        response.chatMessages = chatMessages[chatChannelId];
+      })());
+    }
+
+    // 7. Voice Channel Members (using voiceChannelId if provided, else default or active connection)
+    promises.push((async () => {
+      const vChanId = voiceChannelId || connectionState.channelId || "1435053596742914160";
+      const fallbackMembers = [
+        { name: "[AFK] T0ddei", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=toddei" },
+        { name: "Dari Kontak Anda", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=kontak" }
+      ];
+
+      if (!isDiscordReady || !client) {
+        response.voiceChannel = {
+          name: vChanId === "1435053596742914160" ? "Silence is Golden" : "STUDY ROOM",
+          status: "[05:14] • I Always Wanna Die (Sometimes) - The 1975",
+          members: fallbackMembers,
+          count: fallbackMembers.length
+        };
+        return;
+      }
+
+      try {
+        const channel = await client.channels.fetch(vChanId).catch(() => null);
+        if (channel && channel.type === ChannelType.GuildVoice) {
+          let detectedStatus = null;
+          if (vChanId === '1435053596742914160' && jockieMusicStatus) {
+            const timeDiff = Date.now() - lastJockieTrackTime;
+            if (timeDiff < 1800000) { // 30 mins
+              const elapsedTotalSec = Math.floor(timeDiff / 1000);
+              const elapsedMin = Math.floor(elapsedTotalSec / 60);
+              const elapsedSec = (elapsedTotalSec % 60).toString().padStart(2, '0');
+              const statusParts = jockieMusicStatus.split('] • ');
+              const trackInfo = statusParts[1] || statusParts[0];
+              detectedStatus = `[${elapsedMin}:${elapsedSec}] • ${trackInfo}`;
+              if (lastJockieMessage) {
+                lastJockieMessage.react('✅').catch(() => {});
+                lastJockieMessage = null;
+              }
+            }
+          }
+
+          if (!detectedStatus) {
+            for (const [, m] of channel.members) {
+              try {
+                const presence = m.presence;
+                if (presence && presence.activities && presence.activities.length > 0) {
+                  const spotify = presence.activities.find(act => act.name === 'Spotify');
+                  if (spotify) {
+                    let progressStr = "";
+                    if (spotify.timestamps && spotify.timestamps.start) {
+                      const elapsedMs = Date.now() - spotify.timestamps.start.getTime();
+                      const elapsedMin = Math.floor(elapsedMs / 60000);
+                      const elapsedSec = Math.floor((elapsedMs % 60000) / 1000).toString().padStart(2, '0');
+                      progressStr = `[${elapsedMin}:${elapsedSec}] • `;
+                    }
+                    detectedStatus = `${progressStr}${spotify.details || 'Unknown Track'} - ${spotify.state || 'Unknown Artist'}`;
+                    break;
+                  }
+                }
+              } catch (e) {}
+            }
+          }
+
+          if (!detectedStatus) {
+            for (const [, m] of channel.members) {
+              try {
+                const presence = m.presence;
+                if (presence && presence.activities && presence.activities.length > 0) {
+                  const custom = presence.activities.find(act => act.type === 4);
+                  if (custom && custom.state) {
+                    detectedStatus = custom.state;
+                    break;
+                  }
+                  const listening = presence.activities.find(act => act.type === 2);
+                  if (listening) {
+                    detectedStatus = `${listening.details || listening.name}${listening.state ? ` - ${listening.state}` : ''}`;
+                    break;
+                  }
+                }
+              } catch (e) {}
+            }
+          }
+
+          const finalStatus = detectedStatus || (typeof channel.status === 'string' && channel.status ? channel.status : "[05:14] • I Always Wanna Die (Sometimes) - The 1975");
+          const activeMembers = channel.members.map(m => {
+            const isMuted = m.voice.selfMute || m.voice.serverMute;
+            const isDeafened = m.voice.selfDeaf || m.voice.serverDeaf;
+            const isSpeaking = !isMuted && !isDeafened && Math.random() < 0.25;
+            let roleValueSymbol = null;
+            try {
+              const highestRole = m.roles.cache
+                .filter(r => r.name !== "@everyone" && !r.managed)
+                .sort((a, b) => b.position - a.position)
+                .first();
+              if (highestRole) {
+                const cvMatch = highestRole.name.match(/(?:CV\$|CV|VR|Value\s*Role)\s*([\d.,\s]+)/i);
+                if (cvMatch) {
+                  roleValueSymbol = `${cvMatch[1].trim()} 🌟`;
+                }
+              }
+            } catch (roleErr) {}
+
+            return {
+              name: m.displayName || m.user.globalName || m.user.username,
+              avatar: m.user.displayAvatarURL({ extension: 'webp', size: 64 }) || null,
+              isMuted,
+              isDeafened,
+              isSpeaking,
+              isLive: m.voice.selfVideo || m.voice.streaming,
+              roleValueSymbol
+            };
+          });
+
+          response.voiceChannel = {
+            name: channel.name,
+            status: finalStatus,
+            members: activeMembers,
+            count: activeMembers.length
+          };
+        } else {
+          response.voiceChannel = {
+            name: vChanId === "1435053596742914160" ? "Silence is Golden" : "STUDY ROOM",
+            status: "[05:14] • I Always Wanna Die (Sometimes) - The 1975",
+            members: fallbackMembers,
+            count: fallbackMembers.length
+          };
+        }
+      } catch (err) {
+        response.voiceChannel = {
+          name: vChanId === "1435053596742914160" ? "Silence is Golden" : "STUDY ROOM",
+          status: "[05:14] • I Always Wanna Die (Sometimes) - The 1975",
+          members: fallbackMembers,
+          count: fallbackMembers.length
+        };
+      }
+    })());
+
+    // 8. Submissions (if isAdmin is true)
+    if (isAdmin) {
+      promises.push((async () => {
+        const cacheKey = `api:submissions:all`;
+        let subs = cache.get(cacheKey);
+        if (!subs) {
+          subs = loadLocalSubmissions();
+          cache.set(cacheKey, subs, 15);
+        }
+        response.submissions = subs;
+      })());
+    }
+
+    // Wait for all queries to resolve
+    await Promise.all(promises);
+    return response;
+  } catch (err) {
+    console.error("❌ Error in gatherSyncData:", err.message);
+    throw err;
+  }
+}
+
+// POST /api/sync - Unified status sync endpoint to group multiple requests
+app.post('/api/sync', async (req, res) => {
+  try {
+    const response = await gatherSyncData(req.body);
+    res.json(response);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 
 // Local JSON Database Helpers for offline fallback syncing
@@ -4006,7 +4426,14 @@ app.post('/api/chat/channels/:channelId/messages', requireClientToken, async (re
 
       chatMessages[channelId].push(botMsg);
       console.log(`🤖 [Sparxie Chatbot] Menjawab otomatis di channel ${channelId}: "${quote}"`);
+      if (global.broadcastWsUpdate) {
+        global.broadcastWsUpdate('chat', channelId);
+      }
     }, 1000);
+  }
+
+  if (global.broadcastWsUpdate) {
+    global.broadcastWsUpdate('chat', channelId);
   }
 
   res.json({ success: true, message: newMsg });
@@ -5182,10 +5609,75 @@ app.get('/api/voice-afk/keepalive', async (req, res) => {
 setInterval(runMetadataSyncCycle, 900000);
 setTimeout(runMetadataSyncCycle, 15000);
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n======================================================`);
   console.log(`🎪 Server API CrunchyVerse Bot berjalan dengan sukses!`);
   console.log(`📡 URL API Lokal: http://localhost:${PORT}`);
   console.log(`🖥️  Endpoint Stats: http://localhost:${PORT}/api/stats`);
   console.log(`======================================================\n`);
 });
+
+// ==============================================================================
+// ========== WEBSOCKET SYNC SERVER (PENGGANTI HTTP POLLING) ===================
+// ==============================================================================
+
+const { WebSocketServer } = require('ws');
+const wss = new WebSocketServer({ server });
+const wsClients = new Map(); // ws -> clientState { uid, chatChannelId, voiceChannelId, isAdmin }
+
+global.wsClients = wsClients;
+global.sendWsSyncPayload = async function(ws, state) {
+  if (ws.readyState !== 1) return;
+  try {
+    const data = await gatherSyncData(state);
+    ws.send(JSON.stringify({ action: 'syncResponse', data }));
+  } catch (err) {
+    console.error("❌ Error sending WS sync payload:", err.message);
+  }
+};
+
+global.broadcastWsUpdate = function(type, key) {
+  for (const [ws, state] of wsClients.entries()) {
+    if (ws.readyState === 1) {
+      let shouldSend = false;
+      if (type === 'global') shouldSend = true;
+      else if (type === 'chat' && state.chatChannelId === key) shouldSend = true;
+      else if (type === 'user' && state.uid === key) shouldSend = true;
+      else if (type === 'admin' && state.isAdmin) shouldSend = true;
+      
+      if (shouldSend) {
+        global.sendWsSyncPayload(ws, state).catch(() => {});
+      }
+    }
+  }
+};
+
+wss.on('connection', (ws) => {
+  wsClients.set(ws, { uid: null, chatChannelId: null, voiceChannelId: null, isAdmin: false });
+  
+  ws.on('message', async (message) => {
+    try {
+      const payload = JSON.parse(message);
+      if (payload.action === 'sync') {
+        const state = wsClients.get(ws);
+        if (state) {
+          Object.assign(state, payload.data);
+          await global.sendWsSyncPayload(ws, state);
+        }
+      }
+    } catch (err) {
+      // ignore
+    }
+  });
+  
+  ws.on('close', () => {
+    wsClients.delete(ws);
+  });
+});
+
+// Periodic background sync update pushed every 15s to all active WS clients
+setInterval(() => {
+  for (const [ws, state] of wsClients.entries()) {
+    global.sendWsSyncPayload(ws, state).catch(() => {});
+  }
+}, 15000);

@@ -17,8 +17,8 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-inline/eval needed for Next.js dev
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://api.dicebear.com https://cdn.discordapp.com https://p16-webcast.tiktokcdn.com https://p19-webcast.tiktokcdn.com https://*.tiktokcdn.com",
-      "connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com wss://*.firebaseio.com http://localhost:3001 http://127.0.0.1:3001 https://crunchyverse-backend.onrender.com",
+      "img-src 'self' data: blob: https://api.dicebear.com https://cdn.discordapp.com https://p16-webcast.tiktokcdn.com https://p19-webcast.tiktokcdn.com https://*.tiktokcdn.com https://minecraft.wiki https://*.minecraft.wiki",
+      "connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com wss://*.firebaseio.com http://localhost:3001 http://127.0.0.1:3001 ws://localhost:3001 ws://127.0.0.1:3001 wss://crunchyverse-backend.onrender.com https://crunchyverse-backend.onrender.com",
       "media-src 'self' blob:",
       "frame-ancestors 'none'",
     ].join("; ")

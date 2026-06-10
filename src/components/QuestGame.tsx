@@ -89,6 +89,14 @@ interface QuestGameProps {
   userRole: string | null;
   onScrollToLobby?: () => void;
   backendUrl?: string;
+  syncData?: {
+    userCv: number;
+    dealtQuests: Quest[];
+    dealt: boolean;
+    cardStatuses: Record<string, "active" | "pending" | "Completed" | "Denied">;
+    allSubmissions: any[];
+  };
+  onTriggerSync?: () => void;
 }
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 1500): Promise<T> {
@@ -104,7 +112,7 @@ const isUserAdmin = (role: string | null) => {
   return role === "Volunteer Theater" || role === "Ketua Kerupuk" || role === "Ketua Keripik";
 };
 
-export default function QuestGame({ currentUser, displayName, userRole, onScrollToLobby, backendUrl }: QuestGameProps) {
+export default function QuestGame({ currentUser, displayName, userRole, onScrollToLobby, backendUrl, syncData, onTriggerSync }: QuestGameProps) {
   const BACKEND_URL = backendUrl || (typeof window !== "undefined" ? localStorage.getItem("crunchy_backend_url") : null) || process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:3001";
   const [gameState, setGameState] = useState<"menu" | "playing">("menu");
   const [timeMode, setTimeMode] = useState<"auto" | "morning" | "sunset" | "night">("auto");
@@ -367,29 +375,61 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
     }
   };
 
+  // Sync state with parent props
+  useEffect(() => {
+    if (syncData) {
+      setUserCv(syncData.userCv);
+      setDealtQuests(syncData.dealtQuests);
+      setDealt(syncData.dealt);
+      setCardStatuses(syncData.cardStatuses);
+      setAllSubmissions(syncData.allSubmissions);
+
+      // Save to LocalStorage as cache
+      if (currentUser?.uid) {
+        const key = `crunchyverse_user_deck_${currentUser.uid}`;
+        localStorage.setItem(key, JSON.stringify({
+          uid: currentUser.uid,
+          dealt: syncData.dealt,
+          cards: syncData.dealtQuests,
+          statuses: syncData.cardStatuses
+        }));
+      }
+
+      setCardFlipped(prev => {
+        const nextFlips = { ...prev };
+        (syncData.dealtQuests || []).forEach((q: Quest) => {
+          if (syncData.cardStatuses[q.id] && syncData.cardStatuses[q.id] !== "active") {
+            nextFlips[q.id] = true;
+          }
+        });
+        return nextFlips;
+      });
+    }
+  }, [syncData, currentUser]);
+
   // Real-time synchronization of player's CV points from Bot API
   useEffect(() => {
-    if (!currentUser?.uid) return;
+    if (!currentUser?.uid || syncData) return;
     fetchCv();
     const interval = setInterval(fetchCv, 15000); // Polling setiap 15 detik
     return () => clearInterval(interval);
-  }, [currentUser]);
+  }, [currentUser, syncData]);
 
   // Real-time synchronization of player's Quest Deck (drawn cards, status)
   useEffect(() => {
-    if (!currentUser?.uid) return;
+    if (!currentUser?.uid || syncData) return;
     fetchDeckFromApi();
     const interval = setInterval(fetchDeckFromApi, 10000); // Polling setiap 10 detik
     return () => clearInterval(interval);
-  }, [currentUser]);
+  }, [currentUser, syncData]);
 
   // Sync All Submissions for Admin Progress Panel
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!isAdmin || syncData) return;
     fetchSubmissionsFromApi();
     const interval = setInterval(fetchSubmissionsFromApi, 15000); // Polling setiap 15 detik
     return () => clearInterval(interval);
-  }, [isAdmin]);
+  }, [isAdmin, syncData]);
 
   // Sync Quests Database
   useEffect(() => {
@@ -646,7 +686,8 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
           setMediaFile(null);
           
           // Trigger immediate data refresh
-          fetchDeckFromApi();
+          if (onTriggerSync) onTriggerSync();
+          else fetchDeckFromApi();
           
           setTimeout(() => {
             setActiveQuestId(null);
@@ -739,7 +780,8 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
         }
       }
       alert(`✅ Bukti submission berhasil disetujui!${data.roleAssigned ? ` Role "${data.roleName}" telah diberikan ke Discord.` : ""}`);
-      fetchSubmissionsFromApi();
+      if (onTriggerSync) onTriggerSync();
+      else fetchSubmissionsFromApi();
     } catch (err: any) {
       alert("❌ Gagal menyetujui: " + err.message);
     }
@@ -789,7 +831,8 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
           }
         }
         alert("❌ Bukti submission berhasil ditolak dan dihapus.");
-        fetchSubmissionsFromApi();
+        if (onTriggerSync) onTriggerSync();
+        else fetchSubmissionsFromApi();
       } catch (err: any) {
         alert("❌ Gagal menolak: " + err.message);
       }
@@ -933,7 +976,8 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
     setCardFlipped(flips);
     setActiveQuestId(null);
     setDealt(true);
-    fetchDeckFromApi();
+    if (onTriggerSync) onTriggerSync();
+    else fetchDeckFromApi();
   };
 
   // Click card handler
