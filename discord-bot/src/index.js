@@ -1511,15 +1511,63 @@ function initializeBot(token) {
       // ===== VOICE WATCHDOG: Auto-reconnect setiap 3 menit =====
       const VOICE_WATCHDOG_INTERVAL_MS = 3 * 60 * 1000;
       setInterval(async () => {
+        // 1. Watchdog untuk Main Bot (Sparxie)
         const savedCfg = loadVoiceAfkConfig();
-        if (!savedCfg || !savedCfg.isConnected || !savedCfg.guildId || !savedCfg.channelId) return;
-        if (connectionState.isConnectedToVoice) return;
-        addVoiceAfkLog(`[Watchdog] Voice channel terputus. Mencoba reconnect ke channel ${savedCfg.channelId}...`, 'warning');
-        try {
-          await connectToVoiceChannel(savedCfg.guildId, savedCfg.channelId);
-          addVoiceAfkLog(`[Watchdog] ✅ Berhasil reconnect ke voice channel ${savedCfg.channelId}!`, 'success');
-        } catch (err) {
-          addVoiceAfkLog(`[Watchdog] ❌ Gagal reconnect: ${err.message}. Mencoba lagi dalam 3 menit.`, 'error');
+        if (savedCfg && savedCfg.isConnected && savedCfg.guildId && savedCfg.channelId) {
+          if (!connectionState.isConnectedToVoice) {
+            addVoiceAfkLog(`[Watchdog] Main bot terputus. Mencoba reconnect ke channel ${savedCfg.channelId}...`, 'warning');
+            try {
+              await connectToVoiceChannel(savedCfg.guildId, savedCfg.channelId);
+              addVoiceAfkLog(`[Watchdog] ✅ Berhasil reconnect main bot ke voice channel ${savedCfg.channelId}!`, 'success');
+            } catch (err) {
+              addVoiceAfkLog(`[Watchdog] ❌ Gagal reconnect main bot: ${err.message}. Mencoba lagi dalam 3 menit.`, 'error');
+            }
+          }
+        }
+
+        // 2. Watchdog untuk Ghost Mode (Selfbot Sim)
+        const ghostCfg = loadGhostConfig();
+        if (ghostCfg && ghostCfg.isEnabled && ghostCfg.guildId && ghostCfg.channelId) {
+          // Jika GHOST_USER_TOKEN diset tapi manager belum ready/tidak terhubung
+          if (GHOST_USER_TOKEN && (!ghostManager || !ghostManager.isReady)) {
+            console.log('[Watchdog Ghost] Ghost manager tidak ready/terputus. Mencoba inisialisasi/reconnect...');
+            try {
+              if (!ghostManager) {
+                ghostManager = new SelfbotManager(GHOST_USER_TOKEN);
+              }
+              await ghostManager.connect();
+              console.log('[Watchdog Ghost] ✅ Berhasil mengkoneksikan kembali ghost manager ke Gateway.');
+            } catch (err) {
+              console.error('[Watchdog Ghost] ❌ Gagal inisialisasi/reconnect ghost manager:', err.message);
+            }
+          }
+
+          if (ghostManager && ghostManager.isReady) {
+            // Cek apakah akun ghost benar-benar ada di voice channel
+            let isGhostInVoice = false;
+            try {
+              const guild = client.guilds.cache.get(ghostCfg.guildId);
+              const ghostMember = guild?.members.cache.get(SIM_DISCORD_ID) || await guild?.members.fetch(SIM_DISCORD_ID).catch(() => null);
+              isGhostInVoice = ghostMember?.voice?.channelId === ghostCfg.channelId;
+            } catch (e) {
+              console.warn('[Watchdog Ghost] Gagal cek status voice ghost:', e.message);
+            }
+
+            if (!isGhostInVoice) {
+              console.log(`[Watchdog Ghost] Akun ghost terdeteksi keluar dari channel ${ghostCfg.channelId}. Mencoba menyambung kembali...`);
+              try {
+                await ghostManager.joinVoice(ghostCfg.guildId, ghostCfg.channelId);
+                if (ghostCfg.nickname) {
+                  await new Promise(r => setTimeout(r, 1500));
+                  await ghostManager.setNickname(ghostCfg.guildId, ghostCfg.nickname).catch(() => {});
+                }
+                console.log('[Watchdog Ghost] ✅ Berhasil reconnect akun ghost ke voice channel!');
+                await updateGhostControlMessageStatus(true).catch(() => {});
+              } catch (err) {
+                console.error('[Watchdog Ghost] ❌ Gagal reconnect akun ghost:', err.message);
+              }
+            }
+          }
         }
       }, VOICE_WATCHDOG_INTERVAL_MS);
       console.log('⏰ [VoiceWatchdog] Auto-reconnect watchdog aktif (interval: 3 menit).');
@@ -5681,3 +5729,12 @@ setInterval(() => {
     global.sendWsSyncPayload(ws, state).catch(() => {});
   }
 }, 15000);
+
+// Global exception and rejection handler to prevent crashes
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Anti-Crash] Unhandled Promise Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err, origin) => {
+  console.error('[Anti-Crash] Uncaught Exception:', err, 'origin:', origin);
+});
