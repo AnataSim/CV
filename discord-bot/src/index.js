@@ -3428,6 +3428,14 @@ app.post('/api/volunteerables', requireClientToken, async (req, res) => {
   // Proactive Firestore update (wrapped in try-catch)
   if (db) {
     try {
+      // Simpan ke collection volunteerables
+      await withTimeout(setDoc(doc(db, "volunteerables", discordId), {
+        discordId,
+        addedAt: new Date().toISOString(),
+        addedBy: addedBy || "Sim"
+      }));
+
+      // Update role di collection users
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("discordId", "==", discordId));
       const querySnapshot = await withTimeout(getDocs(q));
@@ -3437,7 +3445,7 @@ app.post('/api/volunteerables', requireClientToken, async (req, res) => {
         }));
       }
     } catch (e) {
-      console.warn("Firestore unreachable saat update role volunteer:", e.message);
+      console.warn("Firestore unreachable saat update role/simpan volunteer:", e.message);
     }
   }
 
@@ -3472,18 +3480,23 @@ app.delete('/api/volunteerables/:id', requireClientToken, async (req, res) => {
   }
 
   // Proactive Firestore update (wrapped in try-catch)
-  if (db && id !== "661135501226672129" && id !== "1410583272173600819") {
+  if (db) {
     try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("discordId", "==", id));
-      const querySnapshot = await withTimeout(getDocs(q));
-      for (const userDoc of querySnapshot.docs) {
-        await withTimeout(updateDoc(doc(db, "users", userDoc.id), {
-          role: "Penonton Teater"
-        }));
+      // Hapus dari collection volunteerables
+      await withTimeout(deleteDoc(doc(db, "volunteerables", id)));
+
+      if (id !== "661135501226672129" && id !== "1410583272173600819") {
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("discordId", "==", id));
+        const querySnapshot = await withTimeout(getDocs(q));
+        for (const userDoc of querySnapshot.docs) {
+          await withTimeout(updateDoc(doc(db, "users", userDoc.id), {
+            role: "Penonton Teater"
+          }));
+        }
       }
     } catch (e) {
-      console.warn("Firestore unreachable saat revert role volunteer:", e.message);
+      console.warn("Firestore unreachable saat revert role/hapus volunteer:", e.message);
     }
   }
 
@@ -4973,7 +4986,7 @@ app.get('/api/quests', (req, res) => {
 });
 
 // POST /api/quests
-app.post('/api/quests', requireClientToken, (req, res) => {
+app.post('/api/quests', requireClientToken, async (req, res) => {
   const { akt, title, description, difficulty, points, roleId, roleName, roleColor, roleCv } = req.body;
   if (!title || !description) {
     return res.status(400).json({ error: "Missing title or description" });
@@ -4993,30 +5006,80 @@ app.post('/api/quests', requireClientToken, (req, res) => {
   };
   quests.push(newQuest);
   saveLocalQuests(quests);
+
+  // Sinkronisasi ke Firestore langsung dari backend
+  if (db) {
+    try {
+      await withTimeout(setDoc(doc(db, "quests", newQuest.id), newQuest));
+      console.log(`🔥 [Firebase] Backend sukses menyimpan quest baru ${newQuest.id} ke Firestore.`);
+    } catch (fsErr) {
+      console.warn("⚠️ [Firebase] Backend gagal menyimpan quest baru ke Firestore:", fsErr.message);
+    }
+  }
+
   cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true, quest: newQuest });
 });
 
 // DELETE /api/quests/:id
-app.delete('/api/quests/:id', requireClientToken, (req, res) => {
+app.delete('/api/quests/:id', requireClientToken, async (req, res) => {
   const { id } = req.params;
   const quests = loadLocalQuests();
   const filtered = quests.filter(q => q.id !== id);
   saveLocalQuests(filtered);
+
+  // Sinkronisasi ke Firestore langsung dari backend
+  if (db) {
+    try {
+      await withTimeout(deleteDoc(doc(db, "quests", id)));
+      console.log(`🔥 [Firebase] Backend sukses menghapus quest ${id} dari Firestore.`);
+    } catch (fsErr) {
+      console.warn("⚠️ [Firebase] Backend gagal menghapus quest dari Firestore:", fsErr.message);
+    }
+  }
+
   cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true });
 });
 
 // POST /api/quests/load-defaults
-app.post('/api/quests/load-defaults', requireClientToken, (req, res) => {
+app.post('/api/quests/load-defaults', requireClientToken, async (req, res) => {
   saveLocalQuests(DEFAULT_QUESTS);
+
+  // Sinkronisasi ke Firestore langsung dari backend
+  if (db) {
+    try {
+      for (const quest of DEFAULT_QUESTS) {
+        await withTimeout(setDoc(doc(db, "quests", quest.id), quest));
+      }
+      console.log(`🔥 [Firebase] Backend sukses memuat default quests ke Firestore.`);
+    } catch (fsErr) {
+      console.warn("⚠️ [Firebase] Backend gagal memuat default quests ke Firestore:", fsErr.message);
+    }
+  }
+
   cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true, quests: DEFAULT_QUESTS });
 });
 
 // POST /api/quests/delete-all
-app.post('/api/quests/delete-all', requireClientToken, (req, res) => {
+app.post('/api/quests/delete-all', requireClientToken, async (req, res) => {
   saveLocalQuests([]);
+
+  // Sinkronisasi ke Firestore langsung dari backend
+  if (db) {
+    try {
+      const q = collection(db, "quests");
+      const snap = await withTimeout(getDocs(q));
+      for (const d of snap.docs) {
+        await withTimeout(deleteDoc(doc(db, "quests", d.id)));
+      }
+      console.log(`🔥 [Firebase] Backend sukses menghapus semua quests dari Firestore.`);
+    } catch (fsErr) {
+      console.warn("⚠️ [Firebase] Backend gagal menghapus semua quests dari Firestore:", fsErr.message);
+    }
+  }
+
   cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true, quests: [] });
 });

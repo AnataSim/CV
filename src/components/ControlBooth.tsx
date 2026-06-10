@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Sliders, LogOut, Save, Terminal, Volume2, RefreshCw, Trash2, ExternalLink, Activity, X, UserPlus } from "lucide-react";
 import { db, isFirebaseConfigured } from "../lib/firebase";
-import { doc, setDoc, deleteDoc, collection, getDocs, query, where, updateDoc } from "firebase/firestore";
+import { doc, collection, getDocs, query, where } from "firebase/firestore";
 import { signedFetch } from "../lib/api";
 
 interface LogEntry {
@@ -191,28 +191,7 @@ export default function ControlBooth({
         console.warn("Gagal terhubung ke API backend bot untuk tambah volunteer:", err);
       }
 
-      // 2. Write to Firestore if configured
-      if (isFirebaseConfigured && db) {
-        try {
-          await withTimeout(setDoc(doc(db, "volunteerables", cleanId), {
-            discordId: cleanId,
-            addedAt,
-            addedBy
-          }));
-
-          // Proactive update: change role in users collection where discordId === cleanId
-          const usersRef = collection(db, "users");
-          const q = query(usersRef, where("discordId", "==", cleanId));
-          const querySnapshot = await withTimeout(getDocs(q));
-          querySnapshot.forEach(async (userDoc) => {
-            await withTimeout(updateDoc(doc(db, "users", userDoc.id), {
-              role: "Volunteer Theater"
-            }));
-          });
-        } catch (fsErr) {
-          console.warn("Gagal menulis ke Firestore:", fsErr);
-        }
-      }
+      // Firestore write bypassed from client-side for security purposes
 
       // 3. Fallback/simulation write to localStorage if not saved to backend
       if (!savedToBackend && (!isFirebaseConfigured || !db)) {
@@ -268,25 +247,7 @@ export default function ControlBooth({
         console.warn("Gagal terhubung ke API backend bot untuk hapus volunteer:", err);
       }
 
-      // 2. Delete on Firestore if configured
-      if (isFirebaseConfigured && db) {
-        try {
-          await withTimeout(deleteDoc(doc(db, "volunteerables", cleanId)));
-
-          if (cleanId !== "661135501226672129" && cleanId !== "1410583272173600819") {
-            const usersRef = collection(db, "users");
-            const q = query(usersRef, where("discordId", "==", cleanId));
-            const querySnapshot = await withTimeout(getDocs(q));
-            querySnapshot.forEach(async (userDoc) => {
-              await withTimeout(updateDoc(doc(db, "users", userDoc.id), {
-                role: "Penonton Teater"
-              }));
-            });
-          }
-        } catch (fsErr) {
-          console.warn("Gagal menghapus dari Firestore:", fsErr);
-        }
-      }
+      // Firestore delete bypassed from client-side for security purposes
 
       // 3. Fallback/simulation write to localStorage if not saved to backend
       if (!deletedFromBackend && (!isFirebaseConfigured || !db)) {

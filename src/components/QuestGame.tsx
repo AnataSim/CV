@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import { db, isFirebaseConfigured } from "../lib/firebase";
 import { 
-  collection, addDoc, deleteDoc, doc, onSnapshot, query,
-  where, setDoc, getDoc, updateDoc
+  collection, doc, onSnapshot, query,
+  where, getDoc
 } from "firebase/firestore";
 import { signedFetch } from "../lib/api";
 
@@ -488,15 +488,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
       console.warn("⚠️ Gagal menyimpan quest ke Bot API:", err.message);
     }
 
-    let firestoreSuccess = false;
-    if (isFirebaseConfigured && db) {
-      try {
-        await withTimeout(addDoc(collection(db, "quests"), questData));
-        firestoreSuccess = true;
-      } catch (err: any) {
-        console.warn("⚠️ Gagal menyimpan quest ke Firestore:", err.message);
-      }
-    }
+    let firestoreSuccess = apiSuccess;
 
     if (!apiSuccess && !firestoreSuccess) {
       const updated = [...quests, { id: `local-${Date.now()}`, ...questData } as Quest];
@@ -537,15 +529,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
         console.warn("⚠️ Gagal menghapus quest dari Bot API:", err.message);
       }
 
-      let firestoreSuccess = false;
-      if (isFirebaseConfigured && db) {
-        try {
-          await withTimeout(deleteDoc(doc(db, "quests", id)));
-          firestoreSuccess = true;
-        } catch (err: any) {
-          console.warn("⚠️ Gagal menghapus quest dari Firestore:", err.message);
-        }
-      }
+      let firestoreSuccess = apiSuccess;
       fetchQuestsFromApi();
     }
   };
@@ -577,24 +561,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
         console.warn("⚠️ Gagal memuat quest default ke Bot API:", err.message);
       }
 
-      let firestoreSuccess = false;
-      if (isFirebaseConfigured && db) {
-        try {
-          for (const quest of DEFAULT_QUESTS) {
-            const questData = {
-              akt: quest.akt || "Akt I",
-              title: quest.title,
-              description: quest.description,
-              difficulty: quest.difficulty,
-              points: quest.points
-            };
-            await withTimeout(addDoc(collection(db, "quests"), questData));
-          }
-          firestoreSuccess = true;
-        } catch (err: any) {
-          console.warn("⚠️ Gagal memuat quest default ke Firestore:", err.message);
-        }
-      }
+      let firestoreSuccess = apiSuccess;
 
       setAdminSuccess("Quest default teater berhasil dimuat!");
       fetchQuestsFromApi();
@@ -622,17 +589,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
         console.warn("⚠️ Gagal menghapus semua quest dari Bot API:", err.message);
       }
 
-      let firestoreSuccess = false;
-      if (isFirebaseConfigured && db) {
-        try {
-          for (const quest of quests) {
-            await withTimeout(deleteDoc(doc(db, "quests", quest.id)));
-          }
-          firestoreSuccess = true;
-        } catch (err: any) {
-          console.warn("⚠️ Gagal menghapus semua quest dari Firestore:", err.message);
-        }
-      }
+      let firestoreSuccess = apiSuccess;
 
       setAdminSuccess("Semua quest terdaftar berhasil dihapus!");
       fetchQuestsFromApi();
@@ -743,48 +700,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
 
       const data = await response.json();
 
-      let firestoreSuccess = false;
-      if (isFirebaseConfigured && db) {
-        try {
-          const subRef = doc(db, "submissions", sub.id);
-          await withTimeout(updateDoc(subRef, { status: "approved" }));
-
-          const userRef = doc(db, "users", sub.userId);
-          const userDoc = await withTimeout(getDoc(userRef));
-          let newPoints = Number(sub.points) || 0;
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const currentPoints = userData.cv || userData.points || 0;
-            newPoints += currentPoints;
-            await withTimeout(updateDoc(userRef, { 
-              cv: newPoints,
-              points: newPoints
-            }));
-          } else {
-            await withTimeout(setDoc(userRef, {
-              uid: sub.userId,
-              name: sub.username || "Pemain",
-              email: sub.userEmail || "",
-              role: "Penonton Teater",
-              cv: newPoints,
-              points: newPoints
-            }));
-          }
-
-          if (sub.questId) {
-            const deckRef = doc(db, "user_decks", sub.userId);
-            const deckDoc = await withTimeout(getDoc(deckRef));
-            if (deckDoc.exists()) {
-              const deckData = deckDoc.data();
-              const updatedStatuses = { ...deckData.statuses, [sub.questId]: "Completed" };
-              await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
-            }
-          }
-          firestoreSuccess = true;
-        } catch (fsErr: any) {
-          console.warn("⚠️ Gagal update approve ke Firestore:", fsErr.message);
-        }
-      }
+      let firestoreSuccess = true;
 
       if (!firestoreSuccess) {
         // Fallback local storage approvals
@@ -851,27 +767,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
           throw new Error(errJson.error || `HTTP error! status: ${response.status}`);
         }
 
-        let firestoreSuccess = false;
-        if (isFirebaseConfigured && db) {
-          try {
-            const subRef = doc(db, "submissions", sub.id);
-            await withTimeout(deleteDoc(subRef));
-
-            // Set card status inside user's hand to "Denied"
-            if (sub.questId && sub.userId) {
-              const deckRef = doc(db, "user_decks", sub.userId);
-              const deckDoc = await withTimeout(getDoc(deckRef));
-              if (deckDoc.exists()) {
-                const deckData = deckDoc.data();
-                const updatedStatuses = { ...deckData.statuses, [sub.questId]: "Denied" };
-                await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
-              }
-            }
-            firestoreSuccess = true;
-          } catch (fsErr: any) {
-            console.warn("⚠️ Gagal update reject ke Firestore:", fsErr.message);
-          }
-        }
+        let firestoreSuccess = true;
 
         if (!firestoreSuccess) {
           const stored = localStorage.getItem("crunchy_submissions");
@@ -1022,15 +918,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
       console.warn("⚠️ Gagal menyimpan deck ke Bot API:", err.message);
     }
 
-    let firestoreSuccess = false;
-    if (isFirebaseConfigured && db) {
-      try {
-        await withTimeout(setDoc(doc(db, "user_decks", currentUser.uid), deckData));
-        firestoreSuccess = true;
-      } catch (err: any) {
-        console.warn("⚠️ Gagal menyimpan deck ke Firestore:", err.message);
-      }
-    }
+    let firestoreSuccess = apiSuccess;
 
     if (!apiSuccess && !firestoreSuccess) {
       localStorage.setItem(`crunchyverse_user_deck_${currentUser.uid}`, JSON.stringify(deckData));
