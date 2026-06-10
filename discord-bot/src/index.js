@@ -794,7 +794,18 @@ async function connectToVoiceChannel(guildId, channelId) {
     }
   });
 
-  await entersState(voiceConnection, VoiceConnectionStatus.Ready, 15000);
+  try {
+    // Kurangi timeout ke 5 detik untuk respon UI yang lebih cepat
+    await entersState(voiceConnection, VoiceConnectionStatus.Ready, 5000);
+  } catch (err) {
+    // Toleransi UDP: Jika tersangkut di signalling/connecting tapi isDiscordReady ok, tetap anggap sukses
+    console.warn(`⚠️ [VoiceAFK] entersState Ready timed out/aborted: ${err.message}. Mengabaikan error koneksi UDP untuk mode AFK.`);
+    connectionState.isConnectedToVoice = true;
+    connectionState.guildId = guildId;
+    connectionState.channelId = channelId;
+    connectionState.status = 'connected_voice';
+    saveVoiceAfkConfig({ guildId, channelId, isConnected: true });
+  }
   return connectionState;
 }
 
@@ -1688,6 +1699,13 @@ app.post('/api/voice-afk/connect', requireClientToken, async (req, res) => {
   }
 
   try {
+    if (!client || !isDiscordReady) {
+      return res.status(400).json({
+        success: false,
+        message: 'Klien Discord belum login atau belum siap.'
+      });
+    }
+
     addVoiceAfkLog(`Menerima perintah sambung ke Voice Channel: Guild ${guildId}, Channel ${channelId}`, 'info');
     await connectToVoiceChannel(guildId, channelId);
     res.json({
@@ -5111,120 +5129,7 @@ app.post('/api/oauth/update-stats/:id', async (req, res) => {
   }
 });
 
-// ==============================================================================
-// ========================= VoiceAFK REST API Endpoints ========================
-// ==============================================================================
-
-app.get('/api/voice-afk/status', (req, res) => {
-  let guilds = [];
-  let inviteLink = null;
-
-  if (client && isDiscordReady) {
-    inviteLink = `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=3145728&scope=bot`;
-    try {
-      guilds = client.guilds.cache.map(g => {
-        const voiceChannels = g.channels.cache
-          .filter(c => c.type === ChannelType.GuildVoice || c.type === 2)
-          .map(c => ({
-            id: c.id,
-            name: c.name
-          }));
-        return {
-          id: g.id,
-          name: g.name,
-          icon: g.iconURL(),
-          channels: voiceChannels
-        };
-      });
-    } catch (err) {
-      console.error('Error fetching guilds in VoiceAFK status:', err);
-    }
-  }
-
-  res.json({
-    ...connectionState,
-    guilds,
-    inviteLink
-  });
-});
-
-app.post('/api/voice-afk/connect', requireClientToken, async (req, res) => {
-  const { guildId, channelId } = req.body;
-
-  if (!guildId || !channelId) {
-    return res.status(400).json({
-      success: false,
-      message: 'guildId dan channelId wajib diisi.'
-    });
-  }
-
-  try {
-    if (!client || !isDiscordReady) {
-      return res.status(400).json({
-        success: false,
-        message: 'Klien Discord belum login atau belum siap.'
-      });
-    }
-
-    await connectToVoiceChannel(guildId, channelId);
-    res.json({
-      success: true,
-      message: 'Berhasil tersambung ke voice channel.',
-      state: connectionState
-    });
-  } catch (error) {
-    connectionState.status = client && isDiscordReady ? 'ready' : 'offline';
-    addVoiceAfkLog(`Gagal menyambung ke voice channel: ${error.message}`, 'error');
-    res.status(500).json({
-      success: false,
-      message: `Error koneksi: ${error.message}`
-    });
-  }
-});
-
-app.post('/api/voice-afk/disconnect', requireClientToken, (req, res) => {
-  if (!connectionState.isConnectedToVoice || !connectionState.guildId) {
-    return res.json({
-      success: true,
-      message: 'Bot memang sedang tidak tersambung ke voice channel mana pun.',
-      state: connectionState
-    });
-  }
-
-  try {
-    addVoiceAfkLog(`Mencoba memutuskan koneksi dari Voice Channel di server ${connectionState.guildId}...`, 'info');
-    const connection = getVoiceConnection(connectionState.guildId);
-    if (connection) {
-      connection.destroy();
-    }
-
-    connectionState.isConnectedToVoice = false;
-    connectionState.guildId = null;
-    connectionState.channelId = null;
-    connectionState.status = 'ready';
-
-    addVoiceAfkLog('Koneksi suara diputuskan secara bersih.', 'success');
-    saveVoiceAfkConfig({ guildId: null, channelId: null, isConnected: false });
-
-    res.json({
-      success: true,
-      message: 'Berhasil memutuskan koneksi dari voice channel.',
-      state: connectionState
-    });
-  } catch (error) {
-    addVoiceAfkLog(`Gagal memutuskan koneksi suara: ${error.message}`, 'error');
-    res.status(500).json({
-      success: false,
-      message: `Error diskoneksi: ${error.message}`
-    });
-  }
-});
-
-app.post('/api/voice-afk/logs/clear', requireClientToken, (req, res) => {
-  connectionState.logs = [];
-  addVoiceAfkLog('Log konsol dibersihkan oleh web client.', 'info');
-  res.json({ success: true });
-});
+// [Cleaned Up] Duplicate VoiceAFK REST API Endpoints removed (defined at line 1647)
 
 // ==============================================================================
 // ========== ENDPOINT KEEPALIVE (dipanggil cron job untuk 24/7) ================

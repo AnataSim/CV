@@ -407,7 +407,7 @@ export default function ControlBooth({
         localStorage.setItem("voice_guild_id", guildId);
         localStorage.setItem("voice_channel_id", channelId);
       } else {
-        setErrorMessage(data.message || "Gagal menghubungkan ke voice channel.");
+        setErrorMessage(data.message || data.error || "Gagal menghubungkan ke voice channel.");
       }
     } catch (err: any) {
       setErrorMessage("Gagal menyambung. Hubungi Admin.");
@@ -429,7 +429,7 @@ export default function ControlBooth({
       if (res.ok && data.success) {
         setBackendState(data.state);
       } else {
-        setErrorMessage(data.message || "Gagal memutuskan koneksi.");
+        setErrorMessage(data.message || data.error || "Gagal memutuskan koneksi.");
       }
     } catch (err: any) {
       setErrorMessage("Gagal memutuskan koneksi.");
