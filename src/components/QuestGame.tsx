@@ -1408,7 +1408,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
       </div>
 
       {/* USER PROFILE & CV BADGE (Floating top-right badge) */}
-      <div className="absolute top-4 right-4 md:top-6 md:right-6 z-30 flex items-center gap-2 md:gap-3">
+      <div className="absolute top-7 right-4 md:top-6 md:right-6 z-30 flex items-center gap-2 md:gap-3">
         <div className="bg-neutral-950/80 border border-theater-gold/30 rounded-2xl p-1.5 px-3 md:p-2 md:px-4 shadow-lg flex items-center gap-2 md:gap-3">
           <div className="flex flex-col text-right">
             <span className="text-[7px] md:text-[8px] font-black tracking-widest text-neutral-500 uppercase">Akun Teater</span>
@@ -2221,9 +2221,10 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
                               left: "50%",
                               width: "calc(100vw - 32px)",
                               maxWidth: "340px",
-                              height: "440px",
-                              bottom: "170px",
-                              transform: `translate3d(-50%, 0, 0) rotate(${rotate * 0.4}deg)`,
+                              height: "var(--active-card-height, 380px)",
+                              bottom: "var(--active-card-bottom, 100px)",
+                              marginLeft: "calc(min(340px, 100vw - 32px) / -2)",
+                              transform: `rotate(${rotate * 0.4}deg)`,
                               zIndex: 50,
                             }}
                           >
@@ -2424,6 +2425,16 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
 
             {/* Custom Embedded animations for Uno card flights & active card pops */}
             <style dangerouslySetInnerHTML={{ __html: `
+              :root {
+                --active-card-bottom: 100px;
+                --active-card-height: 380px;
+              }
+              @media (min-width: 768px) {
+                :root {
+                  --active-card-bottom: 170px;
+                  --active-card-height: 440px;
+                }
+              }
               @keyframes dealCardUno {
                 0% {
                   transform: translate(-35vw, -45vh) rotate(-75deg) scale(0.1);
