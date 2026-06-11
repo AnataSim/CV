@@ -1839,22 +1839,47 @@ export default function CrunchyVerseStage() {
             <span className="font-display font-bold tracking-widest text-theater-gold text-xs sm:text-sm select-none">CRUNCHYVERSE SHOW</span>
           </div>
           
-          <div className="flex items-center gap-2.5 sm:gap-4 z-50">
-            {/* LOKET TIKET / AUTH BUTTON */}
+          <div className="flex items-center gap-2 sm:gap-3 z-50">
+            {/* 1. SETTINGS BUTTON (Admin Only) */}
+            {currentUser && isUserAdmin(userRole) && (
+              <button 
+                onClick={() => setShowConfig(!showConfig)}
+                className="text-xs font-bold text-theater-gold/70 hover:text-theater-gold transition-colors flex items-center justify-center p-1.5 rounded-lg border border-theater-gold/20 bg-theater-black/50 hover:bg-theater-red-dark/80 cursor-pointer"
+                title="Sinyal Bot"
+              >
+                <Settings size={13} className="animate-spin-slow" />
+                <span className="hidden sm:inline ml-1">Sinyal Bot</span>
+              </button>
+            )}
+
+            {/* 2. WIFI STATUS INDICATOR */}
+            <span className={`inline-flex items-center justify-center p-1.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-full text-[10px] font-black tracking-widest border transition-all ${
+              isBotConnected 
+                ? "border-emerald-500/30 bg-emerald-950/40 text-emerald-400" 
+                : "border-theater-red-light/30 bg-theater-red-dark/30 text-theater-red-light animate-pulse"
+            }`}
+              title={isBotConnected ? "Bot Connected" : "Bot Standby"}
+            >
+              {isBotConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
+              <span className="hidden sm:inline ml-1">{isBotConnected ? "CONNECTED" : "STANDBY"}</span>
+            </span>
+
+            {/* 3. LOKET TIKET / PROFILE BADGE */}
             {currentUser ? (
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-1.5 sm:gap-2.5">
                 {/* User Profile Avatar */}
-                <div className="h-8 w-8 rounded-full overflow-hidden border border-theater-gold/45 bg-neutral-950 flex items-center justify-center shrink-0 shadow-md shadow-theater-black">
+                <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full overflow-hidden border border-theater-gold/45 bg-neutral-950 flex items-center justify-center shrink-0 shadow-md shadow-theater-black">
                   {userAvatar ? (
                     <img src={userAvatar} alt="Avatar" className="h-full w-full object-cover" />
                   ) : (
-                    <User size={14} className="text-theater-gold/80" />
+                    <User size={12} className="text-theater-gold/80" />
                   )}
                 </div>
 
-                <div className="hidden md:flex flex-col text-right text-xs">
-                  <span className="font-extrabold text-white leading-none">{displayName}</span>
-                  <span className={`text-[9px] font-black tracking-widest uppercase mt-0.5 ${
+                {/* Discord Display Name */}
+                <div className="flex flex-col text-left text-xs max-w-[65px] sm:max-w-none">
+                  <span className="font-extrabold text-white leading-none truncate max-w-[60px] sm:max-w-none">{displayName}</span>
+                  <span className={`hidden sm:inline text-[9px] font-black tracking-widest uppercase mt-0.5 leading-none ${
                     isUserAdmin(userRole) ? "text-theater-gold" : "text-neutral-400"
                   }`}>
                     {userRole === "Volunteer Theater" ? "🎭 VOLUNTEER" : 
@@ -1862,42 +1887,26 @@ export default function CrunchyVerseStage() {
                      userRole === "Ketua Keripik" ? "👑 KETUA KERIPIK" : "🍿 PENONTON"}
                   </span>
                 </div>
+
+                {/* Logout Button */}
                 <button 
                   onClick={handleLogout}
-                  className="bg-theater-red-dark/80 hover:bg-theater-red text-white p-2 rounded-xl border border-theater-red-light/30 transition-all flex items-center gap-1.5 cursor-pointer text-xs font-bold uppercase tracking-wider"
+                  className="bg-theater-red-dark/80 hover:bg-theater-red text-white p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-theater-red-light/30 transition-all flex items-center gap-1 cursor-pointer text-[10px] sm:text-xs font-bold uppercase tracking-wider"
                   title="Keluar Teater"
                 >
-                  <LogOut size={13} />
+                  <LogOut size={12} />
                   <span className="hidden sm:inline">Keluar</span>
                 </button>
               </div>
             ) : (
               <button 
                 onClick={() => setShowLoginModal(true)}
-                className="bg-gradient-to-r from-theater-gold to-theater-gold-dim hover:from-theater-gold-dim hover:to-theater-gold text-theater-black font-black text-xs uppercase tracking-widest py-2 px-4 rounded-xl shadow-lg shadow-theater-gold/10 hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
+                className="bg-gradient-to-r from-theater-gold to-theater-gold-dim hover:from-theater-gold-dim hover:to-theater-gold text-theater-black font-black text-xs uppercase tracking-widest py-1.5 px-3 sm:py-2 sm:px-4 rounded-lg sm:rounded-xl shadow-lg shadow-theater-gold/10 hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <Ticket size={13} />
                 <span>Loket Tiket</span>
               </button>
             )}
-
-            {isUserAdmin(userRole) && (
-              <button 
-                onClick={() => setShowConfig(!showConfig)}
-                className="text-xs font-bold text-theater-gold/70 hover:text-theater-gold transition-colors flex items-center gap-1.5 cursor-pointer py-1 px-3 rounded-full border border-theater-gold/30 bg-theater-black/50 hover:bg-theater-red-dark/80"
-              >
-                <Settings size={12} className="animate-spin-slow" />
-                <span className="hidden sm:inline">Sinyal Bot</span>
-              </button>
-            )}
-            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black tracking-widest border transition-all ${
-              isBotConnected 
-                ? "border-emerald-500/30 bg-emerald-950/40 text-emerald-400" 
-                : "border-theater-red-light/30 bg-theater-red-dark/30 text-theater-red-light animate-pulse"
-            }`}>
-              {isBotConnected ? <Wifi size={10} /> : <WifiOff size={10} />}
-              {isBotConnected ? "CONNECTED" : "STANDBY"}
-            </span>
           </div>
         </div>
 
@@ -3946,7 +3955,7 @@ export default function CrunchyVerseStage() {
       <section
         id="stage-game"
         ref={frame7Ref}
-        className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col min-h-screen"
+        className="scroll-frame bg-theater-black relative z-20 flex flex-col"
         style={{
           background: 'radial-gradient(circle at top right, #110002 0%, #060102 100%)'
         }}
