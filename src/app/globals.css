@@ -77,17 +77,23 @@ html, body {
 .scroll-container {
   scroll-snap-type: y proximity;
   overflow-y: scroll;
-  height: 100vh;
+  height: 100dvh;
   scrollbar-width: none;
 }
 .scroll-container::-webkit-scrollbar {
   display: none;
 }
 
+@media (max-width: 768px) {
+  .scroll-container {
+    scroll-snap-type: y mandatory;
+  }
+}
+
 /* Frame 1 — Cinematic hero, no internal scroll */
 .scroll-frame {
   scroll-snap-align: start;
-  height: 100vh;
+  height: 100dvh;
   flex-shrink: 0;
   width: 100%;
   position: relative;
@@ -97,7 +103,7 @@ html, body {
 /* Frame 2+ — Snap to start, but content scrolls inside */
 .scroll-frame-inner {
   scroll-snap-align: start;
-  height: 100vh;
+  height: 100dvh;
   flex-shrink: 0;
   width: 100%;
   position: relative;

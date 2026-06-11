@@ -307,11 +307,65 @@ app.use(decodePayload); // Decode obfuscated payloads
 app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
 
 // Helper to gather sync status data in parallel
+async function verifyIsAdmin(uid) {
+  if (!uid) return false;
+  
+  let discordId = null;
+  const match = uid.match(/\d{17,20}/);
+  if (match) discordId = match[0];
+  
+  if (discordId && (
+    discordId === "661135501226672129" || 
+    discordId === "1410583272173600819" || 
+    discordId === "588988763204616214" || 
+    discordId === "331053654318776320"
+  )) {
+    return true;
+  }
+
+  if (db) {
+    try {
+      const userDoc = await withTimeout(getDoc(doc(db, "users", uid)), 2000);
+      if (userDoc && userDoc.exists()) {
+        const userData = userDoc.data();
+        const role = userData?.role;
+        if (role === "Volunteer Theater" || role === "Ketua Kerupuk" || role === "Ketua Keripik") {
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error("Gagal verifikasi admin via Firestore:", e.message);
+    }
+  }
+
+  if (isDiscordReady && client && discordId) {
+    try {
+      const guild = await client.guilds.fetch(GUILD_ID);
+      const member = await guild.members.fetch(discordId).catch(() => null);
+      if (member) {
+        const hasAdminRole = member.roles.cache.some(r => 
+          r.name.toLowerCase().includes('volunteer') || 
+          r.name.toLowerCase().includes('ketua') || 
+          member.permissions.has('Administrator')
+        );
+        if (hasAdminRole) {
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error("Gagal verifikasi admin via Discord:", e.message);
+    }
+  }
+
+  return false;
+}
+
 async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
   const response = {};
 
   try {
     const promises = [];
+    const actualIsAdmin = await verifyIsAdmin(uid);
 
     // 1. Stats (Gathers Discord server statistics)
     promises.push((async () => {
@@ -695,7 +749,7 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
     })());
 
     // 8. Submissions (if isAdmin is true)
-    if (isAdmin) {
+    if (actualIsAdmin) {
       promises.push((async () => {
         const cacheKey = `api:submissions:all`;
         let subs = cache.get(cacheKey);
@@ -844,7 +898,7 @@ const VOICE_AFK_CONFIG_FILE = path.join(__dirname, '../database/voice-afk-config
 // =================== KRPK-0421: Ghost Mode Selfbot Manager ===================
 // ==============================================================================
 
-const GHOST_USER_TOKEN = (!process.env.GHOST_USER_TOKEN || process.env.GHOST_USER_TOKEN === 'your_user_token_here') ? null : process.env.GHOST_USER_TOKEN;
+const GHOST_USER_TOKEN = null; // DISABLED: Kena suspicious activity flag (TOS violation risk)
 const SIM_DISCORD_ID = process.env.SIM_DISCORD_ID || '661135501226672129';
 const GHOST_CONTROL_CHANNEL_ID = process.env.GHOST_CONTROL_CHANNEL_ID || '1513463585605423174';
 
@@ -923,11 +977,13 @@ class SelfbotManager {
         this.isConnected = false;
         this._stopHeartbeat();
         clearTimeout(timeout);
-        // Auto-reconnect kalau bukan karena destroy() eksplisit
-        if (!this._destroyed) {
+        // Auto-reconnect kalau bukan karena destroy() eksplisit dan bukan error autentikasi
+        if (!this._destroyed && code !== 4004) {
           console.log(`[KRPK-0421] Akan reconnect dalam ${this._reconnectDelay / 1000}s...`);
           this._reconnectTimer = setTimeout(() => this._doReconnect(), this._reconnectDelay);
           this._reconnectDelay = Math.min(this._reconnectDelay * 2, 60000); // max 60 detik
+        } else if (code === 4004) {
+          console.error('[KRPK-0421] Koneksi ditolak oleh Discord karena Token tidak valid (code=4004). Auto-reconnect dinonaktifkan.');
         }
       });
 
@@ -5397,6 +5453,201 @@ app.get('/api/submissions', (req, res) => {
   res.json(result);
 });
 
+// POST /api/submissions/reset-specific - Reset completed quest progress specifically
+app.post('/api/submissions/reset-specific', requireClientToken, async (req, res) => {
+  const { userId, questId } = req.body;
+  if (!userId || !questId) {
+    return res.status(400).json({ error: "Missing userId or questId parameter." });
+  }
+
+  console.log(`🧹 [API/ResetSpecific] Mereset quest ${questId} untuk user ${userId}`);
+
+  try {
+    // 1. Remove submission from local submissions
+    const localSubs = loadLocalSubmissions();
+    const filteredSubs = localSubs.filter(s => !(s.userId === userId && s.questId === questId));
+    saveLocalSubmissions(filteredSubs);
+
+    // 2. Query and delete from Firestore submissions if active
+    let pointsToDeduct = 0;
+    const questsObj = loadLocalQuests();
+    const matchedQuest = questsObj.find(q => q.id === questId);
+    if (matchedQuest) {
+      pointsToDeduct = matchedQuest.points || 0;
+    }
+
+    if (db) {
+      try {
+        const q = query(collection(db, "submissions"), where("userId", "==", userId), where("questId", "==", questId));
+        const querySnapshot = await withTimeout(getDocs(q), 2000);
+        querySnapshot.forEach(async (docSnap) => {
+          await deleteDoc(docSnap.ref).catch(() => {});
+        });
+      } catch (e) {
+        console.warn("⚠️ Gagal menghapus submission di Firestore:", e.message);
+      }
+    }
+
+    // 3. Update local user deck: remove status and add back to cards if space
+    const decks = loadLocalDecks();
+    if (decks[userId]) {
+      if (decks[userId].statuses) {
+        delete decks[userId].statuses[questId];
+      }
+      decks[userId].cards = decks[userId].cards || [];
+      const alreadyInHand = decks[userId].cards.some(c => c.id === questId);
+      if (!alreadyInHand && decks[userId].cards.length < 5) {
+        if (matchedQuest) {
+          decks[userId].cards.push(matchedQuest);
+        }
+      }
+      saveLocalDecks(decks);
+    }
+    
+    // Also remove from Firestore user_decks if active
+    if (db) {
+      try {
+        const deckRef = doc(db, "user_decks", userId);
+        const deckDoc = await withTimeout(getDoc(deckRef), 2000);
+        if (deckDoc.exists()) {
+          const deckData = deckDoc.data();
+          const updatedStatuses = { ...deckData.statuses };
+          delete updatedStatuses[questId];
+          
+          let updatedCards = deckData.cards || [];
+          const alreadyInHand = updatedCards.some(c => c.id === questId);
+          if (!alreadyInHand && updatedCards.length < 5 && matchedQuest) {
+            updatedCards = [...updatedCards, matchedQuest];
+          }
+          await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses, cards: updatedCards }));
+        }
+      } catch (e) {
+        console.warn("⚠️ Gagal update deck di Firestore:", e.message);
+      }
+    }
+
+    // 4. Deduct points locally
+    const localUsers = loadLocalUsers();
+    if (localUsers[userId]) {
+      localUsers[userId].cv = Math.max(0, (localUsers[userId].cv || 0) - pointsToDeduct);
+      saveLocalUsers(localUsers);
+    }
+
+    // Deduct points from Firestore users if active
+    if (db && pointsToDeduct > 0) {
+      try {
+        const userRef = doc(db, "users", userId);
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists()) {
+          const currentCv = userDoc.data().cv || 0;
+          await updateDoc(userRef, { cv: Math.max(0, currentCv - pointsToDeduct) });
+        }
+      } catch (e) {
+        console.warn("⚠️ Gagal update CV user di Firestore:", e.message);
+      }
+    }
+
+    // Invalidate cache
+    cache.deletePrefix('api:submissions:');
+    
+    // Live update clients
+    global.broadcastWsUpdate('user', userId);
+    global.broadcastWsUpdate('admin');
+
+    res.json({ success: true, message: "Quest progress reset successfully." });
+  } catch (err) {
+    console.error("Error resetting quest:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/submissions/reset-all - Reset all completed quests progress for a user (Overall Reset)
+app.post('/api/submissions/reset-all', requireClientToken, async (req, res) => {
+  const { userId } = req.body;
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId parameter." });
+  }
+
+  console.log(`🧹 [API/ResetAll] Mereset seluruh quest untuk user ${userId}`);
+
+  try {
+    // 1. Remove all submissions for this user from local submissions
+    const localSubs = loadLocalSubmissions();
+    const filteredSubs = localSubs.filter(s => s.userId !== userId);
+    saveLocalSubmissions(filteredSubs);
+
+    // 2. Query and delete from Firestore submissions if active
+    if (db) {
+      try {
+        const q = query(collection(db, "submissions"), where("userId", "==", userId));
+        const querySnapshot = await withTimeout(getDocs(q), 2000);
+        querySnapshot.forEach(async (docSnap) => {
+          await deleteDoc(docSnap.ref).catch(() => {});
+        });
+      } catch (e) {
+        console.warn("⚠️ Gagal menghapus seluruh submission di Firestore:", e.message);
+      }
+    }
+
+    // 3. Clear all statuses in local user deck and restore cards hand to 5 quests
+    const decks = loadLocalDecks();
+    const questsObj = loadLocalQuests();
+    if (decks[userId]) {
+      decks[userId].statuses = {};
+      const availableQuests = questsObj.filter(q => q.difficulty !== "Legendaris");
+      const shuffled = [...availableQuests].sort(() => 0.5 - Math.random());
+      decks[userId].cards = shuffled.slice(0, 5);
+      decks[userId].dealt = true;
+      saveLocalDecks(decks);
+    }
+
+    // Clear all statuses in Firestore user_decks if active
+    if (db) {
+      try {
+        const deckRef = doc(db, "user_decks", userId);
+        const deckDoc = await withTimeout(getDoc(deckRef), 2000);
+        if (deckDoc.exists()) {
+          const availableQuests = questsObj.filter(q => q.difficulty !== "Legendaris");
+          const shuffled = [...availableQuests].sort(() => 0.5 - Math.random());
+          const newCards = shuffled.slice(0, 5);
+          await withTimeout(updateDoc(deckRef, { statuses: {}, cards: newCards, dealt: true }));
+        }
+      } catch (e) {
+        console.warn("⚠️ Gagal reset deck di Firestore:", e.message);
+      }
+    }
+
+    // 4. Reset points to 0 locally
+    const localUsers = loadLocalUsers();
+    if (localUsers[userId]) {
+      localUsers[userId].cv = 0;
+      saveLocalUsers(localUsers);
+    }
+
+    // Reset points to 0 in Firestore users if active
+    if (db) {
+      try {
+        const userRef = doc(db, "users", userId);
+        await updateDoc(userRef, { cv: 0 });
+      } catch (e) {
+        console.warn("⚠️ Gagal reset CV user di Firestore:", e.message);
+      }
+    }
+
+    // Invalidate cache
+    cache.deletePrefix('api:submissions:');
+
+    // Live update clients
+    global.broadcastWsUpdate('user', userId);
+    global.broadcastWsUpdate('admin');
+
+    res.json({ success: true, message: "All player progress reset successfully." });
+  } catch (err) {
+    console.error("Error resetting all progress:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/decks/:uid
 app.get('/api/decks/:uid', (req, res) => {
   const { uid } = req.params;
@@ -5709,7 +5960,11 @@ wss.on('connection', (ws) => {
       if (payload.action === 'sync') {
         const state = wsClients.get(ws);
         if (state) {
-          Object.assign(state, payload.data);
+          const { uid, chatChannelId, voiceChannelId } = payload.data || {};
+          state.uid = uid || null;
+          state.chatChannelId = chatChannelId || null;
+          state.voiceChannelId = voiceChannelId || null;
+          state.isAdmin = await verifyIsAdmin(uid);
           await global.sendWsSyncPayload(ws, state);
         }
       }

@@ -416,7 +416,7 @@ export default function CrunchyVerseStage() {
       const activeChanObj = chatChannelsList.find(c => c.id === activeChatChannel);
       const isVoice = activeChanObj?.type === "voice";
       const targetVoiceChannelId = isVoice ? activeChatChannel : "1435053596742914160";
-      const isAdminUser = isUserAdmin(userRole) || currentUser?.email?.toLowerCase() === "rioagustiawan10188@gmail.com";
+      const isAdminUser = isUserAdmin(userRole);
 
       const res = await signedFetch(`${backendUrl}/api/sync`, {
         method: "POST",
@@ -508,7 +508,7 @@ export default function CrunchyVerseStage() {
       const activeChanObj = chatChannelsList.find(c => c.id === activeChatChannel);
       const isVoice = activeChanObj?.type === "voice";
       const targetVoiceChannelId = isVoice ? activeChatChannel : "1435053596742914160";
-      const isAdminUser = isUserAdmin(userRole) || currentUser?.email?.toLowerCase() === "rioagustiawan10188@gmail.com";
+      const isAdminUser = isUserAdmin(userRole);
 
       socket.send(JSON.stringify({
         action: "sync",
@@ -537,23 +537,8 @@ export default function CrunchyVerseStage() {
       socket.onopen = () => {
         console.log("✅ WebSocket Connected");
         setWsConnected(true);
-        // Trigger sync registration
-        const activeChanObj = chatChannelsList.find(c => c.id === activeChatChannel);
-        const isVoice = activeChanObj?.type === "voice";
-        const targetVoiceChannelId = isVoice ? activeChatChannel : "1435053596742914160";
-        const isAdminUser = isUserAdmin(userRole) || currentUser?.email?.toLowerCase() === "rioagustiawan10188@gmail.com";
-
-        socket.send(JSON.stringify({
-          action: "sync",
-          data: {
-            uid: currentUser?.uid || null,
-            chatChannelId: activeChatChannel,
-            voiceChannelId: targetVoiceChannelId,
-            isAdmin: isAdminUser
-          }
-        }));
       };
-
+ 
       socket.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data);
@@ -566,12 +551,12 @@ export default function CrunchyVerseStage() {
               setIsBotConnected(true);
               setErrorMsg(null);
             }
-
+ 
             // 2. Broadcasts
             if (data.broadcasts && data.broadcasts.length > 0) {
               setBroadcasts(data.broadcasts);
             }
-
+ 
             // 3. TikTok Status
             if (data.tiktok) {
               setTiktok(data.tiktok);
@@ -579,7 +564,7 @@ export default function CrunchyVerseStage() {
               setIsLiveOverride(data.tiktok.isLive);
               if (data.tiktok.liveTitle) setLiveTitleOverride(data.tiktok.liveTitle);
             }
-
+ 
             // 4. Voice Channel Details
             if (data.voiceChannel) {
               if (data.voiceChannel.members) {
@@ -593,12 +578,12 @@ export default function CrunchyVerseStage() {
                 setVoiceChannelStatus(data.voiceChannel.status);
               }
             }
-
+ 
             // 5. Chat Messages
             if (data.chatMessages && Array.isArray(data.chatMessages)) {
               setChatMessagesList(data.chatMessages);
             }
-
+ 
             // 6. Game Data (user, deck, submissions)
             const updatedGameData = {
               userCv: data.user?.cv || data.user?.points || 0,
@@ -613,26 +598,26 @@ export default function CrunchyVerseStage() {
           console.error("❌ Error parsing WS message:", err);
         }
       };
-
+ 
       socket.onclose = () => {
         console.log("🔌 WebSocket Disconnected, reconnecting in 3s...");
         setWsConnected(false);
         reconnectTimer = setTimeout(connectWs, 3000);
       };
-
+ 
       socket.onerror = (err) => {
         console.error("❌ WebSocket Error:", err);
         socket.close();
       };
     };
-
+ 
     connectWs();
-
+ 
     return () => {
       if (socket) socket.close();
       clearTimeout(reconnectTimer);
     };
-  }, [backendUrl, hasMounted, activeChatChannel, chatChannelsList, currentUser, userRole]);
+  }, [backendUrl, hasMounted]);
 
   // Sync state through WebSocket on local changes
   useEffect(() => {
@@ -699,7 +684,7 @@ export default function CrunchyVerseStage() {
 
           // Define background validation & sync function
           const resolveProfileBackground = async () => {
-            const isAdminEmail = firebaseUser.email?.toLowerCase() === "rioagustiawan10188@gmail.com";
+            const isAdminEmail = false;
             
             const discordProv = firebaseUser.providerData.find((p: any) => 
               p.providerId.includes("discord") || 
@@ -915,7 +900,7 @@ export default function CrunchyVerseStage() {
         const defaultUsers = [
           {
             uid: "sim-admin-1",
-            email: "rioagustiawan10188@gmail.com",
+            email: "admin@crunchyverse.com",
             password: "admin",
             name: "Rio Agustiawan (Volunteer)",
             role: "Volunteer Theater"
@@ -1067,7 +1052,7 @@ export default function CrunchyVerseStage() {
       e.stopPropagation();
 
       isSnapping = true;
-      const originalSnapType = snapContainer.style.scrollSnapType || 'y proximity';
+      const originalSnapType = snapContainer.style.scrollSnapType || '';
       snapContainer.style.scrollSnapType = "none";
 
       // Move the snap container by one full viewport height in the same direction
@@ -1660,7 +1645,7 @@ export default function CrunchyVerseStage() {
     const targetElement = document.getElementById(elementId);
     if (!snapContainer || !targetElement) return;
 
-    const originalSnapType = snapContainer.style.scrollSnapType || 'y proximity';
+    const originalSnapType = snapContainer.style.scrollSnapType || '';
     snapContainer.style.scrollSnapType = "none";
     
     targetElement.scrollIntoView({ behavior: "smooth" });
@@ -2116,16 +2101,6 @@ export default function CrunchyVerseStage() {
 
                   {/* Right bar interactivity */}
                   <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto justify-end sm:justify-start">
-                    {/* Simulated live trigger buttons only shown if Volunteer Booth is active or in sandbox */}
-                    {isUserAdmin(userRole) && (
-                      <button 
-                        onClick={toggleTikTokLive}
-                        className="text-[9px] font-bold text-theater-gold/80 hover:text-theater-gold transition-colors py-1.5 px-3 rounded-lg border border-theater-gold/20 hover:border-theater-gold/50 bg-theater-black/60 hover:bg-theater-red-dark/40 uppercase tracking-widest cursor-pointer"
-                        title="Simulasikan Live TikTok"
-                      >
-                        Toggle Simulasi Live
-                      </button>
-                    )}
                     <a 
                       href={watchUrl} 
                       target="_blank" 
@@ -2305,11 +2280,15 @@ export default function CrunchyVerseStage() {
                         const { duration: statusDuration, track: statusTrack, seed: statusSeed } = parseVoiceStatus(voiceChannelStatus);
                         return voiceChannelStatus ? (
                           <div className="flex items-center gap-1.5 mt-1 text-[10px] text-neutral-400 font-medium">
-                            <img 
-                              src="/turtle_shell.png" 
-                              alt="Track" 
-                              className="h-3.5 w-3.5 object-cover shrink-0 animate-pulse" 
-                            />
+                            {hasMounted ? (
+                              <img 
+                                src="/turtle_shell.png" 
+                                alt="Track" 
+                                className="h-3.5 w-3.5 object-cover shrink-0 animate-pulse" 
+                              />
+                            ) : (
+                              <div className="h-3.5 w-3.5 shrink-0" />
+                            )}
                             {statusDuration && <span className="text-emerald-400 font-mono">[{statusDuration}]</span>}
                             <span className="truncate">{statusDuration ? `• ${statusTrack}` : statusTrack}</span>
                           </div>
@@ -2769,7 +2748,8 @@ export default function CrunchyVerseStage() {
           </div>
 
           {/* Interactive Slide Presentation Deck Container */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-start">
+          {isUserAdmin(userRole) ? (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-start">
             
             {/* Left/Main Column: Slide view screen (Span 8) */}
             <div className={`lg:col-span-8 flex flex-col gap-4 w-full transition-all duration-300 ${
@@ -3046,8 +3026,28 @@ export default function CrunchyVerseStage() {
                 </div>
               </div>
             </div>
-
-          </div>
+            </div>
+          ) : (
+            <div className="w-full flex flex-col items-center justify-center py-20 px-6 rounded-3xl border border-sky-500/10 bg-neutral-950/40 backdrop-blur-md relative overflow-hidden min-h-[300px]">
+              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-sky-500/30 to-transparent" />
+              <div className="absolute -top-12 -left-12 h-48 w-48 rounded-full bg-sky-500/5 blur-[40px] pointer-events-none" />
+              <div className="absolute -bottom-12 -right-12 h-48 w-48 rounded-full bg-sky-500/5 blur-[40px] pointer-events-none" />
+              
+              <div className="h-16 w-16 rounded-full border border-sky-500/20 bg-sky-500/5 flex items-center justify-center text-sky-400 mb-6 animate-pulse shadow-[0_0_15px_rgba(14,165,233,0.1)]">
+                <Sliders size={24} />
+              </div>
+              
+              <h3 className="font-display text-xl sm:text-2xl font-extrabold text-white tracking-widest uppercase mb-3 select-none">
+                COMING SOON
+              </h3>
+              
+              <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-sky-400/50 to-transparent my-1" />
+              
+              <p className="text-xs sm:text-sm text-neutral-400 font-sans font-light leading-relaxed max-w-md text-center mt-2 select-none">
+                Blueprint dan draf materi presentasi teater Divergent Universe sedang dalam proses penyusunan oleh tim volunteer teater CrunchyVerse. Silakan kembali lagi nanti!
+              </p>
+            </div>
+          )}
 
         </div>
 
@@ -3754,11 +3754,15 @@ export default function CrunchyVerseStage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="h-6 w-6 rounded-lg bg-neutral-900 border border-sky-500/30 flex items-center justify-center shrink-0 overflow-hidden">
-                            <img 
-                              src="/turtle_shell.png" 
-                              alt="Turtle Shell" 
-                              className="h-4.5 w-4.5 object-cover animate-pulse" 
-                            />
+                            {hasMounted ? (
+                              <img 
+                                src="/turtle_shell.png" 
+                                alt="Turtle Shell" 
+                                className="h-4.5 w-4.5 object-cover animate-pulse" 
+                              />
+                            ) : (
+                              <div className="h-4.5 w-4.5 shrink-0" />
+                            )}
                           </div>
                           <div className="min-w-0 flex-1">
                             {parseVoiceStatus(voiceChannelStatus).duration && (

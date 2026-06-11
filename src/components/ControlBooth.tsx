@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Sliders, LogOut, Save, Terminal, Volume2, RefreshCw, Trash2, ExternalLink, Activity, X, UserPlus } from "lucide-react";
+import { Sliders, LogOut, Save, Terminal, Volume2, RefreshCw, Trash2, ExternalLink, Activity, X, UserPlus, ChevronDown } from "lucide-react";
 import { db, isFirebaseConfigured } from "../lib/firebase";
 import { doc, collection, getDocs, query, where } from "firebase/firestore";
 import { signedFetch } from "../lib/api";
@@ -77,6 +77,7 @@ export default function ControlBooth({
 
   // Tab State: "lobby" | "voice" | "volunteers"
   const [activeTab, setActiveTab] = useState<"lobby" | "voice" | "volunteers">("lobby");
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Voice States
   const [guildId, setGuildId] = useState("");
@@ -303,6 +304,13 @@ export default function ControlBooth({
     }
   }, []);
 
+  // Auto collapse on mobile viewports on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setIsCollapsed(true);
+    }
+  }, []);
+
   // Sync / Poll Backend Status
   const fetchStatus = async () => {
     try {
@@ -454,8 +462,20 @@ export default function ControlBooth({
 
   if (!currentUser || !isUserAdmin(userRole)) return null;
 
+  if (isCollapsed) {
+    return (
+      <button
+        onClick={() => setIsCollapsed(false)}
+        className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-950 border-2 border-theater-gold text-theater-gold shadow-2xl hover:bg-neutral-900 active:scale-95 transition-all animate-float cursor-pointer"
+        title="Buka Control Booth"
+      >
+        <Sliders size={20} className="animate-pulse" />
+      </button>
+    );
+  }
+
   return (
-    <div className="fixed bottom-6 right-6 z-40 max-w-sm w-full bg-neutral-950 border-2 border-theater-gold rounded-3xl p-5 shadow-2xl animate-float">
+    <div className="fixed bottom-6 right-6 z-40 max-w-sm w-[calc(100vw-32px)] sm:w-full bg-neutral-950 border-2 border-theater-gold rounded-3xl p-5 shadow-2xl animate-float">
       {/* Title Header */}
       <div className="flex items-center justify-between border-b border-neutral-900 pb-3 mb-3">
         <div className="flex items-center gap-2">
@@ -472,13 +492,22 @@ export default function ControlBooth({
           </div>
         </div>
         
-        <button 
-          onClick={handleLogout}
-          className="text-neutral-500 hover:text-theater-red-light transition-colors p-1 cursor-pointer"
-          title="Keluar"
-        >
-          <LogOut size={14} />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button 
+            onClick={() => setIsCollapsed(true)}
+            className="text-neutral-500 hover:text-theater-gold transition-colors p-1 cursor-pointer"
+            title="Sembunyikan"
+          >
+            <ChevronDown size={15} />
+          </button>
+          <button 
+            onClick={handleLogout}
+            className="text-neutral-500 hover:text-theater-red-light transition-colors p-1 cursor-pointer"
+            title="Keluar"
+          >
+            <LogOut size={14} />
+          </button>
+        </div>
       </div>
 
       {/* TABS TRAY */}
