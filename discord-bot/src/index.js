@@ -3919,17 +3919,104 @@ function saveLocalVolunteerables(list) {
   }
 }
 
+async function syncVolunteerablesFromFirestore() {
+  if (!db) return;
+  try {
+    console.log("🔄 [Volunteerables] Memulai sinkronisasi dari Firestore...");
+    const querySnapshot = await withTimeout(getDocs(collection(db, "volunteerables")), 5000);
+    const list = [];
+    querySnapshot.forEach(doc => {
+      list.push(doc.data());
+    });
+    if (list.length > 0) {
+      saveLocalVolunteerables(list);
+      console.log(`🔄 [Volunteerables] Berhasil sinkronisasi ${list.length} data dari Firestore ke lokal.`);
+    } else {
+      console.log("🔄 [Volunteerables] Tidak ada data di Firestore.");
+    }
+  } catch (err) {
+    console.warn("⚠️ [Volunteerables] Gagal sinkronisasi dari Firestore pada saat startup/GET:", err.message);
+  }
+}
+
+// Jalankan sync setelah startup (5 detik) jika Firebase terhubung
+setTimeout(() => {
+  if (db) {
+    syncVolunteerablesFromFirestore().catch(err => {
+      console.error("Gagal sinkronisasi volunteerables pada startup:", err.message);
+    });
+  }
+}, 5000);
+
 // GET all volunteerables
-app.get('/api/volunteerables', (req, res) => {
-  const list = loadLocalVolunteerables();
-  res.json(list);
+app.get('/api/volunteerables', async (req, res) => {
+  let list = [];
+  if (db) {
+    try {
+      const querySnapshot = await withTimeout(getDocs(collection(db, "volunteerables")), 5000);
+      const fsList = [];
+      querySnapshot.forEach(doc => {
+        fsList.push(doc.data());
+      });
+      if (fsList.length > 0) {
+        list = fsList;
+        saveLocalVolunteerables(list);
+      } else {
+        list = loadLocalVolunteerables();
+      }
+    } catch (err) {
+      console.warn("⚠️ Gagal mengambil volunteerables dari Firestore, menggunakan local fallback:", err.message);
+      list = loadLocalVolunteerables();
+    }
+  } else {
+    list = loadLocalVolunteerables();
+  }
+
+  // Hydrate each volunteer with Discord profile data if client is ready
+  const hydratedList = await Promise.all(list.map(async (v) => {
+    let username = "";
+    let globalName = "";
+    let avatarUrl = "";
+    if (client && isDiscordReady) {
+      try {
+        const user = await client.users.fetch(v.discordId);
+        username = user.username;
+        globalName = user.globalName || user.username;
+        avatarUrl = user.displayAvatarURL({ dynamic: true, size: 128 });
+      } catch (err) {
+        console.warn(`Gagal fetch Discord user ${v.discordId}:`, err.message);
+      }
+    }
+    return {
+      ...v,
+      username,
+      globalName,
+      avatarUrl
+    };
+  }));
+
+  res.json(hydratedList);
 });
 
 // GET single volunteerable status
-app.get('/api/volunteerables/:id', (req, res) => {
+app.get('/api/volunteerables/:id', async (req, res) => {
   const { id } = req.params;
-  const list = loadLocalVolunteerables();
-  const isVolunteerable = list.some(v => v.discordId === id);
+  let list = loadLocalVolunteerables();
+  let isVolunteerable = list.some(v => v.discordId === id);
+
+  if (!isVolunteerable && db) {
+    try {
+      const volDoc = await withTimeout(getDoc(doc(db, "volunteerables", id)), 3000);
+      if (volDoc.exists()) {
+        isVolunteerable = true;
+        list.push(volDoc.data());
+        saveLocalVolunteerables(list);
+      }
+    } catch (e) {
+      console.warn(`Gagal fetch single volunteerable ${id} dari Firestore:`, e.message);
+    }
+  }
+
   res.json({ isVolunteerable });
 });
 
@@ -5656,7 +5743,7 @@ app.get('/api/decks/:uid', (req, res) => {
   res.json(deck);
 });
 
-// POST /api/decks/deal dengan sinkronisasi Firestore
+// POST /api/decks/deal dengan sinkronisasi Firestore (asinkron di background)
 app.post('/api/decks/deal', requireClientToken, async (req, res) => {
   const { uid, cards, statuses } = req.body;
   if (!uid) {
@@ -5671,20 +5758,21 @@ app.post('/api/decks/deal', requireClientToken, async (req, res) => {
   };
   saveLocalDecks(decks);
 
-  // Sinkronisasi ke Firestore langsung dari backend
+  // Sinkronisasi ke Firestore langsung dari backend di background
   if (db) {
-    try {
-      await withTimeout(setDoc(doc(db, "user_decks", uid), decks[uid]));
-      console.log(`🔥 [Firebase] Backend sukses update deal deck untuk user ${uid} di Firestore.`);
-    } catch (fsErr) {
-      console.warn("⚠️ [Firebase] Backend gagal update deal deck di Firestore:", fsErr.message);
-    }
+    withTimeout(setDoc(doc(db, "user_decks", uid), decks[uid]))
+      .then(() => {
+        console.log(`🔥 [Firebase] Backend sukses update deal deck untuk user ${uid} di Firestore secara asinkron.`);
+      })
+      .catch((fsErr) => {
+        console.warn("⚠️ [Firebase] Backend gagal update deal deck di Firestore secara asinkron:", fsErr.message);
+      });
   }
 
   res.json({ success: true, deck: decks[uid] });
 });
 
-// POST /api/decks/update-status dengan sinkronisasi Firestore
+// POST /api/decks/update-status dengan sinkronisasi Firestore (asinkron di background)
 app.post('/api/decks/update-status', requireClientToken, async (req, res) => {
   const { uid, questId, status } = req.body;
   if (!uid || !questId || !status) {
@@ -5696,20 +5784,25 @@ app.post('/api/decks/update-status', requireClientToken, async (req, res) => {
     decks[uid].statuses[questId] = status;
     saveLocalDecks(decks);
 
-    // Sinkronisasi ke Firestore langsung dari backend
+    // Sinkronisasi ke Firestore langsung dari backend di background
     if (db) {
-      try {
-        const deckRef = doc(db, "user_decks", uid);
-        const deckDoc = await withTimeout(getDoc(deckRef));
-        if (deckDoc.exists()) {
-          const deckData = deckDoc.data();
-          const updatedStatuses = { ...deckData.statuses, [questId]: status };
-          await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
-          console.log(`🔥 [Firebase] Backend sukses update status quest ${questId} menjadi ${status} di Firestore.`);
+      (async () => {
+        try {
+          const deckRef = doc(db, "user_decks", uid);
+          const deckDoc = await withTimeout(getDoc(deckRef));
+          if (deckDoc.exists()) {
+            const deckData = deckDoc.data();
+            const updatedStatuses = { ...deckData.statuses, [questId]: status };
+            await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
+            console.log(`🔥 [Firebase] Backend sukses update status quest ${questId} menjadi ${status} di Firestore secara asinkron.`);
+          } else {
+            await withTimeout(setDoc(deckRef, decks[uid]));
+            console.log(`🔥 [Firebase] Backend sukses inisialisasi deck untuk user ${uid} di Firestore.`);
+          }
+        } catch (fsErr) {
+          console.warn("⚠️ [Firebase] Backend gagal update status deck di Firestore secara asinkron:", fsErr.message);
         }
-      } catch (fsErr) {
-        console.warn("⚠️ [Firebase] Backend gagal update status deck di Firestore:", fsErr.message);
-      }
+      })();
     }
 
     return res.json({ success: true, deck: decks[uid] });

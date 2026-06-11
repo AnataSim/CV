@@ -311,8 +311,18 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
         const key = `crunchyverse_user_deck_${currentUser.uid}`;
         localStorage.setItem(key, JSON.stringify(data));
         
+        // Load flips from localStorage if available
+        const localFlipsKey = `crunchyverse_card_flips_${currentUser.uid}`;
+        const localFlipsRaw = localStorage.getItem(localFlipsKey);
+        let localFlips: Record<string, boolean> = {};
+        if (localFlipsRaw) {
+          try {
+            localFlips = JSON.parse(localFlipsRaw);
+          } catch (e) {}
+        }
+
         setCardFlipped(prev => {
-          const nextFlips = { ...prev };
+          const nextFlips = { ...localFlips, ...prev };
           (data.cards || []).forEach((q: Quest) => {
             if (statuses[q.id] && statuses[q.id] !== "active") {
               nextFlips[q.id] = true;
@@ -395,8 +405,20 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
         }));
       }
 
+      // Load flips from localStorage if available
+      let localFlips: Record<string, boolean> = {};
+      if (currentUser?.uid) {
+        const localFlipsKey = `crunchyverse_card_flips_${currentUser.uid}`;
+        const localFlipsRaw = localStorage.getItem(localFlipsKey);
+        if (localFlipsRaw) {
+          try {
+            localFlips = JSON.parse(localFlipsRaw);
+          } catch (e) {}
+        }
+      }
+
       setCardFlipped(prev => {
-        const nextFlips = { ...prev };
+        const nextFlips = { ...localFlips, ...prev };
         (syncData.dealtQuests || []).forEach((q: Quest) => {
           if (syncData.cardStatuses[q.id] && syncData.cardStatuses[q.id] !== "active") {
             nextFlips[q.id] = true;
@@ -418,6 +440,16 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
   // Real-time synchronization of player's Quest Deck (drawn cards, status)
   useEffect(() => {
     if (!currentUser?.uid || syncData) return;
+
+    // Load flips from localStorage immediately on mount/user change
+    const localFlipsKey = `crunchyverse_card_flips_${currentUser.uid}`;
+    const localFlipsRaw = localStorage.getItem(localFlipsKey);
+    if (localFlipsRaw) {
+      try {
+        setCardFlipped(JSON.parse(localFlipsRaw));
+      } catch (e) {}
+    }
+
     fetchDeckFromApi();
     const interval = setInterval(fetchDeckFromApi, 10000); // Polling setiap 10 detik
     return () => clearInterval(interval);
@@ -974,6 +1006,10 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
       flips[q.id] = cardFlipped[q.id] || false;
     });
     setCardFlipped(flips);
+    if (currentUser?.uid) {
+      const localFlipsKey = `crunchyverse_card_flips_${currentUser.uid}`;
+      localStorage.setItem(localFlipsKey, JSON.stringify(flips));
+    }
     setActiveQuestId(null);
     setDealt(true);
     if (onTriggerSync) onTriggerSync();
@@ -986,7 +1022,14 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
       setActiveQuestId(null);
     } else {
       setActiveQuestId(questId);
-      setCardFlipped(prev => ({ ...prev, [questId]: true }));
+      setCardFlipped(prev => {
+        const nextFlips = { ...prev, [questId]: true };
+        if (currentUser?.uid) {
+          const localFlipsKey = `crunchyverse_card_flips_${currentUser.uid}`;
+          localStorage.setItem(localFlipsKey, JSON.stringify(nextFlips));
+        }
+        return nextFlips;
+      });
     }
   };
 
@@ -2190,7 +2233,7 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
                     activeQuestId === null ? "bottom-[160px] z-10" : "bottom-6 z-40"
                   }`}
                 >
-                  <div className="relative flex items-center justify-center w-[480px] h-52">
+                  <div className="relative flex items-center justify-center w-full max-w-[480px] h-52 overflow-visible">
                     {(() => {
                       let newCardIdx = 0;
                       return visibleQuests.map((quest, idx) => {
@@ -2375,7 +2418,8 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
                               : "border-theater-gold/20"
                           }`}
                           style={{
-                            left: `${leftPos}px`,
+                            left: "50%",
+                            marginLeft: `${offset * spacing - (cardWidth / 2)}px`,
                             transform: `translate3d(0, ${translateY}px, 0) rotate(${rotate}deg)`,
                             zIndex: idx + 10,
                             "--rot": `${rotate}deg`,
