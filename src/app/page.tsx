@@ -1792,6 +1792,30 @@ export default function CrunchyVerseStage() {
         </div>
       )}
 
+      {/* Mobile Bottom Navigation Bar (Mobile Only, Hidden on Stage Game) */}
+      {isScrollUnlocked && activeFrame !== "stage-game" && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex md:hidden flex-row items-center gap-1.5 bg-neutral-950/90 border border-theater-gold/15 backdrop-blur-md px-3.5 py-2 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.9),_0_0_15px_rgba(212,175,55,0.05)]">
+          {sidebarItems.map((item) => {
+            const IconComponent = item.icon;
+            const isActive = activeFrame === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => safeScrollTo(item.id)}
+                className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 cursor-pointer ${
+                  isActive
+                    ? "bg-theater-gold/10 border-theater-gold text-theater-gold shadow-[0_0_10px_rgba(212,175,55,0.2)] scale-105"
+                    : "bg-neutral-950/40 border-neutral-900/60 text-neutral-400 hover:border-theater-gold/40 hover:text-theater-gold hover:bg-neutral-900/30"
+                }`}
+                title={item.label}
+              >
+                <IconComponent size={14} />
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* FRAME 1: THE WELCOME STAGE */}
       <section 
         id="stage-welcome"
