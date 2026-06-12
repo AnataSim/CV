@@ -597,8 +597,7 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
       })());
 
       promises.push((async () => {
-        const decks = loadLocalDecks();
-        response.deck = decks[uid] || { uid, dealt: false, cards: [], statuses: {} };
+        response.deck = await getUserDeck(uid);
       })());
     }
 
@@ -823,6 +822,33 @@ function saveLocalDecks(decks) {
     console.error("Gagal menulis user_decks.json:", e.message);
   }
 }
+
+async function getUserDeck(uid) {
+  if (!uid) return { uid, dealt: false, cards: [], statuses: {} };
+
+  // 1. Coba fetch dari Firestore jika aktif
+  if (db) {
+    try {
+      const deckRef = doc(db, "user_decks", uid);
+      const deckDoc = await withTimeout(getDoc(deckRef), 3000);
+      if (deckDoc && deckDoc.exists()) {
+        const deckData = deckDoc.data();
+        // Update local JSON cache agar sinkron
+        const decks = loadLocalDecks();
+        decks[uid] = deckData;
+        saveLocalDecks(decks);
+        return deckData;
+      }
+    } catch (e) {
+      console.warn(`⚠️ [Firebase] Gagal fetch deck untuk ${uid} dari Firestore, menggunakan lokal fallback:`, e.message);
+    }
+  }
+
+  // 2. Fallback ke database lokal JSON
+  const decks = loadLocalDecks();
+  return decks[uid] || { uid, dealt: false, cards: [], statuses: {} };
+}
+
 
 const QUESTS_FILE = path.join(__dirname, '../database/quests.json');
 
@@ -5333,8 +5359,7 @@ app.post('/api/submissions/submit', requireClientToken, async (req, res) => {
 
   // 1. Resolve originalQuestId dari user's deck
   let originalQuestId = questId;
-  const decks = loadLocalDecks();
-  const userDeck = decks[userId];
+  const userDeck = await getUserDeck(userId);
   if (userDeck && userDeck.cards) {
     const card = userDeck.cards.find(c => c.id === questId);
     if (card) {
@@ -5736,10 +5761,9 @@ app.post('/api/submissions/reset-all', requireClientToken, async (req, res) => {
 });
 
 // GET /api/decks/:uid
-app.get('/api/decks/:uid', (req, res) => {
+app.get('/api/decks/:uid', async (req, res) => {
   const { uid } = req.params;
-  const decks = loadLocalDecks();
-  const deck = decks[uid] || { uid, dealt: false, cards: [], statuses: {} };
+  const deck = await getUserDeck(uid);
   res.json(deck);
 });
 
