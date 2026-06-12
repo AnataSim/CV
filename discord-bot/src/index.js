@@ -309,7 +309,19 @@ app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
 // Helper to gather sync status data in parallel
 async function verifyIsAdmin(uid) {
   if (!uid) return false;
-  
+
+  // 1. Cek in-memory cache dulu
+  const cacheKey = `is_admin:${uid}`;
+  if (typeof cache !== 'undefined') {
+    const cached = cache.get(cacheKey);
+    if (cached !== null && cached !== undefined) {
+      return cached;
+    }
+  }
+
+  let isAdmin = false;
+
+  // 2. Cek hardcoded admin IDs
   let discordId = null;
   const match = uid.match(/\d{17,20}/);
   if (match) discordId = match[0];
@@ -320,44 +332,68 @@ async function verifyIsAdmin(uid) {
     discordId === "588988763204616214" || 
     discordId === "331053654318776320"
   )) {
-    return true;
-  }
-
-  if (db) {
+    isAdmin = true;
+  } else {
+    // 3. Cek database lokal JSON (sangat cepat)
     try {
-      const userDoc = await withTimeout(getDoc(doc(db, "users", uid)), 2000);
-      if (userDoc && userDoc.exists()) {
-        const userData = userDoc.data();
-        const role = userData?.role;
-        if (role === "Volunteer Theater" || role === "Ketua Kerupuk" || role === "Ketua Keripik") {
-          return true;
+      if (typeof loadLocalUsers === 'function') {
+        const localUsers = loadLocalUsers();
+        const userData = localUsers[uid];
+        if (userData && (
+          userData.role === "Volunteer Theater" || 
+          userData.role === "Ketua Kerupuk" || 
+          userData.role === "Ketua Keripik"
+        )) {
+          isAdmin = true;
         }
       }
     } catch (e) {
-      console.error("Gagal verifikasi admin via Firestore:", e.message);
+      console.warn("Gagal cek local users di verifyIsAdmin:", e.message);
     }
-  }
 
-  if (isDiscordReady && client && discordId) {
-    try {
-      const guild = await client.guilds.fetch(GUILD_ID);
-      const member = await guild.members.fetch(discordId).catch(() => null);
-      if (member) {
-        const hasAdminRole = member.roles.cache.some(r => 
-          r.name.toLowerCase().includes('volunteer') || 
-          r.name.toLowerCase().includes('ketua') || 
-          member.permissions.has('Administrator')
-        );
-        if (hasAdminRole) {
-          return true;
+    // 4. Coba Firestore sebagai fallback jika lokal tidak tahu/bukan admin
+    if (!isAdmin && db) {
+      try {
+        const userDoc = await withTimeout(getDoc(doc(db, "users", uid)), 1000); // Turunkan timeout ke 1 detik
+        if (userDoc && userDoc.exists()) {
+          const userData = userDoc.data();
+          const role = userData?.role;
+          if (role === "Volunteer Theater" || role === "Ketua Kerupuk" || role === "Ketua Keripik") {
+            isAdmin = true;
+          }
         }
+      } catch (e) {
+        console.error("Gagal verifikasi admin via Firestore:", e.message);
       }
-    } catch (e) {
-      console.error("Gagal verifikasi admin via Discord:", e.message);
+    }
+
+    // 5. Coba Discord API sebagai fallback terakhir
+    if (!isAdmin && isDiscordReady && client && discordId) {
+      try {
+        const guild = await client.guilds.fetch(GUILD_ID);
+        const member = await guild.members.fetch(discordId).catch(() => null);
+        if (member) {
+          const hasAdminRole = member.roles.cache.some(r => 
+            r.name.toLowerCase().includes('volunteer') || 
+            r.name.toLowerCase().includes('ketua') || 
+            member.permissions.has('Administrator')
+          );
+          if (hasAdminRole) {
+            isAdmin = true;
+          }
+        }
+      } catch (e) {
+        console.error("Gagal verifikasi admin via Discord:", e.message);
+      }
     }
   }
 
-  return false;
+  // Simpan hasil ke cache memory
+  if (typeof cache !== 'undefined') {
+    cache.set(cacheKey, isAdmin, 60); // Cache selama 60 detik
+  }
+
+  return isAdmin;
 }
 
 async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
@@ -559,7 +595,14 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
 
         let liveCv = 0;
         let hasLiveCv = false;
-        if (isDiscordReady && client && discordId) {
+
+        const cvCacheKey = `user_cv:${uid}`;
+        const cachedCv = typeof cache !== 'undefined' ? cache.get(cvCacheKey) : null;
+
+        if (cachedCv !== null && cachedCv !== undefined) {
+          liveCv = cachedCv;
+          hasLiveCv = true;
+        } else if (isDiscordReady && client && discordId) {
           try {
             const guild = await client.guilds.fetch(GUILD_ID);
             const member = await guild.members.fetch(discordId).catch(() => null);
@@ -581,6 +624,10 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
                 if (roleCv) liveCv += roleCv;
               });
               hasLiveCv = true;
+
+              if (typeof cache !== 'undefined') {
+                cache.set(cvCacheKey, liveCv, 30); // Cache selama 30 detik
+              }
             }
           } catch (err) {}
         }
