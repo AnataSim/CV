@@ -626,6 +626,30 @@ export default function CrunchyVerseStage() {
     }
   }, [currentUser?.uid, activeChatChannel, userRole, hasMounted, wsConnected]);
 
+  // Instantly load user's quest deck from localStorage to avoid blank screen/delay on refresh
+  useEffect(() => {
+    if (typeof window !== "undefined" && currentUser?.uid) {
+      const key = `crunchyverse_user_deck_${currentUser.uid}`;
+      const storedDeckRaw = localStorage.getItem(key);
+      if (storedDeckRaw) {
+        try {
+          const storedDeck = JSON.parse(storedDeckRaw);
+          if (storedDeck) {
+            setSyncGameData(prev => ({
+              ...prev,
+              dealtQuests: storedDeck.cards || [],
+              dealt: storedDeck.dealt || false,
+              cardStatuses: storedDeck.statuses || {}
+            }));
+            console.log("⚡ Instant deck load from localStorage cache for:", currentUser.uid);
+          }
+        } catch (e) {
+          console.error("Gagal parse cached deck:", e);
+        }
+      }
+    }
+  }, [currentUser?.uid]);
+
   const triggerSyncRefresh = () => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       sendWsSync();
