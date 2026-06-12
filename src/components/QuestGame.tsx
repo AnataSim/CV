@@ -151,12 +151,86 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
     }
     return DEFAULT_QUESTS;
   });
-  const [dealtQuests, setDealtQuests] = useState<Quest[]>([]);
-  const [dealt, setDealt] = useState(false);
-  const [cardFlipped, setCardFlipped] = useState<Record<string, boolean>>({});
+  const [dealtQuests, setDealtQuests] = useState<Quest[]>(() => {
+    if (syncData?.dealtQuests && syncData.dealtQuests.length > 0) {
+      return syncData.dealtQuests;
+    }
+    if (typeof window !== "undefined") {
+      const lastUid = currentUser?.uid || localStorage.getItem("crunchy_last_uid");
+      if (lastUid) {
+        const key = `crunchyverse_user_deck_${lastUid}`;
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          try {
+            return JSON.parse(stored).cards || [];
+          } catch (e) {}
+        }
+      }
+    }
+    return [];
+  });
+  const [dealt, setDealt] = useState<boolean>(() => {
+    if (syncData?.dealt) return syncData.dealt;
+    if (typeof window !== "undefined") {
+      const lastUid = currentUser?.uid || localStorage.getItem("crunchy_last_uid");
+      if (lastUid) {
+        const key = `crunchyverse_user_deck_${lastUid}`;
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          try {
+            return JSON.parse(stored).dealt || false;
+          } catch (e) {}
+        }
+      }
+    }
+    return false;
+  });
+  const [cardFlipped, setCardFlipped] = useState<Record<string, boolean>>(() => {
+    let localFlips: Record<string, boolean> = {};
+    const uid = currentUser?.uid || (typeof window !== "undefined" ? localStorage.getItem("crunchy_last_uid") : null);
+    if (uid) {
+      const localFlipsKey = `crunchyverse_card_flips_${uid}`;
+      if (typeof window !== "undefined") {
+        const localFlipsRaw = localStorage.getItem(localFlipsKey);
+        if (localFlipsRaw) {
+          try {
+            localFlips = JSON.parse(localFlipsRaw);
+          } catch (e) {}
+        }
+      }
+    }
+    const finalCards = syncData?.dealtQuests || [];
+    const finalStatuses = syncData?.cardStatuses || {};
+    if (finalCards.length > 0) {
+      finalCards.forEach((q: Quest) => {
+        if (finalStatuses[q.id] && finalStatuses[q.id] !== "active") {
+          localFlips[q.id] = true;
+        }
+      });
+    }
+    return localFlips;
+  });
   const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
-  const [cardStatuses, setCardStatuses] = useState<Record<string, "active" | "pending" | "Completed" | "Denied">>({});
+  const [cardStatuses, setCardStatuses] = useState<Record<string, "active" | "pending" | "Completed" | "Denied">>(() => {
+    if (syncData?.cardStatuses && Object.keys(syncData.cardStatuses).length > 0) {
+      return syncData.cardStatuses;
+    }
+    if (typeof window !== "undefined") {
+      const lastUid = currentUser?.uid || localStorage.getItem("crunchy_last_uid");
+      if (lastUid) {
+        const key = `crunchyverse_user_deck_${lastUid}`;
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          try {
+            return JSON.parse(stored).statuses || {};
+          } catch (e) {}
+        }
+      }
+    }
+    return {};
+  });
   const activeQuest = activeQuestId ? dealtQuests.find(q => q.id === activeQuestId) : null;
+  const [isDealing, setIsDealing] = useState(false);
   
   // Admin form state
   const [showAdminPanel, setShowAdminPanel] = useState(false);
@@ -873,147 +947,151 @@ export default function QuestGame({ currentUser, displayName, userRole, onScroll
 
   // Game action: Deal Math.min(5, quests.length) cards
   const handleDealCards = async () => {
-    if (quests.length === 0 || !currentUser?.uid) return;
-    
-    // Sort quests by difficulty
-    const easyQuests = quests.filter(q => q.difficulty === "Mudah");
-    const mediumQuests = quests.filter(q => q.difficulty === "Sedang");
-    const hardQuests = quests.filter(q => q.difficulty === "Sulit");
-    const legendaryQuests = quests.filter(q => q.difficulty === "Legendaris");
+    if (quests.length === 0 || !currentUser?.uid || isDealing) return;
+    setIsDealing(true);
+    try {
+      // Sort quests by difficulty
+      const easyQuests = quests.filter(q => q.difficulty === "Mudah");
+      const mediumQuests = quests.filter(q => q.difficulty === "Sedang");
+      const hardQuests = quests.filter(q => q.difficulty === "Sulit");
+      const legendaryQuests = quests.filter(q => q.difficulty === "Legendaris");
 
-    // Check completed count based on approved active submissions
-    const completedQuestIds = new Set(
-      allSubmissions
-        .filter((s: any) => s.userId === currentUser.uid && s.status === "approved")
-        .map((s: any) => s.questId)
-    );
-    const completedCount = completedQuestIds.size;
+      // Check completed count based on approved active submissions
+      const completedQuestIds = new Set(
+        allSubmissions
+          .filter((s: any) => s.userId === currentUser.uid && s.status === "approved")
+          .map((s: any) => s.questId)
+      );
+      const completedCount = completedQuestIds.size;
 
-    const isFirstTime = completedCount === 0;
+      const isFirstTime = completedCount === 0;
 
-    // Retain existing uncompleted cards in hand (active or pending)
-    const retainedCards = dealt ? dealtQuests.filter(q => cardStatuses[q.id] === "active" || cardStatuses[q.id] === "pending") : [];
-    
-    const selected: Quest[] = [...retainedCards];
-    const selectedIds = new Set<string>(retainedCards.map(c => c.id));
+      // Retain existing uncompleted cards in hand (active or pending)
+      const retainedCards = dealt ? dealtQuests.filter(q => cardStatuses[q.id] === "active" || cardStatuses[q.id] === "pending") : [];
+      
+      const selected: Quest[] = [...retainedCards];
+      const selectedIds = new Set<string>(retainedCards.map(c => c.id));
 
-    // Exclude completed quests AND currently retained quests from the pool to avoid duplicates
-    const pool = quests.filter(q => !completedQuestIds.has(q.id) && !selectedIds.has(q.id));
+      // Exclude completed quests AND currently retained quests from the pool to avoid duplicates
+      const pool = quests.filter(q => !completedQuestIds.has(q.id) && !selectedIds.has(q.id));
 
-    const cardsToDraw = 5 - retainedCards.length;
+      const cardsToDraw = 5 - retainedCards.length;
 
-    if (pool.length + retainedCards.length <= 5) {
-      pool.forEach(q => {
-        if (!selectedIds.has(q.id)) {
-          selected.push(q);
-          selectedIds.add(q.id);
-        }
-      });
-    } else if (cardsToDraw > 0) {
-      // Draw cardsToDraw unique cards based on weighted probabilities
-      for (let i = 0; i < cardsToDraw; i++) {
-        const rand = Math.random() * 100;
-        let targetDifficulty: "Mudah" | "Sedang" | "Sulit" | "Legendaris" = "Mudah";
+      if (pool.length + retainedCards.length <= 5) {
+        pool.forEach(q => {
+          if (!selectedIds.has(q.id)) {
+            selected.push(q);
+            selectedIds.add(q.id);
+          }
+        });
+      } else if (cardsToDraw > 0) {
+        // Draw cardsToDraw unique cards based on weighted probabilities
+        for (let i = 0; i < cardsToDraw; i++) {
+          const rand = Math.random() * 100;
+          let targetDifficulty: "Mudah" | "Sedang" | "Sulit" | "Legendaris" = "Mudah";
 
-        if (isFirstTime) {
-          // Pertama kali: Mudah 50%, Sedang 40%, Sulit 9%, Legendaris 1%
-          if (rand < 50) targetDifficulty = "Mudah";
-          else if (rand < 90) targetDifficulty = "Sedang";
-          else if (rand < 99) targetDifficulty = "Sulit";
-          else targetDifficulty = "Legendaris";
-        } else {
-          // Mengambil lagi: Mudah 20%, Sedang 50%, Sulit 25%, Legendaris 5%
-          if (rand < 20) targetDifficulty = "Mudah";
-          else if (rand < 70) targetDifficulty = "Sedang";
-          else if (rand < 95) targetDifficulty = "Sulit";
-          else targetDifficulty = "Legendaris";
-        }
+          if (isFirstTime) {
+            // Pertama kali: Mudah 50%, Sedang 40%, Sulit 9%, Legendaris 1%
+            if (rand < 50) targetDifficulty = "Mudah";
+            else if (rand < 90) targetDifficulty = "Sedang";
+            else if (rand < 99) targetDifficulty = "Sulit";
+            else targetDifficulty = "Legendaris";
+          } else {
+            // Mengambil lagi: Mudah 20%, Sedang 50%, Sulit 25%, Legendaris 5%
+            if (rand < 20) targetDifficulty = "Mudah";
+            else if (rand < 70) targetDifficulty = "Sedang";
+            else if (rand < 95) targetDifficulty = "Sulit";
+            else targetDifficulty = "Legendaris";
+          }
 
-        // Get unselected quests of this difficulty from the pool
-        let diffPool: Quest[] = [];
-        if (targetDifficulty === "Mudah") diffPool = easyQuests.filter(q => pool.some(p => p.id === q.id) && !selectedIds.has(q.id));
-        else if (targetDifficulty === "Sedang") diffPool = mediumQuests.filter(q => pool.some(p => p.id === q.id) && !selectedIds.has(q.id));
-        else if (targetDifficulty === "Sulit") diffPool = hardQuests.filter(q => pool.some(p => p.id === q.id) && !selectedIds.has(q.id));
-        else if (targetDifficulty === "Legendaris") diffPool = legendaryQuests.filter(q => pool.some(p => p.id === q.id) && !selectedIds.has(q.id));
+          // Get unselected quests of this difficulty from the pool
+          let diffPool: Quest[] = [];
+          if (targetDifficulty === "Mudah") diffPool = easyQuests.filter(q => pool.some(p => p.id === q.id) && !selectedIds.has(q.id));
+          else if (targetDifficulty === "Sedang") diffPool = mediumQuests.filter(q => pool.some(p => p.id === q.id) && !selectedIds.has(q.id));
+          else if (targetDifficulty === "Sulit") diffPool = hardQuests.filter(q => pool.some(p => p.id === q.id) && !selectedIds.has(q.id));
+          else if (targetDifficulty === "Legendaris") diffPool = legendaryQuests.filter(q => pool.some(p => p.id === q.id) && !selectedIds.has(q.id));
 
-        // Fallback if target difficulty pool is empty
-        if (diffPool.length === 0) {
-          const availableQuests = pool.filter(q => !selectedIds.has(q.id));
-          if (availableQuests.length > 0) {
-            const chosen = availableQuests[Math.floor(Math.random() * availableQuests.length)];
+          // Fallback if target difficulty pool is empty
+          if (diffPool.length === 0) {
+            const availableQuests = pool.filter(q => !selectedIds.has(q.id));
+            if (availableQuests.length > 0) {
+              const chosen = availableQuests[Math.floor(Math.random() * availableQuests.length)];
+              selected.push(chosen);
+              selectedIds.add(chosen.id);
+            }
+          } else {
+            const chosen = diffPool[Math.floor(Math.random() * diffPool.length)];
             selected.push(chosen);
             selectedIds.add(chosen.id);
           }
-        } else {
-          const chosen = diffPool[Math.floor(Math.random() * diffPool.length)];
-          selected.push(chosen);
-          selectedIds.add(chosen.id);
         }
       }
-    }
 
-    const randomId = Math.random().toString(36).substring(2, 10);
-    const finalSelected = selected.map((q, idx) => {
-      if (q.id && q.id.startsWith("quest-")) {
-        return q;
-      }
-      return {
-        ...q,
-        originalQuestId: (q as any).originalQuestId || q.id,
-        id: `quest-${currentUser.uid}.${randomId}_${idx}`
-      };
-    });
-
-    const initialStatuses: Record<string, "active" | "pending" | "Completed" | "Denied"> = {};
-    finalSelected.forEach(q => {
-      // Keep existing status if it was retained, otherwise default to "active"
-      initialStatuses[q.id] = cardStatuses[q.id] || "active";
-    });
-
-    const deckData = {
-      uid: currentUser.uid,
-      dealt: true,
-      cards: finalSelected,
-      statuses: initialStatuses
-    };
-
-    let apiSuccess = false;
-    try {
-      const res = await signedFetch(`${BACKEND_URL}/api/decks/deal`, {
-        method: "POST",
-        body: JSON.stringify({
-          uid: currentUser.uid,
-          cards: finalSelected,
-          statuses: initialStatuses
-        }),
-        sensitive: true
+      const randomId = Math.random().toString(36).substring(2, 10);
+      const finalSelected = selected.map((q, idx) => {
+        if (q.id && q.id.startsWith("quest-")) {
+          return q;
+        }
+        return {
+          ...q,
+          originalQuestId: (q as any).originalQuestId || q.id,
+          id: `quest-${currentUser.uid}.${randomId}_${idx}`
+        };
       });
-      if (res.ok) apiSuccess = true;
-    } catch (err: any) {
-      console.warn("⚠️ Gagal menyimpan deck ke Bot API:", err.message);
-    }
 
-    let firestoreSuccess = apiSuccess;
+      const initialStatuses: Record<string, "active" | "pending" | "Completed" | "Denied"> = {};
+      finalSelected.forEach(q => {
+        // Keep existing status if it was retained, otherwise default to "active"
+        initialStatuses[q.id] = cardStatuses[q.id] || "active";
+      });
 
-    if (!apiSuccess && !firestoreSuccess) {
-      localStorage.setItem(`crunchyverse_user_deck_${currentUser.uid}`, JSON.stringify(deckData));
+      const deckData = {
+        uid: currentUser.uid,
+        dealt: true,
+        cards: finalSelected,
+        statuses: initialStatuses
+      };
+
+      let apiSuccess = false;
+      try {
+        const res = await signedFetch(`${BACKEND_URL}/api/decks/deal`, {
+          method: "POST",
+          body: JSON.stringify({
+            uid: currentUser.uid,
+            cards: finalSelected,
+            statuses: initialStatuses
+          }),
+          sensitive: true
+        });
+        if (res.ok) apiSuccess = true;
+      } catch (err: any) {
+        console.warn("⚠️ Gagal menyimpan deck ke Bot API:", err.message);
+      }
+
+      let firestoreSuccess = apiSuccess;
+
+      if (!apiSuccess && !firestoreSuccess) {
+        localStorage.setItem(`crunchyverse_user_deck_${currentUser.uid}`, JSON.stringify(deckData));
+      }
+      
+      setDealtQuests(finalSelected);
+      // Retain flips mapping for already exposed cards, default to false for new cards
+      const flips: Record<string, boolean> = {};
+      finalSelected.forEach(q => {
+        flips[q.id] = cardFlipped[q.id] || false;
+      });
+      setCardFlipped(flips);
+      if (currentUser?.uid) {
+        const localFlipsKey = `crunchyverse_card_flips_${currentUser.uid}`;
+        localStorage.setItem(localFlipsKey, JSON.stringify(flips));
+      }
+      setActiveQuestId(null);
+      setDealt(true);
+      if (onTriggerSync) onTriggerSync();
+      else fetchDeckFromApi();
+    } finally {
+      setIsDealing(false);
     }
-    
-    setDealtQuests(finalSelected);
-    // Retain flips mapping for already exposed cards, default to false for new cards
-    const flips: Record<string, boolean> = {};
-    finalSelected.forEach(q => {
-      flips[q.id] = cardFlipped[q.id] || false;
-    });
-    setCardFlipped(flips);
-    if (currentUser?.uid) {
-      const localFlipsKey = `crunchyverse_card_flips_${currentUser.uid}`;
-      localStorage.setItem(localFlipsKey, JSON.stringify(flips));
-    }
-    setActiveQuestId(null);
-    setDealt(true);
-    if (onTriggerSync) onTriggerSync();
-    else fetchDeckFromApi();
   };
 
   // Click card handler

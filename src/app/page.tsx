@@ -402,12 +402,37 @@ export default function CrunchyVerseStage() {
     dealt: boolean;
     cardStatuses: Record<string, any>;
     allSubmissions: any[];
-  }>({
-    userCv: 0,
-    dealtQuests: [],
-    dealt: false,
-    cardStatuses: {},
-    allSubmissions: []
+  }>(() => {
+    if (typeof window !== "undefined") {
+      const lastUid = localStorage.getItem("crunchy_last_uid");
+      if (lastUid) {
+        const key = `crunchyverse_user_deck_${lastUid}`;
+        const storedDeckRaw = localStorage.getItem(key);
+        if (storedDeckRaw) {
+          try {
+            const storedDeck = JSON.parse(storedDeckRaw);
+            if (storedDeck) {
+              return {
+                userCv: 0,
+                dealtQuests: storedDeck.cards || [],
+                dealt: storedDeck.dealt || false,
+                cardStatuses: storedDeck.statuses || {},
+                allSubmissions: []
+              };
+            }
+          } catch (e) {
+            console.error("Gagal parse cached deck in initial state:", e);
+          }
+        }
+      }
+    }
+    return {
+      userCv: 0,
+      dealtQuests: [],
+      dealt: false,
+      cardStatuses: {},
+      allSubmissions: []
+    };
   });
 
   const performUnifiedSync = async (silent = false) => {
@@ -680,6 +705,9 @@ export default function CrunchyVerseStage() {
       // Monitor real Firebase login state
       const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
         if (firebaseUser) {
+          if (typeof window !== "undefined") {
+            localStorage.setItem("crunchy_last_uid", firebaseUser.uid);
+          }
           // Check if we have cached profile details
           let cachedProfile: any = null;
           if (typeof window !== "undefined") {
@@ -890,6 +918,9 @@ export default function CrunchyVerseStage() {
             try {
               const sessionUser = JSON.parse(activeSession);
               if (sessionUser && typeof sessionUser.uid === 'string' && sessionUser.uid.startsWith("sim-")) {
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("crunchy_last_uid", sessionUser.uid);
+                }
                 setCurrentUser(sessionUser);
                 setDisplayName(sessionUser.name);
                 setUserRole(sessionUser.role);
@@ -1578,6 +1609,9 @@ export default function CrunchyVerseStage() {
     setUserAvatar(avatarUrl);
     
     if (user && user.uid) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("crunchy_last_uid", user.uid);
+      }
       const cachedProfile = {
         uid: user.uid,
         name: name,
@@ -1597,6 +1631,7 @@ export default function CrunchyVerseStage() {
   // Sign out handler
   const handleLogout = async () => {
     localStorage.removeItem("crunchy_session");
+    localStorage.removeItem("crunchy_last_uid");
     if (currentUser?.uid) {
       localStorage.removeItem(`crunchy_profile_${currentUser.uid}`);
     }
