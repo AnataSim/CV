@@ -818,6 +818,10 @@ function loadLocalDecks() {
 function saveLocalDecks(decks) {
   try {
     fs.writeFileSync(DECKS_FILE, JSON.stringify(decks, null, 2), 'utf8');
+    // Invalidate memory cache so that the next read gets the fresh data
+    if (typeof cache !== 'undefined' && cache.deletePrefix) {
+      cache.deletePrefix('user_deck:');
+    }
   } catch (e) {
     console.error("Gagal menulis user_decks.json:", e.message);
   }
@@ -826,27 +830,45 @@ function saveLocalDecks(decks) {
 async function getUserDeck(uid) {
   if (!uid) return { uid, dealt: false, cards: [], statuses: {} };
 
-  // 1. Coba fetch dari Firestore jika aktif
+  // 1. Cek in-memory cache dulu untuk performance instan
+  const cacheKey = `user_deck:${uid}`;
+  const cachedDeck = cache.get(cacheKey);
+  if (cachedDeck) {
+    return cachedDeck;
+  }
+
+  // 2. Coba baca dari database lokal JSON
+  const decks = loadLocalDecks();
+  const localDeck = decks[uid];
+  
+  // Jika deck lokal sudah ada dan didealkan (dealt === true), langsung cache di memory dan kembalikan (cepat)
+  if (localDeck && localDeck.dealt) {
+    cache.set(cacheKey, localDeck, 30); // Cache selama 30 detik
+    return localDeck;
+  }
+
+  // 3. Jika tidak ada di lokal atau dealt masih false, coba fetch dari Firestore
   if (db) {
     try {
       const deckRef = doc(db, "user_decks", uid);
-      const deckDoc = await withTimeout(getDoc(deckRef), 3000);
+      // Gunakan timeout yang sangat singkat (500ms) agar jika Firestore lambat/tidak terjangkau tidak menyebabkan lag
+      const deckDoc = await withTimeout(getDoc(deckRef), 500);
       if (deckDoc && deckDoc.exists()) {
         const deckData = deckDoc.data();
         // Update local JSON cache agar sinkron
-        const decks = loadLocalDecks();
         decks[uid] = deckData;
         saveLocalDecks(decks);
+        cache.set(cacheKey, deckData, 30); // Cache selama 30 detik
         return deckData;
       }
     } catch (e) {
-      console.warn(`⚠️ [Firebase] Gagal fetch deck untuk ${uid} dari Firestore, menggunakan lokal fallback:`, e.message);
+      console.warn(`⚠️ [Firebase] Gagal fetch deck untuk ${uid} dari Firestore:`, e.message);
     }
   }
 
-  // 2. Fallback ke database lokal JSON
-  const decks = loadLocalDecks();
-  return decks[uid] || { uid, dealt: false, cards: [], statuses: {} };
+  const finalDeck = localDeck || { uid, dealt: false, cards: [], statuses: {} };
+  cache.set(cacheKey, finalDeck, 10); // Cache deck kosong/belum deal selama 10 detik agar tidak timeout berulang-ulang
+  return finalDeck;
 }
 
 
