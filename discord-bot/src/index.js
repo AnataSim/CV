@@ -2156,15 +2156,14 @@ function initializeBot(token) {
         const result = await roleConn.installUserProfileWidget(userId, token);
 
         if (result.success) {
-          try {
-            await roleConn.updateConnectionMetadata(userId, acc.username, token);
-          } catch (err) {
-            console.warn("⚠️ Gagal update status widget secara instan setelah instalasi:", err.message);
-          }
-
+          // Kirim reply DULU agar tidak stuck "is thinking"
           await interaction.editReply({
             content: '✅ **Widget CrunchyVerse berhasil dipasang ke profil Anda!**\nSilakan reload Discord client Anda (`Ctrl + R`), buka profil Anda, dan cek tab **Board**.'
           });
+
+          // Update metadata di background (tidak blokir reply)
+          roleConn.updateConnectionMetadata(userId, acc.username, token)
+            .catch(err => console.warn("⚠️ Gagal update status widget secara instan setelah instalasi:", err.message));
         } else {
           await interaction.editReply({
             content: `❌ **Gagal memasang widget ke profil:** ${result.error || 'Unknown error'}\nPastikan Anda sudah melakukan otorisasi link widget dengan benar.`
