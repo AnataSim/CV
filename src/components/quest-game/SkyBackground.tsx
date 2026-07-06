@@ -34,7 +34,15 @@ export default function SkyBackground({ isMorning, isSunset }: SkyBackgroundProp
   }, []);
 
   return (
-    <div className="absolute inset-x-0 bottom-0 top-[20%] select-none z-0">
+    <div 
+      className="absolute inset-0 adaptive-sky select-none z-0"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(6, 1, 2, 0.45), rgba(6, 1, 2, 0.85)), url('/challenge_bg.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       <img
         src="/pixel_fox.png"
         alt="Pixel Fox"
