@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Play, Shield, Sparkle, X } from "lucide-react";
 import { db, isFirebaseConfigured } from "../lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
@@ -101,6 +101,7 @@ export default function QuestGame({
   const BACKEND_URL = backendUrl || (typeof window !== "undefined" ? localStorage.getItem("crunchy_backend_url") : null) || process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:3001";
   
   const [gameState, setGameState] = useState<"menu" | "playing">("menu");
+  const lastDealTimeRef = useRef<number>(0);
   const [timeMode, setTimeMode] = useState<"auto" | "morning" | "sunset" | "night">("auto");
   const [currentHour, setCurrentHour] = useState<number>(() => {
     const hourStr = new Intl.DateTimeFormat("id-ID", {
@@ -403,19 +404,26 @@ export default function QuestGame({
   useEffect(() => {
     if (syncData) {
       setUserCv(syncData.userCv);
-      setDealtQuests(syncData.dealtQuests);
-      setDealt(syncData.dealt);
-      setCardStatuses(syncData.cardStatuses);
       setAllSubmissions(syncData.allSubmissions);
 
-      if (currentUser?.uid) {
-        const key = `crunchyverse_user_deck_${currentUser.uid}`;
-        localStorage.setItem(key, JSON.stringify({
-          uid: currentUser.uid,
-          dealt: syncData.dealt,
-          cards: syncData.dealtQuests,
-          statuses: syncData.cardStatuses
-        }));
+      // Avoid overwriting local optimistic deal state with stale server state
+      const timeSinceLastDeal = Date.now() - lastDealTimeRef.current;
+      const isRecentDeal = timeSinceLastDeal < 5000; // 5 seconds cooldown
+
+      if (!isRecentDeal || syncData.dealt) {
+        setDealtQuests(syncData.dealtQuests);
+        setDealt(syncData.dealt);
+        setCardStatuses(syncData.cardStatuses);
+
+        if (currentUser?.uid) {
+          const key = `crunchyverse_user_deck_${currentUser.uid}`;
+          localStorage.setItem(key, JSON.stringify({
+            uid: currentUser.uid,
+            dealt: syncData.dealt,
+            cards: syncData.dealtQuests,
+            statuses: syncData.cardStatuses
+          }));
+        }
       }
 
       let localFlips: Record<string, boolean> = {};
@@ -561,6 +569,7 @@ export default function QuestGame({
   const handleDealCards = async () => {
     if (quests.length === 0 || !currentUser?.uid || isDealing) return;
     setIsDealing(true);
+    lastDealTimeRef.current = Date.now();
     try {
       const easyQuests = quests.filter(q => q.difficulty === "Mudah");
       const mediumQuests = quests.filter(q => q.difficulty === "Sedang");
