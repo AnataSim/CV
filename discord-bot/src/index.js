@@ -4893,24 +4893,24 @@ async function updateDiscordProfileWidget(userId, stats) {
     data: {
       dynamic: [
         {
-          type: 2,
+          type: 1,
           name: "level", // Sesuai Data Field Key di Developer Portal
-          value: stats.level
+          value: String(stats.level)
         },
         {
-          type: 2,
+          type: 1,
           name: "voice",
-          value: stats.voice
+          value: String(stats.voice)
         },
         {
-          type: 2,
+          type: 1,
           name: "streak",
-          value: stats.streak
+          value: String(stats.streak)
         },
         {
-          type: 2,
+          type: 1,
           name: "cv_wealth",
-          value: stats.cv_wealth
+          value: String(stats.cv_wealth)
         }
       ]
     }
