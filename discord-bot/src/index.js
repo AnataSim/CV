@@ -1751,7 +1751,7 @@ function initializeBot(token) {
 
       const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
-      const oauthUrl = `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&redirect_uri=${encodeURIComponent(process.env.DISCORD_REDIRECT_URI)}&response_type=code&scope=identify%20role_connections.write%20sdk.social_layer_presence`;
+      const oauthUrl = `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&redirect_uri=${encodeURIComponent(process.env.DISCORD_REDIRECT_URI)}&response_type=code&scope=identify%20role_connections.write%20sdk.social_layer`;
 
       const embed = new EmbedBuilder()
         .setTitle('🎪 CrunchyVerse Board Profile Widget 🎪')
@@ -5078,7 +5078,7 @@ app.get('/api/oauth/link', (req, res) => {
   const clientId = process.env.DISCORD_CLIENT_ID;
   const redirectUri = encodeURIComponent(process.env.DISCORD_REDIRECT_URI);
   const state = req.query.state || 'link';
-  const url = `https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify+role_connections.write&state=${state}`;
+  const url = `https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify+role_connections.write+sdk.social_layer&state=${state}`;
   return res.redirect(url);
 });
 
