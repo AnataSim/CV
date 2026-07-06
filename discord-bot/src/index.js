@@ -3435,9 +3435,9 @@ app.get('/api/leaderboard', async (req, res) => {
     // Final Response Merger
     if (resolvedCakey) {
       res.json({
-        leveling: resolvedCakey.leveling.slice(0, 10),
-        streak: resolvedCakey.streak.slice(0, 10),
-        voice: resolvedCakey.voice.slice(0, 10),
+        leveling: resolvedCakey.leveling,
+        streak: resolvedCakey.streak,
+        voice: resolvedCakey.voice,
         cvWealth: finalCvWealth
       });
     } else {
@@ -4848,14 +4848,6 @@ async function getUserStats(userId) {
   const targetIds = [userId];
   const targetUsernames = [];
   if (username) targetUsernames.push(username);
-
-  // Link test account (sim.tsx) with main account (raiidd) so they share progress
-  if (userId === "661135501226672129" || userId === "418285751743021066") {
-    if (!targetIds.includes("661135501226672129")) targetIds.push("661135501226672129");
-    if (!targetIds.includes("418285751743021066")) targetIds.push("418285751743021066");
-    if (!targetUsernames.includes("sim.tsx")) targetUsernames.push("sim.tsx");
-    if (!targetUsernames.includes("raiidd")) targetUsernames.push("raiidd");
-  }
 
   try {
     const lbUrl = `http://localhost:${PORT}/api/leaderboard`;
