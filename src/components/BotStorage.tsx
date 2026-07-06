@@ -4,25 +4,11 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Shield,
   Users,
-  Coins,
   RefreshCw,
-  ChevronDown,
-  ChevronUp,
-  User,
-  Key,
   Search,
-  Hash,
-  Lock,
-  Eye,
-  MessageSquare,
-  Mic,
-  Crown,
-  Settings,
-  Zap,
-  Bell,
-  Ban,
-  Star,
 } from "lucide-react";
+import RoleCard from "./bot-storage/RoleCard";
+import RoleDetail from "./bot-storage/RoleDetail";
 
 // ─── Interfaces ─────────────────────────────────────────────────────────────
 
@@ -48,38 +34,6 @@ interface RoleData {
 interface BotStorageProps {
   backendUrl: string;
 }
-
-// ─── Permission icon & label map ────────────────────────────────────────────
-
-const PERM_META: Record<string, { label: string; icon: React.ReactNode; tier: "admin" | "mod" | "basic" }> = {
-  ADMINISTRATOR:           { label: "Administrator",        icon: <Crown size={9} />,      tier: "admin" },
-  MANAGE_GUILD:            { label: "Kelola Server",        icon: <Settings size={9} />,   tier: "admin" },
-  MANAGE_ROLES:            { label: "Kelola Role",          icon: <Shield size={9} />,     tier: "admin" },
-  MANAGE_CHANNELS:         { label: "Kelola Channel",       icon: <Hash size={9} />,       tier: "admin" },
-  MANAGE_MESSAGES:         { label: "Kelola Pesan",         icon: <MessageSquare size={9} />, tier: "mod" },
-  MANAGE_WEBHOOKS:         { label: "Kelola Webhook",       icon: <Zap size={9} />,        tier: "mod" },
-  KICK_MEMBERS:            { label: "Kick Member",          icon: <Ban size={9} />,        tier: "mod" },
-  BAN_MEMBERS:             { label: "Ban Member",           icon: <Ban size={9} />,        tier: "mod" },
-  MODERATE_MEMBERS:        { label: "Timeout Member",       icon: <Lock size={9} />,       tier: "mod" },
-  VIEW_CHANNEL:            { label: "Lihat Channel",        icon: <Eye size={9} />,        tier: "basic" },
-  SEND_MESSAGES:           { label: "Kirim Pesan",          icon: <MessageSquare size={9} />, tier: "basic" },
-  ATTACH_FILES:            { label: "Lampirkan File",       icon: <MessageSquare size={9} />, tier: "basic" },
-  CONNECT:                 { label: "Masuk Voice",          icon: <Mic size={9} />,        tier: "basic" },
-  SPEAK:                   { label: "Bicara di Voice",      icon: <Mic size={9} />,        tier: "basic" },
-  USE_EXTERNAL_EMOJIS:     { label: "Emoji Eksternal",      icon: <Star size={9} />,       tier: "basic" },
-  ADD_REACTIONS:           { label: "Tambah Reaksi",        icon: <Star size={9} />,       tier: "basic" },
-  MENTION_EVERYONE:        { label: "Mention @everyone",    icon: <Bell size={9} />,       tier: "mod" },
-  MUTE_MEMBERS:            { label: "Bisukan Member",       icon: <Mic size={9} />,        tier: "mod" },
-  DEAFEN_MEMBERS:          { label: "Deafen Member",        icon: <Mic size={9} />,        tier: "mod" },
-  MOVE_MEMBERS:            { label: "Pindahkan Member",     icon: <Users size={9} />,      tier: "mod" },
-  PRIORITY_SPEAKER:        { label: "Prioritas Suara",      icon: <Mic size={9} />,        tier: "basic" },
-};
-
-const TIER_STYLE = {
-  admin: "bg-red-950/60 border-red-800/50 text-red-300",
-  mod:   "bg-amber-950/60 border-amber-800/40 text-amber-300",
-  basic: "bg-neutral-900 border-neutral-800 text-neutral-400",
-};
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -185,7 +139,7 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
     setPageInput("");
   };
 
-  // Smart page numbers: always show first, last, current ± 1, ellipsis for gaps
+  // Smart page numbers
   const getPageNumbers = (): (number | "...")[] => {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
     const pages: (number | "...")[] = [];
@@ -215,7 +169,6 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
   // Stats summary
   const totalMembers   = roles.reduce((s, r) => s + r.members.length, 0);
   const rolesWithCv    = roles.filter(r => r.cvAmount).length;
-  const rolesWithIcon  = roles.filter(r => r.icon).length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -387,7 +340,7 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
                   background: "#0a0a0a",
                 }}
               >
-                {/* Left accent bar — solid or animated gradient */}
+                {/* Left accent bar */}
                 <div
                   className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${gradient ? "role-gradient-bar" : ""}`}
                   style={{
@@ -396,255 +349,20 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
                   }}
                 />
 
-                {/* ── Card Header (always visible) ── */}
-                <div
-                  onClick={() => toggleExpand(role.id)}
-                  className="pl-5 pr-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer select-none group relative"
-                  style={{ background: isExpanded ? hexAlpha08 : "transparent" }}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    {/* Role icon / color swatch */}
-                    <div
-                      className="h-11 w-11 rounded-xl shrink-0 border flex items-center justify-center overflow-hidden"
-                      style={{ borderColor: `${roleColor}40`, background: `${roleColor}15` }}
-                    >
-                      {role.icon ? (
-                        <img
-                          src={role.icon}
-                          alt={role.name}
-                          className="h-full w-full object-cover"
-                          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-                        />
-                      ) : (
-                        <Shield size={20} style={{ color: roleColor }} />
-                      )}
-                    </div>
+                <RoleCard
+                  role={role}
+                  isExpanded={isExpanded}
+                  onToggleExpand={toggleExpand}
+                  roleColor={roleColor}
+                  gradient={gradient}
+                  hexAlpha08={hexAlpha08}
+                />
 
-                    {/* Name + badges */}
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {gradient ? (
-                          <h4
-                            className="role-gradient-text text-sm font-extrabold leading-tight truncate font-sans"
-                            style={{ backgroundImage: gradient }}
-                          >
-                            {role.name}
-                          </h4>
-                        ) : (
-                          <h4
-                            className="text-sm font-extrabold leading-tight truncate font-sans"
-                            style={{ color: roleColor }}
-                          >
-                            {role.name}
-                          </h4>
-                        )}
-                        {role.cvAmount && (
-                          <span
-                            className="shrink-0 inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border"
-                            style={{ color: "#d4af37", borderColor: "#d4af3730", background: "#d4af3710" }}
-                          >
-                            <Shield size={8} />
-                            CV {role.cvAmount}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-3 mt-1">
-                        {/* Color chip */}
-                        <span className="inline-flex items-center gap-1.5 text-[9px] font-mono text-neutral-500">
-                          <span
-                            className="h-2.5 w-2.5 rounded-sm border border-white/10"
-                            style={{ background: roleColor }}
-                          />
-                          {roleColor.toUpperCase()}
-                        </span>
-
-                        {/* Member count */}
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-neutral-500 uppercase">
-                          <Users size={9} />
-                          {role.members.length} pemegang
-                        </span>
-
-                        {/* Permission count */}
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-neutral-500 uppercase">
-                          <Key size={9} />
-                          {role.permissions.length} izin
-                        </span>
-
-                        {/* Role icon indicator */}
-                        {role.icon && (
-                          <span className="text-[9px] font-bold text-neutral-600 uppercase">
-                            🖼 Logo
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Expand chevron */}
-                  <div
-                    className="shrink-0 h-7 w-7 rounded-lg border flex items-center justify-center transition-all"
-                    style={{
-                      borderColor: isExpanded ? `${roleColor}40` : "#2a2a2a",
-                      background: isExpanded ? `${roleColor}15` : "#111",
-                      color: isExpanded ? roleColor : "#555",
-                    }}
-                  >
-                    {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                  </div>
-                </div>
-
-                {/* ── Expanded Panel ── */}
                 {isExpanded && (
-                  <div
-                    className="border-t flex flex-col gap-5 p-5"
-                    style={{ borderColor: "#1a1a1a", background: "#070707" }}
-                  >
-
-                    {/* Row: Color + CV$ + Icon preview */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-
-                      {/* Color info */}
-                      <div className="rounded-xl border border-neutral-900 p-3 flex items-center gap-3">
-                        <div
-                          className="h-10 w-10 rounded-lg shrink-0 border border-white/10 shadow-lg"
-                          style={{ background: roleColor, boxShadow: `0 4px 16px ${roleColor}40` }}
-                        />
-                        <div>
-                          <div className="text-[8px] font-black text-neutral-600 uppercase tracking-widest">Warna Role</div>
-                          <div className="text-xs font-black text-white font-mono mt-0.5">{roleColor.toUpperCase()}</div>
-                          <div className="text-[9px] text-neutral-600 font-mono">
-                            #{parseInt(roleColor.slice(1, 3), 16)},{parseInt(roleColor.slice(3, 5), 16)},{parseInt(roleColor.slice(5, 7), 16)}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* CV$ treasury */}
-                      <div
-                        className="rounded-xl border p-3 flex items-center gap-3"
-                        style={{ borderColor: "#d4af3720", background: "#d4af3708" }}
-                      >
-                        <div
-                          className="h-10 w-10 rounded-lg shrink-0 border flex items-center justify-center"
-                          style={{ borderColor: "#d4af3730", background: "#d4af3715", color: "#d4af37" }}
-                        >
-                          <Shield size={18} />
-                        </div>
-                        <div>
-                          <div className="text-[8px] font-black text-yellow-700 uppercase tracking-widest">Kekuatan Value Role</div>
-                          <div className="text-sm font-black text-yellow-400 font-display mt-0.5">
-                            {role.cvAmount ? `CV ${role.cvAmount}` : "—"}
-                          </div>
-                          <div className="text-[9px] text-neutral-600">Nilai kontribusi kasta/role server</div>
-                        </div>
-                      </div>
-
-                      {/* Role icon */}
-                      <div className="rounded-xl border border-neutral-900 p-3 flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg shrink-0 border border-neutral-800 bg-neutral-900 flex items-center justify-center overflow-hidden">
-                          {role.icon ? (
-                            <img src={role.icon} alt="Role logo" className="h-full w-full object-cover" />
-                          ) : (
-                            <Shield size={18} className="text-neutral-700" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-[8px] font-black text-neutral-600 uppercase tracking-widest">Logo Role</div>
-                          <div className="text-xs font-bold text-neutral-400 mt-0.5">
-                            {role.icon ? "Ada gambar logo" : "Tidak ada logo"}
-                          </div>
-                          {role.icon && (
-                            <a
-                              href={role.icon}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[9px] text-yellow-600 hover:text-yellow-400 underline"
-                            >
-                              Lihat gambar ↗
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Members */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="flex items-center gap-1.5 text-[10px] font-black text-neutral-500 uppercase tracking-widest">
-                          <Users size={11} />
-                          <span>Pemegang Role ({role.members.length})</span>
-                        </div>
-                      </div>
-
-                      {role.members.length === 0 ? (
-                        <div className="text-[10px] text-neutral-700 italic py-3 border border-neutral-900 rounded-xl text-center">
-                          Belum ada member yang menyandang role ini.
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                          {role.members.map((member) => (
-                            <div
-                              key={member.id}
-                              className="flex items-center gap-2.5 p-2 rounded-xl border border-neutral-900 hover:border-neutral-700 bg-neutral-950/80 transition-all group/member"
-                            >
-                              <div className="h-8 w-8 rounded-full overflow-hidden border border-neutral-800 bg-neutral-900 flex items-center justify-center shrink-0">
-                                {member.avatar ? (
-                                  <img
-                                    src={member.avatar}
-                                    alt={member.displayName}
-                                    className="h-full w-full object-cover"
-                                    onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-                                  />
-                                ) : (
-                                  <User size={12} className="text-neutral-600" />
-                                )}
-                              </div>
-                              <div className="overflow-hidden">
-                                <div className="text-[11px] font-bold text-white truncate leading-tight font-sans">
-                                  {member.displayName}
-                                </div>
-                                <div className="text-[9px] text-neutral-600 truncate font-mono leading-none">
-                                  @{member.username}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Permissions */}
-                    <div>
-                      <div className="flex items-center gap-1.5 text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-3">
-                        <Key size={11} />
-                        <span>Izin Kekuasaan ({role.permissions.length})</span>
-                      </div>
-
-                      {role.permissions.length === 0 ? (
-                        <div className="text-[10px] text-neutral-700 italic py-3 border border-neutral-900 rounded-xl text-center">
-                          Role ini tidak memiliki hak izin administratif khusus.
-                        </div>
-                      ) : (
-                        <div className="flex flex-wrap gap-1.5">
-                          {role.permissions.map((perm, idx) => {
-                            const meta = PERM_META[perm];
-                            const tierStyle = TIER_STYLE[meta?.tier ?? "basic"];
-                            return (
-                              <span
-                                key={idx}
-                                className={`inline-flex items-center gap-1 text-[8px] font-extrabold border px-2 py-1 rounded-lg uppercase tracking-wider font-mono ${tierStyle}`}
-                                title={perm}
-                              >
-                                {meta?.icon}
-                                {meta?.label ?? perm.replace(/_/g, " ")}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-
-                  </div>
+                  <RoleDetail
+                    role={role}
+                    roleColor={roleColor}
+                  />
                 )}
               </div>
             );
@@ -734,7 +452,7 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
         </div>
       )}
 
-      {/* Footer count (single page case) */}
+      {/* Footer count */}
       {!loading && sortedRoles.length > 0 && totalPages <= 1 && (
         <div className="text-center text-[9px] text-neutral-700 font-mono uppercase tracking-widest pb-2">
           {sortedRoles.length} role terdaftar

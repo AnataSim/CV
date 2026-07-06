@@ -1,9 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const rateLimit = require('express-rate-limit');
-const crypto = require('crypto');
-const compression = require('compression');
 const {
   Client,
   GatewayIntentBits,
@@ -21,8 +18,6 @@ const {
   entersState
 } = require('@discordjs/voice');
 
-const WebSocket = require('ws');
-
 // Load environment variables
 dotenv.config();
 
@@ -30,7 +25,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Load parent Next.js env.local for Firebase Config
-dotenv.config({ path: path.join(__dirname, '../../.env.local') });
+dotenv.config({ path: path.join(__dirname, '../.env.local') });
 
 // Initialize Firebase in Discord Bot
 const { initializeApp } = require('firebase/app');
@@ -56,15 +51,6 @@ if (firebaseConfig.projectId) {
   }
 }
 
-const withTimeout = (promise, timeoutMs = 8000) => {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Firestore operation timed out")), timeoutMs)
-    )
-  ]);
-};
-
 const logFile = path.join(__dirname, 'server.log');
 try { fs.writeFileSync(logFile, ''); } catch (e) { }
 const originalLog = console.log;
@@ -79,758 +65,15 @@ console.error = (...args) => {
 };
 
 const app = express();
-
-// ================== SECURITY MIDDLEWARE ==================
-
-// Restricted CORS — hanya izinkan origin dari frontend yang terdaftar
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://127.0.0.1:3000')
-  .split(',')
-  .map(s => s.trim())
-  .filter(Boolean);
-
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, same-server)
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
-      return callback(null, true);
-    }
-    console.warn(`[CORS] Blocked request from unauthorized origin: ${origin}`);
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-CV-Client-Token', 'X-CV-Timestamp', 'X-CV-Client', 'X-CV-Encoded'],
-}));
-
-// Security headers
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  // Hapus header yang mengekspos info server
-  res.removeHeader('X-Powered-By');
-  next();
-});
-
-// ================== RATE LIMITING ==================
-
-// Global rate limit — 2000 req per 15 menit per IP
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 2000,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Terlalu banyak permintaan. Silahkan coba lagi dalam 15 menit.' },
-  skip: (req) => {
-    // Skip rate limit untuk health checks
-    return req.path === '/health' || req.path === '/api/voice-afk/keepalive';
-  }
-});
-app.use(globalLimiter);
-
-// Ketat untuk submission upload (cegah spam/abuse)
-const submissionLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Terlalu banyak pengiriman bukti. Tunggu 15 menit sebelum mencoba lagi.' },
-});
-
-// Ketat untuk OAuth endpoints
-const oauthLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Terlalu banyak percobaan autentikasi. Coba lagi dalam 15 menit.' },
-});
-
-// ================== MEMORY CACHE WITH TTL ==================
-
-class MemoryCache {
-  constructor() {
-    this._store = new Map();
-    // Auto-cleanup setiap 5 menit
-    setInterval(() => this._cleanup(), 5 * 60 * 1000);
-  }
-
-  set(key, value, ttlSeconds) {
-    this._store.set(key, {
-      value,
-      expiry: Date.now() + ttlSeconds * 1000
-    });
-  }
-
-  get(key) {
-    const entry = this._store.get(key);
-    if (!entry) return null;
-    if (Date.now() > entry.expiry) {
-      this._store.delete(key);
-      return null;
-    }
-    return entry.value;
-  }
-
-  delete(key) {
-    this._store.delete(key);
-  }
-
-  deletePrefix(prefix) {
-    for (const key of this._store.keys()) {
-      if (key.startsWith(prefix)) {
-        this._store.delete(key);
-      }
-    }
-  }
-
-  _cleanup() {
-    const now = Date.now();
-    for (const [key, entry] of this._store.entries()) {
-      if (now > entry.expiry) this._store.delete(key);
-    }
-  }
-}
-
-const cache = new MemoryCache();
-
-// ================== HMAC TOKEN VALIDATION ==================
-
-const CV_API_SECRET = process.env.CV_API_SECRET || 'crunchyverse-stage-2026-secret';
-const TOKEN_EXPIRY_SECONDS = 60; // Token valid 60 detik (naik dari 30 untuk toleransi latency)
-
-function verifyRequestToken(token, path) {
-  if (!token) return false;
-  const parts = token.split('.');
-  if (parts.length < 2) return false;
-
-  const timestamp = parseInt(parts[0], 10);
-  if (isNaN(timestamp)) return false;
-
-  // Cek timestamp tidak expired
-  const now = Math.floor(Date.now() / 1000);
-  if (Math.abs(now - timestamp) > TOKEN_EXPIRY_SECONDS) {
-    return false;
-  }
-
-  // Verifikasi HMAC
-  const message = `${path}:${timestamp}`;
-  const expectedSig = crypto
-    .createHmac('sha256', CV_API_SECRET)
-    .update(message)
-    .digest('base64');
-
-  const receivedSig = parts.slice(1).join('.');
-  try {
-    return crypto.timingSafeEqual(
-      Buffer.from(expectedSig),
-      Buffer.from(receivedSig)
-    );
-  } catch {
-    return false;
-  }
-}
-
-// Middleware HMAC auth untuk endpoint sensitive
-function requireClientToken(req, res, next) {
-  const token = req.headers['x-cv-client-token'];
-  const path = req.path;
-
-  if (!verifyRequestToken(token, path)) {
-    console.warn(`[Security] Invalid/missing client token dari ${req.ip} untuk ${req.method} ${path}`);
-    // Return generic error tanpa detail
-    return res.status(403).json({ error: 'Akses ditolak.' });
-  }
-  next();
-}
-
-// Dekripsi payload terenkripsi AES-256-GCM dari frontend
-function decryptPayload(obfuscatedPayload) {
-  try {
-    const combined = Buffer.from(obfuscatedPayload, 'base64');
-    if (combined.length < 28) {
-      throw new Error("Payload terlalu pendek");
-    }
-
-    const iv = combined.subarray(0, 12);
-    const encryptedWithTag = combined.subarray(12);
-
-    // Auth tag AES-GCM adalah 16 byte terakhir dari data yang dihasilkan Web Crypto API
-    const tag = encryptedWithTag.subarray(encryptedWithTag.length - 16);
-    const ciphertext = encryptedWithTag.subarray(0, encryptedWithTag.length - 16);
-
-    const secretKey = CV_API_SECRET.slice(0, 32).padEnd(32, '0');
-    const decipher = crypto.createDecipheriv('aes-256-gcm', Buffer.from(secretKey), iv);
-    decipher.setAuthTag(tag);
-
-    let decrypted = decipher.update(ciphertext, null, 'utf8');
-    decrypted += decipher.final('utf8');
-    return JSON.parse(decrypted);
-  } catch (err) {
-    console.error("❌ Dekripsi payload gagal:", err.message);
-    throw err;
-  }
-}
-
-// Decode obfuscated payload kalau ada
-function decodePayload(req, res, next) {
-  if (req.headers['x-cv-encoded'] === '1' && req.body && req.body._d) {
-    try {
-      req.body = decryptPayload(req.body._d);
-    } catch (e) {
-      console.error("❌ [Security] Decryption/Parsing payload gagal:", e.message);
-      return res.status(400).json({ error: 'Payload tidak valid atau rusak.' });
-    }
-  }
-  next();
-}
-
-// Input sanitasi — strip HTML dan limit panjang string
-function sanitizeString(str, maxLen = 500) {
-  if (typeof str !== 'string') return str;
-  return str
-    .replace(/<[^>]*>/g, '') // Strip HTML tags
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '') // Strip control chars
-    .trim()
-    .slice(0, maxLen);
-}
-
-// ================== EXPRESS SETUP ==================
-
-app.use(compression());
+app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use(decodePayload); // Decode obfuscated payloads
-
-// Health check endpoint
-app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
-
-// Helper to gather sync status data in parallel
-async function verifyIsAdmin(uid) {
-  if (!uid) return false;
-
-  // 1. Cek in-memory cache dulu
-  const cacheKey = `is_admin:${uid}`;
-  if (typeof cache !== 'undefined') {
-    const cached = cache.get(cacheKey);
-    if (cached !== null && cached !== undefined) {
-      return cached;
-    }
-  }
-
-  let isAdmin = false;
-
-  // 2. Cek hardcoded admin IDs
-  let discordId = null;
-  const match = uid.match(/\d{17,20}/);
-  if (match) discordId = match[0];
-  
-  if (discordId && (
-    discordId === "661135501226672129" || 
-    discordId === "1410583272173600819" || 
-    discordId === "588988763204616214" || 
-    discordId === "331053654318776320"
-  )) {
-    isAdmin = true;
-  } else {
-    // 3. Cek database lokal JSON (sangat cepat)
-    try {
-      if (typeof loadLocalUsers === 'function') {
-        const localUsers = loadLocalUsers();
-        const userData = localUsers[uid];
-        if (userData && (
-          userData.role === "Volunteer Theater" || 
-          userData.role === "Ketua Kerupuk" || 
-          userData.role === "Ketua Keripik"
-        )) {
-          isAdmin = true;
-        }
-      }
-    } catch (e) {
-      console.warn("Gagal cek local users di verifyIsAdmin:", e.message);
-    }
-
-    // 4. Coba Firestore sebagai fallback jika lokal tidak tahu/bukan admin
-    if (!isAdmin && db) {
-      try {
-        const userDoc = await withTimeout(getDoc(doc(db, "users", uid)), 1000); // Turunkan timeout ke 1 detik
-        if (userDoc && userDoc.exists()) {
-          const userData = userDoc.data();
-          const role = userData?.role;
-          if (role === "Volunteer Theater" || role === "Ketua Kerupuk" || role === "Ketua Keripik") {
-            isAdmin = true;
-          }
-        }
-      } catch (e) {
-        console.error("Gagal verifikasi admin via Firestore:", e.message);
-      }
-    }
-
-    // 5. Coba Discord API sebagai fallback terakhir
-    if (!isAdmin && isDiscordReady && client && discordId) {
-      try {
-        const guild = await client.guilds.fetch(GUILD_ID);
-        const member = await guild.members.fetch(discordId).catch(() => null);
-        if (member) {
-          const hasAdminRole = member.roles.cache.some(r => 
-            r.name.toLowerCase().includes('volunteer') || 
-            r.name.toLowerCase().includes('ketua') || 
-            member.permissions.has('Administrator')
-          );
-          if (hasAdminRole) {
-            isAdmin = true;
-          }
-        }
-      } catch (e) {
-        console.error("Gagal verifikasi admin via Discord:", e.message);
-      }
-    }
-  }
-
-  // Simpan hasil ke cache memory
-  if (typeof cache !== 'undefined') {
-    cache.set(cacheKey, isAdmin, 60); // Cache selama 60 detik
-  }
-
-  return isAdmin;
-}
-
-async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
-  const response = {};
-
-  try {
-    const promises = [];
-    const actualIsAdmin = await verifyIsAdmin(uid);
-
-    // 1. Stats (Gathers Discord server statistics)
-    promises.push((async () => {
-      const cacheKey = 'api:stats';
-      let statsData = cache.get(cacheKey);
-      if (!statsData) {
-        const mockStats = {
-          totalMembers: 1337,
-          totalKerupuk: 420,
-          totalKeripik: 690,
-          online: 245,
-          idle: 62,
-          dnd: 38,
-          offline: 992,
-          mode: "Simulation (Bot Offline)"
-        };
-        if (!isDiscordReady || !client || !GUILD_ID) {
-          statsData = mockStats;
-        } else {
-          try {
-            const guild = await client.guilds.fetch(GUILD_ID);
-            if (!guild) {
-              statsData = { ...mockStats, mode: "Simulation (Guild Not Found)" };
-            } else {
-              const totalMembers = guild.memberCount;
-              const roleKerupukKey = process.env.ROLE_KERUPUK || 'Kerupuk';
-              const roleKeripikKey = process.env.ROLE_KERIPIK || 'Keripik';
-              const roleKerupuk = guild.roles.cache.find(r => r.id === roleKerupukKey || r.name.toLowerCase() === roleKerupukKey.toLowerCase());
-              const roleKeripik = guild.roles.cache.find(r => r.id === roleKeripikKey || r.name.toLowerCase() === roleKeripikKey.toLowerCase());
-              const totalKerupuk = roleKerupuk ? roleKerupuk.members.size : 0;
-              const totalKeripik = roleKeripik ? roleKeripik.members.size : 0;
-              let online = 0, idle = 0, dnd = 0, offline = 0;
-              let hasPresences = false;
-              guild.members.cache.forEach(member => {
-                if (member.presence) {
-                  hasPresences = true;
-                  const status = member.presence.status;
-                  if (status === 'online') online++;
-                  else if (status === 'idle') idle++;
-                  else if (status === 'dnd') dnd++;
-                }
-              });
-              if (hasPresences) {
-                offline = totalMembers - (online + idle + dnd);
-              } else {
-                const randomFactor = () => Math.floor(Math.random() * 6) - 3;
-                online = Math.floor(totalMembers * 0.18) + randomFactor();
-                idle = Math.floor(totalMembers * 0.05) + randomFactor();
-                dnd = Math.floor(totalMembers * 0.03) + randomFactor();
-                offline = totalMembers - (online + idle + dnd);
-              }
-              const finalKerupuk = totalKerupuk || Math.floor(totalMembers * 0.31);
-              const finalKeripik = totalKeripik || Math.floor(totalMembers * 0.52);
-              statsData = {
-                totalMembers,
-                totalKerupuk: finalKerupuk,
-                totalKeripik: finalKeripik,
-                online,
-                idle,
-                dnd,
-                offline,
-                mode: "Live Discord Connection"
-              };
-              cache.set(cacheKey, statsData, 60);
-            }
-          } catch (e) {
-            statsData = { ...mockStats, mode: `Simulation (Error: ${e.message})` };
-          }
-        }
-      }
-      response.stats = statsData;
-    })());
-
-    // 2. Broadcasts
-    promises.push((async () => {
-      const cacheKey = 'api:broadcasts';
-      let broadcastsData = cache.get(cacheKey);
-      if (!broadcastsData) {
-        const mockBroadcasts = [
-          {
-            id: "b1",
-            content: "🎪 **PERTUNJUKAN AKBAR RESMI DIMULAI!** \n\nHalo para Anomaly sekalian! Malam ini tirai CrunchyVerse resmi dibuka lebar. Persiapkan tempat duduk Anda di barisan terdepan! Kami menghadirkan panggung interaktif baru ini khusus untuk Anda semua. \n\nBagikan keseruan ini ke teman-teman dan dapatkan role eksklusif malam ini!",
-            author: "Pimpinan Produksi",
-            authorAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=stage-manager",
-            timestamp: "Hari Ini pukul 08:30",
-            imageUrl: "/theater_stage_bg.png"
-          },
-          {
-            id: "b2",
-            content: "🍿 **DIVISI KERUPUK & KERIPIK BERTEMPUR!** \n\nPertarungan sengit antara sekte Kerupuk gurih melawan sekte Keripik renyah akan dimulai di panggung koloseum suara malam ini pukul 20.00 WIB. Siapakah yang akan membawa pulang mahkota garing termegah? Pilih kubu Anda sekarang di channel #roles!",
-            author: "Sutradara Event",
-            authorAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=director",
-            timestamp: "Kemarin pukul 18:15",
-            imageUrl: null
-          }
-        ];
-        if (!isDiscordReady || !client || !GUILD_ID) {
-          broadcastsData = mockBroadcasts;
-        } else {
-          try {
-            const guild = await client.guilds.fetch(GUILD_ID);
-            if (!guild) {
-              broadcastsData = mockBroadcasts;
-            } else {
-              const channelKey = process.env.BROADCAST_CHANNEL || 'broadcast';
-              let channel = guild.channels.cache.find(c =>
-                c.id === channelKey ||
-                (c.name.toLowerCase() === channelKey.toLowerCase() && c.type === ChannelType.GuildText)
-              );
-              if (!channel) {
-                try {
-                  const channels = await guild.channels.fetch();
-                  channel = channels.find(c =>
-                    c.id === channelKey ||
-                    (c.name.toLowerCase() === channelKey.toLowerCase() && c.type === ChannelType.GuildText)
-                  );
-                } catch (e) {}
-              }
-              if (channel) {
-                const messages = await channel.messages.fetch({ limit: 10 });
-                const list = [];
-                for (const [, msg] of messages) {
-                  if (msg.content || msg.attachments.size > 0) {
-                    const resolvedContent = await resolveMentions(msg.content, guild);
-                    const attachment = msg.attachments.first();
-                    const imageUrl = (attachment && attachment.contentType?.startsWith('image/')) ? attachment.url : null;
-                    const cleanTimestamp = `Hari Ini pukul ${msg.createdAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
-                    list.push({
-                      id: msg.id,
-                      content: resolvedContent || 'Lampiran Media',
-                      author: msg.member?.displayName || msg.author.globalName || msg.author.username,
-                      authorAvatar: msg.author.displayAvatarURL({ extension: 'webp', size: 64 }) || null,
-                      timestamp: cleanTimestamp,
-                      imageUrl
-                    });
-                  }
-                }
-                broadcastsData = list.length > 0 ? list : mockBroadcasts;
-              } else {
-                broadcastsData = mockBroadcasts;
-              }
-              cache.set(cacheKey, broadcastsData, 300);
-            }
-          } catch (e) {
-            broadcastsData = mockBroadcasts;
-          }
-        }
-      }
-      response.broadcasts = broadcastsData;
-    })());
-
-    // 3. TikTok Status
-    promises.push((async () => {
-      const cacheKey = 'api:tiktok';
-      let tiktokData = cache.get(cacheKey);
-      if (!tiktokData) {
-        tiktokData = tiktokState;
-        cache.set(cacheKey, tiktokData, 30);
-      }
-      response.tiktok = tiktokData;
-    })());
-
-    // 4. VoiceAFK Status
-    promises.push((async () => {
-      let guilds = [];
-      let inviteLink = null;
-      if (client && isDiscordReady) {
-        inviteLink = `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=3145728&scope=bot`;
-        try {
-          guilds = client.guilds.cache.map(g => {
-            const voiceChannels = g.channels.cache
-              .filter(c => c.type === ChannelType.GuildVoice)
-              .map(c => ({ id: c.id, name: c.name }));
-            return { id: g.id, name: g.name, icon: g.iconURL(), channels: voiceChannels };
-          });
-        } catch (err) {}
-      }
-      response.voiceAfkStatus = {
-        ...connectionState,
-        guilds,
-        inviteLink
-      };
-    })());
-
-    // 5. User Data & Deck (if uid is provided)
-    if (uid) {
-      promises.push((async () => {
-        let discordId = null;
-        const match = uid.match(/\d{17,20}/);
-        if (match) discordId = match[0];
-
-        let liveCv = 0;
-        let hasLiveCv = false;
-
-        const cvCacheKey = `user_cv:${uid}`;
-        const cachedCv = typeof cache !== 'undefined' ? cache.get(cvCacheKey) : null;
-
-        if (cachedCv !== null && cachedCv !== undefined) {
-          liveCv = cachedCv;
-          hasLiveCv = true;
-        } else if (isDiscordReady && client && discordId) {
-          try {
-            const guild = await client.guilds.fetch(GUILD_ID);
-            const member = await guild.members.fetch(discordId).catch(() => null);
-            if (member) {
-              const roles = await guild.roles.fetch();
-              const roleCvMap = new Map();
-              roles.forEach(role => {
-                if (role.name !== "@everyone" && !role.managed && !EXCLUDED_CV_ROLE_IDS.includes(role.id)) {
-                  const cvMatch = role.name.match(/(?:CV\$|CV|VR|Value\s*Role)\s*([\d.,\s]+)/i);
-                  if (cvMatch) {
-                    const cvStr = cvMatch[1].trim();
-                    const cvVal = parseFloat(cvStr.replace(/[.,\s]/g, "").replace(",", ".")) || 0;
-                    roleCvMap.set(role.id, cvVal);
-                  }
-                }
-              });
-              member.roles.cache.forEach(role => {
-                const roleCv = roleCvMap.get(role.id);
-                if (roleCv) liveCv += roleCv;
-              });
-              hasLiveCv = true;
-
-              if (typeof cache !== 'undefined') {
-                cache.set(cvCacheKey, liveCv, 30); // Cache selama 30 detik
-              }
-            }
-          } catch (err) {}
-        }
-
-        const localUsers = loadLocalUsers();
-        const userData = localUsers[uid] || { uid, name: "Pemain Teater", cv: 0, points: 0 };
-        if (hasLiveCv) {
-          userData.cv = liveCv;
-          userData.points = liveCv;
-          localUsers[uid] = userData;
-          saveLocalUsers(localUsers);
-        }
-        response.user = userData;
-      })());
-
-      promises.push((async () => {
-        response.deck = await getUserDeck(uid);
-      })());
-    }
-
-    // 6. Chat Messages (if chatChannelId is provided)
-    if (chatChannelId) {
-      promises.push((async () => {
-        if (!chatMessages[chatChannelId]) {
-          chatMessages[chatChannelId] = [
-            { id: "msg-init-" + Date.now(), content: `Selamat datang di saluran #${chatChannelId}! Mulai obrolan seru di sini. ✨`, author: "Sparxie Bot", authorAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie", timestamp: "Hari Ini", isBot: true }
-          ];
-        }
-        response.chatMessages = chatMessages[chatChannelId];
-      })());
-    }
-
-    // 7. Voice Channel Members (using voiceChannelId if provided, else default or active connection)
-    promises.push((async () => {
-      const vChanId = voiceChannelId || connectionState.channelId || "1435053596742914160";
-      const fallbackMembers = [
-        { name: "[AFK] T0ddei", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=toddei" },
-        { name: "Dari Kontak Anda", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=kontak" }
-      ];
-
-      if (!isDiscordReady || !client) {
-        response.voiceChannel = {
-          name: vChanId === "1435053596742914160" ? "Silence is Golden" : "STUDY ROOM",
-          status: "[05:14] • I Always Wanna Die (Sometimes) - The 1975",
-          members: fallbackMembers,
-          count: fallbackMembers.length
-        };
-        return;
-      }
-
-      try {
-        const channel = await client.channels.fetch(vChanId).catch(() => null);
-        if (channel && channel.type === ChannelType.GuildVoice) {
-          let detectedStatus = null;
-          if (vChanId === '1435053596742914160' && jockieMusicStatus) {
-            const timeDiff = Date.now() - lastJockieTrackTime;
-            if (timeDiff < 1800000) { // 30 mins
-              const elapsedTotalSec = Math.floor(timeDiff / 1000);
-              const elapsedMin = Math.floor(elapsedTotalSec / 60);
-              const elapsedSec = (elapsedTotalSec % 60).toString().padStart(2, '0');
-              const statusParts = jockieMusicStatus.split('] • ');
-              const trackInfo = statusParts[1] || statusParts[0];
-              detectedStatus = `[${elapsedMin}:${elapsedSec}] • ${trackInfo}`;
-              if (lastJockieMessage) {
-                lastJockieMessage.react('✅').catch(() => {});
-                lastJockieMessage = null;
-              }
-            }
-          }
-
-          if (!detectedStatus) {
-            for (const [, m] of channel.members) {
-              try {
-                const presence = m.presence;
-                if (presence && presence.activities && presence.activities.length > 0) {
-                  const spotify = presence.activities.find(act => act.name === 'Spotify');
-                  if (spotify) {
-                    let progressStr = "";
-                    if (spotify.timestamps && spotify.timestamps.start) {
-                      const elapsedMs = Date.now() - spotify.timestamps.start.getTime();
-                      const elapsedMin = Math.floor(elapsedMs / 60000);
-                      const elapsedSec = Math.floor((elapsedMs % 60000) / 1000).toString().padStart(2, '0');
-                      progressStr = `[${elapsedMin}:${elapsedSec}] • `;
-                    }
-                    detectedStatus = `${progressStr}${spotify.details || 'Unknown Track'} - ${spotify.state || 'Unknown Artist'}`;
-                    break;
-                  }
-                }
-              } catch (e) {}
-            }
-          }
-
-          if (!detectedStatus) {
-            for (const [, m] of channel.members) {
-              try {
-                const presence = m.presence;
-                if (presence && presence.activities && presence.activities.length > 0) {
-                  const custom = presence.activities.find(act => act.type === 4);
-                  if (custom && custom.state) {
-                    detectedStatus = custom.state;
-                    break;
-                  }
-                  const listening = presence.activities.find(act => act.type === 2);
-                  if (listening) {
-                    detectedStatus = `${listening.details || listening.name}${listening.state ? ` - ${listening.state}` : ''}`;
-                    break;
-                  }
-                }
-              } catch (e) {}
-            }
-          }
-
-          const finalStatus = detectedStatus || (typeof channel.status === 'string' && channel.status ? channel.status : "[05:14] • I Always Wanna Die (Sometimes) - The 1975");
-          const activeMembers = channel.members.map(m => {
-            const isMuted = m.voice.selfMute || m.voice.serverMute;
-            const isDeafened = m.voice.selfDeaf || m.voice.serverDeaf;
-            const isSpeaking = !isMuted && !isDeafened && Math.random() < 0.25;
-            let roleValueSymbol = null;
-            try {
-              const highestRole = m.roles.cache
-                .filter(r => r.name !== "@everyone" && !r.managed)
-                .sort((a, b) => b.position - a.position)
-                .first();
-              if (highestRole) {
-                const cvMatch = highestRole.name.match(/(?:CV\$|CV|VR|Value\s*Role)\s*([\d.,\s]+)/i);
-                if (cvMatch) {
-                  roleValueSymbol = `${cvMatch[1].trim()} 🌟`;
-                }
-              }
-            } catch (roleErr) {}
-
-            return {
-              name: m.displayName || m.user.globalName || m.user.username,
-              avatar: m.user.displayAvatarURL({ extension: 'webp', size: 64 }) || null,
-              isMuted,
-              isDeafened,
-              isSpeaking,
-              isLive: m.voice.selfVideo || m.voice.streaming,
-              roleValueSymbol
-            };
-          });
-
-          response.voiceChannel = {
-            name: channel.name,
-            status: finalStatus,
-            members: activeMembers,
-            count: activeMembers.length
-          };
-        } else {
-          response.voiceChannel = {
-            name: vChanId === "1435053596742914160" ? "Silence is Golden" : "STUDY ROOM",
-            status: "[05:14] • I Always Wanna Die (Sometimes) - The 1975",
-            members: fallbackMembers,
-            count: fallbackMembers.length
-          };
-        }
-      } catch (err) {
-        response.voiceChannel = {
-          name: vChanId === "1435053596742914160" ? "Silence is Golden" : "STUDY ROOM",
-          status: "[05:14] • I Always Wanna Die (Sometimes) - The 1975",
-          members: fallbackMembers,
-          count: fallbackMembers.length
-        };
-      }
-    })());
-
-    // 8. Submissions (if isAdmin is true)
-    if (actualIsAdmin) {
-      promises.push((async () => {
-        const cacheKey = `api:submissions:all`;
-        let subs = cache.get(cacheKey);
-        if (!subs) {
-          subs = loadLocalSubmissions();
-          cache.set(cacheKey, subs, 15);
-        }
-        response.submissions = subs;
-      })());
-    }
-
-    // Wait for all queries to resolve
-    await Promise.all(promises);
-    return response;
-  } catch (err) {
-    console.error("❌ Error in gatherSyncData:", err.message);
-    throw err;
-  }
-}
-
-// POST /api/sync - Unified status sync endpoint to group multiple requests
-app.post('/api/sync', async (req, res) => {
-  try {
-    const response = await gatherSyncData(req.body);
-    res.json(response);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 const PORT = process.env.PORT || 3001;
 
 // Local JSON Database Helpers for offline fallback syncing
-const SUBMISSIONS_FILE = path.join(__dirname, '../database/submissions.json');
-const DECKS_FILE = path.join(__dirname, '../database/user_decks.json');
+const SUBMISSIONS_FILE = path.join(__dirname, 'submissions.json');
+const DECKS_FILE = path.join(__dirname, 'user_decks.json');
 
 function loadLocalSubmissions() {
   try {
@@ -865,61 +108,12 @@ function loadLocalDecks() {
 function saveLocalDecks(decks) {
   try {
     fs.writeFileSync(DECKS_FILE, JSON.stringify(decks, null, 2), 'utf8');
-    // Invalidate memory cache so that the next read gets the fresh data
-    if (typeof cache !== 'undefined' && cache.deletePrefix) {
-      cache.deletePrefix('user_deck:');
-    }
   } catch (e) {
     console.error("Gagal menulis user_decks.json:", e.message);
   }
 }
 
-async function getUserDeck(uid) {
-  if (!uid) return { uid, dealt: false, cards: [], statuses: {} };
-
-  // 1. Cek in-memory cache dulu untuk performance instan
-  const cacheKey = `user_deck:${uid}`;
-  const cachedDeck = cache.get(cacheKey);
-  if (cachedDeck) {
-    return cachedDeck;
-  }
-
-  // 2. Coba baca dari database lokal JSON
-  const decks = loadLocalDecks();
-  const localDeck = decks[uid];
-  
-  // Jika deck lokal sudah ada dan didealkan (dealt === true), langsung cache di memory dan kembalikan (cepat)
-  if (localDeck && localDeck.dealt) {
-    cache.set(cacheKey, localDeck, 30); // Cache selama 30 detik
-    return localDeck;
-  }
-
-  // 3. Jika tidak ada di lokal atau dealt masih false, coba fetch dari Firestore
-  if (db) {
-    try {
-      const deckRef = doc(db, "user_decks", uid);
-      // Gunakan timeout yang sangat singkat (500ms) agar jika Firestore lambat/tidak terjangkau tidak menyebabkan lag
-      const deckDoc = await withTimeout(getDoc(deckRef), 500);
-      if (deckDoc && deckDoc.exists()) {
-        const deckData = deckDoc.data();
-        // Update local JSON cache agar sinkron
-        decks[uid] = deckData;
-        saveLocalDecks(decks);
-        cache.set(cacheKey, deckData, 30); // Cache selama 30 detik
-        return deckData;
-      }
-    } catch (e) {
-      console.warn(`⚠️ [Firebase] Gagal fetch deck untuk ${uid} dari Firestore:`, e.message);
-    }
-  }
-
-  const finalDeck = localDeck || { uid, dealt: false, cards: [], statuses: {} };
-  cache.set(cacheKey, finalDeck, 10); // Cache deck kosong/belum deal selama 10 detik agar tidak timeout berulang-ulang
-  return finalDeck;
-}
-
-
-const QUESTS_FILE = path.join(__dirname, '../database/quests.json');
+const QUESTS_FILE = path.join(__dirname, 'quests.json');
 
 const DEFAULT_QUESTS = [
   {
@@ -987,265 +181,7 @@ function saveLocalQuests(quests) {
 }
 
 // VoiceAFK Global State & Config Persistence
-const VOICE_AFK_CONFIG_FILE = path.join(__dirname, '../database/voice-afk-config.json');
-
-// ==============================================================================
-// =================== KRPK-0421: Ghost Mode Selfbot Manager ===================
-// ==============================================================================
-
-const GHOST_USER_TOKEN = null; // DISABLED: Kena suspicious activity flag (TOS violation risk)
-const SIM_DISCORD_ID = process.env.SIM_DISCORD_ID || '661135501226672129';
-const GHOST_CONTROL_CHANNEL_ID = process.env.GHOST_CONTROL_CHANNEL_ID || '1513463585605423174';
-
-const GHOST_CONFIG_FILE = path.join(__dirname, '../database/ghost-mode-config.json');
-
-function saveGhostConfig(cfg) {
-  try {
-    fs.writeFileSync(GHOST_CONFIG_FILE, JSON.stringify(cfg, null, 2), 'utf8');
-  } catch (e) { console.error('[KRPK-0421] Gagal simpan ghost config:', e.message); }
-}
-
-function loadGhostConfig() {
-  try {
-    if (fs.existsSync(GHOST_CONFIG_FILE)) return JSON.parse(fs.readFileSync(GHOST_CONFIG_FILE, 'utf8'));
-  } catch (e) { console.error('[KRPK-0421] Gagal baca ghost config:', e.message); }
-  return null;
-}
-
-class SelfbotManager {
-  constructor(token) {
-    this.token = token;
-    this.ws = null;
-    this.heartbeatInterval = null;
-    this.sequence = null;
-    this.sessionId = null;
-    this.isReady = false;
-    this.isConnected = false;
-    this.currentGuildId = null;
-    this.currentChannelId = null;
-    this._reconnectTimer = null;
-    this._destroyed = false;       // true hanya kalau destroy() dipanggil secara eksplisit
-    this._reconnectDelay = 5000;  // mulai 5 detik, naik s/d 60 detik
-  }
-
-  connect() {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Gateway connect timeout (15s)')), 15000);
-      this.ws = new WebSocket('wss://gateway.discord.gg/?v=10&encoding=json');
-
-      this.ws.on('open', () => {
-        this._reconnectDelay = 5000; // reset backoff setelah berhasil
-        console.log('[KRPK-0421] WebSocket Gateway terbuka.');
-      });
-
-      this.ws.on('message', (data) => {
-        let payload;
-        try { payload = JSON.parse(data); } catch { return; }
-        const { op, d, s, t } = payload;
-        if (s) this.sequence = s;
-
-        if (op === 10) { // Hello
-          this._startHeartbeat(d.heartbeat_interval);
-          this._identify();
-        } else if (op === 11) { // Heartbeat ACK
-          // ok
-        } else if (op === 0) { // Dispatch
-          if (t === 'READY') {
-            this.sessionId = d.session_id;
-            this.isReady = true;
-            console.log(`[KRPK-0421] Ghost user ready: ${d.user.username}#${d.user.discriminator}`);
-            clearTimeout(timeout);
-            resolve();
-            // Auto-restore voice jika sebelumnya sedang aktif
-            this._autoRestoreVoice();
-          }
-        } else if (op === 9) { // Invalid session
-          console.warn('[KRPK-0421] Invalid session dari Gateway.');
-          clearTimeout(timeout);
-          reject(new Error('Invalid session'));
-        }
-      });
-
-      this.ws.on('close', (code) => {
-        console.warn(`[KRPK-0421] WebSocket ditutup: code=${code}`);
-        this.isReady = false;
-        this.isConnected = false;
-        this._stopHeartbeat();
-        clearTimeout(timeout);
-        // Auto-reconnect kalau bukan karena destroy() eksplisit dan bukan error autentikasi
-        if (!this._destroyed && code !== 4004) {
-          console.log(`[KRPK-0421] Akan reconnect dalam ${this._reconnectDelay / 1000}s...`);
-          this._reconnectTimer = setTimeout(() => this._doReconnect(), this._reconnectDelay);
-          this._reconnectDelay = Math.min(this._reconnectDelay * 2, 60000); // max 60 detik
-        } else if (code === 4004) {
-          console.error('[KRPK-0421] Koneksi ditolak oleh Discord karena Token tidak valid (code=4004). Auto-reconnect dinonaktifkan.');
-        }
-      });
-
-      this.ws.on('error', (err) => {
-        console.error('[KRPK-0421] WebSocket error:', err.message);
-        clearTimeout(timeout);
-        reject(err);
-      });
-    });
-  }
-
-  async _doReconnect() {
-    if (this._destroyed) return;
-    try {
-      console.log('[KRPK-0421] Mencoba reconnect ke Gateway...');
-      await this.connect();
-      console.log('[KRPK-0421] Reconnect berhasil!');
-    } catch (err) {
-      console.error('[KRPK-0421] Reconnect gagal:', err.message);
-      // Akan dicoba lagi oleh close handler berikutnya
-    }
-  }
-
-  async _autoRestoreVoice() {
-    // Cek apakah ghost mode seharusnya aktif berdasarkan config yang tersimpan
-    await new Promise(r => setTimeout(r, 2000)); // tunggu 2 detik setelah READY
-    const cfg = loadGhostConfig();
-    if (!cfg || !cfg.isEnabled || !cfg.guildId || !cfg.channelId) return;
-    try {
-      console.log(`[KRPK-0421] Auto-restore: bergabung kembali ke voice channel ${cfg.channelId}...`);
-      await this.joinVoice(cfg.guildId, cfg.channelId);
-      // Update nickname juga
-      if (cfg.nickname) {
-        await new Promise(r => setTimeout(r, 1500));
-        await this.setNickname(cfg.guildId, cfg.nickname).catch(e =>
-          console.warn('[KRPK-0421] Auto-restore nickname gagal:', e.message)
-        );
-      }
-      console.log('[KRPK-0421] Auto-restore voice berhasil!');
-      await updateGhostControlMessageStatus(true).catch(() => {});
-    } catch (err) {
-      console.error('[KRPK-0421] Auto-restore voice gagal:', err.message);
-    }
-  }
-
-  _identify() {
-    this._send({
-      op: 2,
-      d: {
-        token: this.token,
-        properties: {
-          os: 'linux',
-          browser: 'Discord Web',
-          device: 'Discord Web'
-        },
-        intents: 0
-      }
-    });
-  }
-
-  _startHeartbeat(interval) {
-    this._stopHeartbeat();
-    this.heartbeatInterval = setInterval(() => {
-      this._send({ op: 1, d: this.sequence });
-    }, interval);
-  }
-
-  _stopHeartbeat() {
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval);
-      this.heartbeatInterval = null;
-    }
-  }
-
-  _send(payload) {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(payload));
-    }
-  }
-
-  async joinVoice(guildId, channelId) {
-    if (!this.isReady) throw new Error('Ghost user belum ready.');
-    this._send({
-      op: 4,
-      d: {
-        guild_id: guildId,
-        channel_id: channelId,
-        self_mute: true,
-        self_deaf: true
-      }
-    });
-    this.currentGuildId = guildId;
-    this.currentChannelId = channelId;
-    this.isConnected = true;
-    console.log(`[KRPK-0421] Ghost user join voice: guild=${guildId}, channel=${channelId}`);
-  }
-
-  async leaveVoice() {
-    if (!this.isReady || !this.currentGuildId) return;
-    this._send({
-      op: 4,
-      d: {
-        guild_id: this.currentGuildId,
-        channel_id: null,
-        self_mute: false,
-        self_deaf: false
-      }
-    });
-    console.log(`[KRPK-0421] Ghost user leave voice dari guild=${this.currentGuildId}`);
-    this.currentGuildId = null;
-    this.currentChannelId = null;
-    this.isConnected = false;
-  }
-
-  async setNickname(guildId, nickname) {
-    const url = `https://discord.com/api/v10/guilds/${guildId}/members/@me`;
-    const resp = await fetch(url, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': this.token,
-        'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0'
-      },
-      body: JSON.stringify({ nick: nickname })
-    });
-    if (!resp.ok) {
-      const body = await resp.text();
-      throw new Error(`setNickname gagal: HTTP ${resp.status} — ${body}`);
-    }
-    const data = await resp.json();
-    console.log(`[KRPK-0421] Nickname diubah ke: "${nickname}"`);
-    return data.nick || nickname;
-  }
-
-  async getCurrentNickname(guildId) {
-    const url = `https://discord.com/api/v10/guilds/${guildId}/members/@me`;
-    const resp = await fetch(url, {
-      headers: {
-        'Authorization': this.token,
-        'User-Agent': 'Mozilla/5.0'
-      }
-    });
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    return data.nick || null;
-  }
-
-  destroy() {
-    this._destroyed = true;
-    if (this._reconnectTimer) {
-      clearTimeout(this._reconnectTimer);
-      this._reconnectTimer = null;
-    }
-    this._stopHeartbeat();
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-    }
-    this.isReady = false;
-    this.isConnected = false;
-    console.log('[KRPK-0421] SelfbotManager dihancurkan.');
-  }
-}
-
-let ghostManager = null;
-let ghostControlMessageId = null;
-
+const VOICE_AFK_CONFIG_FILE = path.join(__dirname, 'voice-afk-config.json');
 
 let connectionState = {
   isBotLoggedIn: false,
@@ -1354,29 +290,18 @@ async function connectToVoiceChannel(guildId, channelId) {
       // Reconnected!
     } catch (error) {
       connectionState.isConnectedToVoice = false;
+      connectionState.guildId = null;
+      connectionState.channelId = null;
       connectionState.status = 'ready';
-      // PENTING: Simpan guildId & channelId agar watchdog bisa reconnect otomatis!
-      // Jangan set isConnected: false agar config tetap tahu channel tujuan.
-      addVoiceAfkLog(`Bot terputus dari voice channel. Watchdog akan mencoba reconnect otomatis dalam 3 menit...`, 'warning');
-      saveVoiceAfkConfig({ guildId, channelId, isConnected: true });
+      addVoiceAfkLog('Bot terputus sepenuhnya dari voice channel.', 'warning');
+      saveVoiceAfkConfig({ guildId, channelId, isConnected: false });
       try {
         voiceConnection.destroy();
       } catch (e) { }
     }
   });
 
-  try {
-    // Kurangi timeout ke 5 detik untuk respon UI yang lebih cepat
-    await entersState(voiceConnection, VoiceConnectionStatus.Ready, 5000);
-  } catch (err) {
-    // Toleransi UDP: Jika tersangkut di signalling/connecting tapi isDiscordReady ok, tetap anggap sukses
-    console.warn(`⚠️ [VoiceAFK] entersState Ready timed out/aborted: ${err.message}. Mengabaikan error koneksi UDP untuk mode AFK.`);
-    connectionState.isConnectedToVoice = true;
-    connectionState.guildId = guildId;
-    connectionState.channelId = channelId;
-    connectionState.status = 'connected_voice';
-    saveVoiceAfkConfig({ guildId, channelId, isConnected: true });
-  }
+  await entersState(voiceConnection, VoiceConnectionStatus.Ready, 15000);
   return connectionState;
 }
 
@@ -1658,125 +583,10 @@ function initializeBot(token) {
             console.error(`❌ Gagal terhubung ke Guild ID ${GUILD_ID}: ${err.message}`);
           });
       }
-
-      // ===== VOICE WATCHDOG: Auto-reconnect setiap 3 menit =====
-      const VOICE_WATCHDOG_INTERVAL_MS = 3 * 60 * 1000;
-      setInterval(async () => {
-        // 1. Watchdog untuk Main Bot (Sparxie)
-        const savedCfg = loadVoiceAfkConfig();
-        if (savedCfg && savedCfg.isConnected && savedCfg.guildId && savedCfg.channelId) {
-          if (!connectionState.isConnectedToVoice) {
-            addVoiceAfkLog(`[Watchdog] Main bot terputus. Mencoba reconnect ke channel ${savedCfg.channelId}...`, 'warning');
-            try {
-              await connectToVoiceChannel(savedCfg.guildId, savedCfg.channelId);
-              addVoiceAfkLog(`[Watchdog] ✅ Berhasil reconnect main bot ke voice channel ${savedCfg.channelId}!`, 'success');
-            } catch (err) {
-              addVoiceAfkLog(`[Watchdog] ❌ Gagal reconnect main bot: ${err.message}. Mencoba lagi dalam 3 menit.`, 'error');
-            }
-          }
-        }
-
-        // 2. Watchdog untuk Ghost Mode (Selfbot Sim)
-        const ghostCfg = loadGhostConfig();
-        if (ghostCfg && ghostCfg.isEnabled && ghostCfg.guildId && ghostCfg.channelId) {
-          // Jika GHOST_USER_TOKEN diset tapi manager belum ready/tidak terhubung
-          if (GHOST_USER_TOKEN && (!ghostManager || !ghostManager.isReady)) {
-            console.log('[Watchdog Ghost] Ghost manager tidak ready/terputus. Mencoba inisialisasi/reconnect...');
-            try {
-              if (!ghostManager) {
-                ghostManager = new SelfbotManager(GHOST_USER_TOKEN);
-              }
-              await ghostManager.connect();
-              console.log('[Watchdog Ghost] ✅ Berhasil mengkoneksikan kembali ghost manager ke Gateway.');
-            } catch (err) {
-              console.error('[Watchdog Ghost] ❌ Gagal inisialisasi/reconnect ghost manager:', err.message);
-            }
-          }
-
-          if (ghostManager && ghostManager.isReady) {
-            // Cek apakah akun ghost benar-benar ada di voice channel
-            let isGhostInVoice = false;
-            try {
-              const guild = client.guilds.cache.get(ghostCfg.guildId);
-              const ghostMember = guild?.members.cache.get(SIM_DISCORD_ID) || await guild?.members.fetch(SIM_DISCORD_ID).catch(() => null);
-              isGhostInVoice = ghostMember?.voice?.channelId === ghostCfg.channelId;
-            } catch (e) {
-              console.warn('[Watchdog Ghost] Gagal cek status voice ghost:', e.message);
-            }
-
-            if (!isGhostInVoice) {
-              console.log(`[Watchdog Ghost] Akun ghost terdeteksi keluar dari channel ${ghostCfg.channelId}. Mencoba menyambung kembali...`);
-              try {
-                await ghostManager.joinVoice(ghostCfg.guildId, ghostCfg.channelId);
-                if (ghostCfg.nickname) {
-                  await new Promise(r => setTimeout(r, 1500));
-                  await ghostManager.setNickname(ghostCfg.guildId, ghostCfg.nickname).catch(() => {});
-                }
-                console.log('[Watchdog Ghost] ✅ Berhasil reconnect akun ghost ke voice channel!');
-                await updateGhostControlMessageStatus(true).catch(() => {});
-              } catch (err) {
-                console.error('[Watchdog Ghost] ❌ Gagal reconnect akun ghost:', err.message);
-              }
-            }
-          }
-        }
-      }, VOICE_WATCHDOG_INTERVAL_MS);
-      console.log('⏰ [VoiceWatchdog] Auto-reconnect watchdog aktif (interval: 3 menit).');
     });
-
-    // ===== KRPK-0421: Ghost Mode Init =====
-    if (GHOST_USER_TOKEN) {
-      setTimeout(async () => {
-        try {
-          ghostManager = new SelfbotManager(GHOST_USER_TOKEN);
-          await ghostManager.connect();
-          console.log('[KRPK-0421] Ghost SelfbotManager berhasil terhubung ke Gateway.');
-          await sendOrUpdateGhostControlMessage();
-        } catch (err) {
-          console.error('[KRPK-0421] Gagal inisialisasi ghost manager:', err.message);
-        }
-      }, 8000); // Delay 8 detik setelah bot ready
-    } else {
-      console.log('[KRPK-0421] GHOST_USER_TOKEN tidak ditemukan di .env. Ghost Mode dinonaktifkan.');
-    }
 
     client.on('error', (err) => {
       console.error(`❌ Error pada klien Discord: ${err.message}`);
-    });
-
-    // ===== KRPK-0422: Widget Configuration Setup Button Command =====
-    client.on('messageCreate', async (message) => {
-      if (message.author.bot) return;
-      if (!message.content.startsWith('!widget')) return;
-
-      const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-
-      const oauthUrl = `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&redirect_uri=${encodeURIComponent(process.env.DISCORD_REDIRECT_URI)}&response_type=code&scope=identify%20role_connections.write%20sdk.social_layer_presence`;
-
-      const embed = new EmbedBuilder()
-        .setTitle('🎪 CrunchyVerse Board Profile Widget 🎪')
-        .setDescription(
-          'Tampilkan Level, Voice Hours, Streak, dan Kekayaan Teater (CV$) Anda secara live langsung di profil Discord Anda (di bawah tab **Board**, Widget v2)!\n\n' +
-          '**Langkah-langkah Setup:**\n' +
-          '1️⃣ Klik tombol **1. Otorisasi Link Widget** untuk menghubungkan akun Anda.\n' +
-          '2️⃣ Setelah sukses otorisasi di browser, kembali ke Discord dan klik tombol **2. Pasang Widget ke Profile Board**.\n' +
-          '3️⃣ Reload Discord client Anda (`Ctrl + R`) lalu buka profil Anda untuk melihat tab **Board**!'
-        )
-        .setColor('#D4AF37')
-        .setThumbnail(client.user.displayAvatarURL());
-
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setLabel('1. Otorisasi Link Widget')
-          .setStyle(ButtonStyle.Link)
-          .setURL(oauthUrl),
-        new ButtonBuilder()
-          .setCustomId('krpk_widget_install')
-          .setLabel('2. Pasang Widget ke Profile Board')
-          .setStyle(ButtonStyle.Success)
-      );
-
-      await message.reply({ embeds: [embed], components: [row] });
     });
 
     // Listen to Jockie Music (Jing Liu) messages to capture playing track
@@ -1879,7 +689,7 @@ function initializeBot(token) {
       if (db) {
         try {
           const q = query(collection(db, "submissions"), where("discordMessageId", "==", messageId));
-          const querySnapshot = await withTimeout(getDocs(q));
+          const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             const docSnap = querySnapshot.docs[0];
             submissionFromDb = docSnap.data();
@@ -1917,9 +727,9 @@ function initializeBot(token) {
         try {
           const docRef = doc(db, "submissions", subDocId);
           if (emoji === '✅') {
-            await withTimeout(updateDoc(docRef, { status: "approved" }));
+            await updateDoc(docRef, { status: "approved" });
           } else {
-            await withTimeout(deleteDoc(docRef));
+            await deleteDoc(docRef);
           }
         } catch (dbErr) {
           console.warn("⚠️ [Reaction] Gagal update status submission di Firestore:", dbErr.message);
@@ -1951,11 +761,11 @@ function initializeBot(token) {
         if (db) {
           try {
             const deckRef = doc(db, "user_decks", userId);
-            const deckDoc = await withTimeout(getDoc(deckRef));
+            const deckDoc = await getDoc(deckRef);
             if (deckDoc.exists()) {
               const deckData = deckDoc.data();
               const updatedStatuses = { ...deckData.statuses, [questId]: "Completed" };
-              await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
+              await updateDoc(deckRef, { statuses: updatedStatuses });
               console.log(`🔥 [Reaction] Updated Firestore user deck card ${questId} status to Completed`);
             }
           } catch (dbErr) {
@@ -1989,25 +799,25 @@ function initializeBot(token) {
         if (db) {
           try {
             const userRef = doc(db, "users", userId);
-            const userDoc = await withTimeout(getDoc(userRef));
+            const userDoc = await getDoc(userRef);
             let newPoints = points;
             if (userDoc.exists()) {
               const userData = userDoc.data();
               const currentPoints = userData.cv || userData.points || 0;
               newPoints += currentPoints;
-              await withTimeout(updateDoc(userRef, {
+              await updateDoc(userRef, {
                 cv: newPoints,
                 points: newPoints
-              }));
+              });
             } else {
-              await withTimeout(setDoc(userRef, {
+              await setDoc(userRef, {
                 uid: userId,
                 name: username,
                 email: userEmail,
                 role: "Penonton Teater",
                 cv: newPoints,
                 points: newPoints
-              }));
+              });
             }
             console.log(`💰 [Points] Firestore: Ditambahkan ${points} poin ke user ${username}. Total poin baru: ${newPoints}`);
           } catch (dbErr) {
@@ -2025,7 +835,7 @@ function initializeBot(token) {
           let targetDiscordId = mergedSub.discordId;
           if (!targetDiscordId && db) {
             try {
-              const userDoc = await withTimeout(getDoc(doc(db, "users", userId)));
+              const userDoc = await getDoc(doc(db, "users", userId));
               if (userDoc.exists()) {
                 targetDiscordId = userDoc.data().discordId;
               }
@@ -2099,11 +909,11 @@ function initializeBot(token) {
         if (db) {
           try {
             const deckRef = doc(db, "user_decks", userId);
-            const deckDoc = await withTimeout(getDoc(deckRef));
+            const deckDoc = await getDoc(deckRef);
             if (deckDoc.exists()) {
               const deckData = deckDoc.data();
               const updatedStatuses = { ...deckData.statuses, [questId]: "Denied" };
-              await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
+              await updateDoc(deckRef, { statuses: updatedStatuses });
               console.log(`🔥 [Reaction] Updated Firestore user deck card ${questId} status to Denied`);
             }
           } catch (dbErr) {
@@ -2120,145 +930,6 @@ function initializeBot(token) {
       }
     });
 
-    // ===== KRPK-0421: Ghost Mode Button Interaction Handler =====
-    client.on('interactionCreate', async (interaction) => {
-      if (!interaction.isButton()) return;
-      if (!['krpk_ghost_enable', 'krpk_ghost_disable', 'krpk_widget_install'].includes(interaction.customId)) return;
-
-      if (interaction.customId === 'krpk_widget_install') {
-        await interaction.deferReply({ ephemeral: true });
-        
-        const userId = interaction.user.id;
-        if (!roleConn) {
-          return interaction.editReply({ content: '❌ Sistem widget/role-connections belum diinisialisasi.' });
-        }
-        
-        const accounts = roleConn.loadLinkedAccounts();
-        const acc = accounts[userId];
-
-        if (!acc) {
-          return interaction.editReply({
-            content: '🚫 **Akun Anda belum terhubung!** Silakan klik tombol **1. Otorisasi Link Widget** terlebih dahulu.'
-          });
-        }
-
-        let token = acc.access_token;
-        if (Date.now() > (acc.expires_at - 300000)) {
-          token = await roleConn.refreshAccessToken(userId, acc.refresh_token);
-        }
-
-        if (!token) {
-          return interaction.editReply({
-            content: '❌ **Gagal otentikasi.** Silakan klik tombol **1. Otorisasi Link Widget** kembali untuk menyegarkan token Anda.'
-          });
-        }
-
-        const result = await roleConn.installUserProfileWidget(userId, token);
-
-        if (result.success) {
-          try {
-            await roleConn.updateConnectionMetadata(userId, acc.username, token);
-          } catch (err) {
-            console.warn("⚠️ Gagal update status widget secara instan setelah instalasi:", err.message);
-          }
-
-          await interaction.editReply({
-            content: '✅ **Widget CrunchyVerse berhasil dipasang ke profil Anda!**\nSilakan reload Discord client Anda (`Ctrl + R`), buka profil Anda, dan cek tab **Board**.'
-          });
-        } else {
-          await interaction.editReply({
-            content: `❌ **Gagal memasang widget ke profil:** ${result.error || 'Unknown error'}\nPastikan Anda sudah melakukan otorisasi link widget dengan benar.`
-          });
-        }
-        return;
-      }
-
-      // 🔒 Hanya akun sim yang boleh
-      if (interaction.user.id !== SIM_DISCORD_ID) {
-        return interaction.reply({
-          content: '🚫 **Akses Ditolak.** Menu ini hanya bisa digunakan oleh operator teater.',
-          ephemeral: true
-        });
-      }
-
-      await interaction.deferReply({ ephemeral: true });
-
-      if (!ghostManager || !ghostManager.isReady) {
-        return interaction.editReply({ content: '❌ Ghost Mode tidak aktif (GHOST_USER_TOKEN belum diisi di server).' });
-      }
-
-      const guildId = GUILD_ID;
-
-      if (interaction.customId === 'krpk_ghost_enable') {
-        try {
-          // Cari voice channel yang sama dengan Sparxie
-          let targetChannelId = connectionState.channelId;
-
-          // Fallback: cek langsung dari guild voice state kalau connectionState belum diisi
-          if (!targetChannelId && client && GUILD_ID) {
-            try {
-              const guild = client.guilds.cache.get(GUILD_ID);
-              const botMember = guild?.members.cache.get(client.user.id);
-              targetChannelId = botMember?.voice?.channelId || null;
-              if (targetChannelId) {
-                console.log(`[KRPK-0421] Fallback: Sparxie ditemukan di voice channel ${targetChannelId} via guild cache.`);
-              }
-            } catch (_) {}
-          }
-
-          if (!targetChannelId) {
-            return interaction.editReply({ content: '❌ Sparxie belum join voice channel manapun. Connect Sparxie ke voice dulu via Control Booth.' });
-          }
-
-
-          // Get current nickname and strip [💤] if already there, then prepend it
-          let currentNick = await ghostManager.getCurrentNickname(guildId);
-          let baseNick = (currentNick || 'Sim').replace(/^\[💤\]\s*/u, '').trim();
-          const newNick = `[💤] ${baseNick}`;
-
-          await ghostManager.joinVoice(guildId, targetChannelId);
-          await new Promise(r => setTimeout(r, 1500)); // tunggu sebentar sebelum PATCH nick
-          await ghostManager.setNickname(guildId, newNick);
-
-          // Simpan state agar auto-restore setelah restart
-          saveGhostConfig({ isEnabled: true, guildId, channelId: targetChannelId, nickname: newNick });
-
-          console.log(`[KRPK-0421] Ghost Mode ENABLED → voice:${targetChannelId}, nick:"${newNick}"`);
-          await interaction.editReply({ content: `✅ **Ghost Mode ON** — Bergabung ke voice dan nickname diubah ke \`${newNick}\`.` });
-
-          // Update control message status
-          await updateGhostControlMessageStatus(true);
-        } catch (err) {
-          console.error('[KRPK-0421] Enable error:', err.message);
-          await interaction.editReply({ content: `❌ Gagal enable ghost mode: ${err.message}` });
-        }
-
-      } else if (interaction.customId === 'krpk_ghost_disable') {
-        try {
-          // Kembalikan nickname (hapus [💤])
-          let currentNick = await ghostManager.getCurrentNickname(guildId);
-          if (currentNick) {
-            const restoredNick = currentNick.replace(/^\[💤\]\s*/u, '').trim() || null;
-            await ghostManager.setNickname(guildId, restoredNick || '');
-          }
-
-          await ghostManager.leaveVoice();
-
-          // Hapus config agar tidak auto-restore setelah restart
-          saveGhostConfig({ isEnabled: false, guildId: null, channelId: null, nickname: null });
-
-          console.log('[KRPK-0421] Ghost Mode DISABLED.');
-          await interaction.editReply({ content: '✅ **Ghost Mode OFF** — Keluar dari voice dan nickname dikembalikan.' });
-
-          // Update control message status
-          await updateGhostControlMessageStatus(false);
-        } catch (err) {
-          console.error('[KRPK-0421] Disable error:', err.message);
-          await interaction.editReply({ content: `❌ Gagal disable ghost mode: ${err.message}` });
-        }
-      }
-    });
-
     client.login(token).catch(err => {
       console.error(`❌ Login Discord Bot gagal: ${err.message}`);
       isDiscordReady = false;
@@ -2270,91 +941,7 @@ function initializeBot(token) {
   }
 }
 
-// ===== KRPK-0421: Ghost Mode Helper Functions =====
-
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-
-async function sendOrUpdateGhostControlMessage() {
-  if (!client || !isDiscordReady) return;
-  try {
-    const channel = await client.channels.fetch(GHOST_CONTROL_CHANNEL_ID).catch(() => null);
-    if (!channel) {
-      console.error(`[KRPK-0421] Channel kontrol ${GHOST_CONTROL_CHANNEL_ID} tidak ditemukan.`);
-      return;
-    }
-
-    const isGhostOn = ghostManager && ghostManager.isConnected;
-    const embed = buildGhostControlEmbed(isGhostOn);
-    const row = buildGhostControlRow(isGhostOn);
-
-    // Coba cari pesan lama dari bot di channel ini
-    const messages = await channel.messages.fetch({ limit: 20 });
-    const existingMsg = messages.find(m => m.author.id === client.user.id && m.components?.length > 0);
-
-    if (existingMsg) {
-      await existingMsg.edit({ embeds: [embed], components: [row] });
-      ghostControlMessageId = existingMsg.id;
-      console.log('[KRPK-0421] Pesan kontrol diperbarui.');
-    } else {
-      const sent = await channel.send({ embeds: [embed], components: [row] });
-      ghostControlMessageId = sent.id;
-      console.log('[KRPK-0421] Pesan kontrol baru dikirim:', sent.id);
-    }
-  } catch (err) {
-    console.error('[KRPK-0421] Gagal kirim/update pesan kontrol:', err.message);
-  }
-}
-
-async function updateGhostControlMessageStatus(isEnabled) {
-  if (!client || !isDiscordReady || !ghostControlMessageId) return;
-  try {
-    const channel = await client.channels.fetch(GHOST_CONTROL_CHANNEL_ID).catch(() => null);
-    if (!channel) return;
-    const msg = await channel.messages.fetch(ghostControlMessageId).catch(() => null);
-    if (!msg) return;
-    const embed = buildGhostControlEmbed(isEnabled);
-    const row = buildGhostControlRow(isEnabled);
-    await msg.edit({ embeds: [embed], components: [row] });
-  } catch (err) {
-    console.error('[KRPK-0421] Gagal update status pesan kontrol:', err.message);
-  }
-}
-
-function buildGhostControlEmbed(isEnabled) {
-  const { EmbedBuilder } = require('discord.js');
-  return new EmbedBuilder()
-    .setTitle('👻 Ghost Mode — KRPK-0421')
-    .setColor(isEnabled ? 0x57F287 : 0x5865F2)
-    .setDescription(
-      isEnabled
-        ? '✅ **Ghost Mode sedang AKTIF.**\nAkun ghost sedang berada di voice channel dengan status 💤 AFK.\nTekan **Disable** untuk keluar dan mengembalikan nama.'
-        : '💤 **Ghost Mode tidak aktif.**\nTekan **Enable** untuk bergabung ke voice channel yang sama dengan Sparxie dengan nama `[💤] <namamu>`.'
-    )
-    .addFields(
-      { name: 'Status Ghost', value: isEnabled ? '🟢 Online di Voice' : '⚫ Offline', inline: true },
-      { name: 'Akses', value: `<@${SIM_DISCORD_ID}>`, inline: true }
-    )
-    .setFooter({ text: 'KRPK-0421 • Hanya operator yang bisa menggunakan menu ini' })
-    .setTimestamp();
-}
-
-function buildGhostControlRow(isEnabled) {
-  return new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId('krpk_ghost_enable')
-      .setLabel('✅ Enable Ghost')
-      .setStyle(ButtonStyle.Success)
-      .setDisabled(isEnabled),
-    new ButtonBuilder()
-      .setCustomId('krpk_ghost_disable')
-      .setLabel('🚫 Disable Ghost')
-      .setStyle(ButtonStyle.Danger)
-      .setDisabled(!isEnabled)
-  );
-}
-
 // ================= Express API Endpoints =================
-
 
 // 0. VoiceAFK Endpoints
 app.get('/api/voice-afk/status', (req, res) => {
@@ -2390,7 +977,7 @@ app.get('/api/voice-afk/status', (req, res) => {
   });
 });
 
-app.post('/api/voice-afk/connect', requireClientToken, async (req, res) => {
+app.post('/api/voice-afk/connect', async (req, res) => {
   const { guildId, channelId } = req.body;
 
   if (!guildId || !channelId) {
@@ -2401,13 +988,6 @@ app.post('/api/voice-afk/connect', requireClientToken, async (req, res) => {
   }
 
   try {
-    if (!client || !isDiscordReady) {
-      return res.status(400).json({
-        success: false,
-        message: 'Klien Discord belum login atau belum siap.'
-      });
-    }
-
     addVoiceAfkLog(`Menerima perintah sambung ke Voice Channel: Guild ${guildId}, Channel ${channelId}`, 'info');
     await connectToVoiceChannel(guildId, channelId);
     res.json({
@@ -2425,7 +1005,7 @@ app.post('/api/voice-afk/connect', requireClientToken, async (req, res) => {
   }
 });
 
-app.post('/api/voice-afk/disconnect', requireClientToken, (req, res) => {
+app.post('/api/voice-afk/disconnect', (req, res) => {
   if (!connectionState.isConnectedToVoice || !connectionState.guildId) {
     return res.json({
       success: true,
@@ -2466,23 +1046,19 @@ app.post('/api/voice-afk/disconnect', requireClientToken, (req, res) => {
   }
 });
 
-app.post('/api/voice-afk/logs/clear', requireClientToken, (req, res) => {
+app.post('/api/voice-afk/logs/clear', (req, res) => {
   connectionState.logs = [];
   addVoiceAfkLog('Log konsol dibersihkan oleh web client.', 'info');
   res.json({ success: true });
 });
 
-// 1. GET TikTok Status — cached 30 detik
+// 1. GET TikTok Status
 app.get('/api/tiktok', (req, res) => {
-  const cacheKey = 'api:tiktok';
-  const cached = cache.get(cacheKey);
-  if (cached) return res.json(cached);
-  cache.set(cacheKey, tiktokState, 30);
   res.json(tiktokState);
 });
 
 // POST to update TikTok status with manual Volunteer overrides
-app.post('/api/tiktok/override', requireClientToken, async (req, res) => {
+app.post('/api/tiktok/override', async (req, res) => {
   const { isLive, liveTitle, manualOverride } = req.body;
 
   if (manualOverride !== undefined) {
@@ -2508,18 +1084,11 @@ app.post('/api/tiktok/override', requireClientToken, async (req, res) => {
     console.error("❌ [API/tiktok/override] Gagal mengubah nama channel di Discord:", err.message);
   }
 
-  // Invalidate tiktok cache saat ada override
-  cache.delete('api:tiktok');
-
   res.json({ success: true, state: tiktokState });
 });
 
-// 2. GET Live Discord Server Stats — cached 60 detik
+// 2. GET Live Discord Server Stats
 app.get('/api/stats', async (req, res) => {
-  const cacheKey = 'api:stats';
-  const cached = cache.get(cacheKey);
-  if (cached) return res.json(cached);
-
   // Graceful Fallback mock stats if bot is offline or not configured
   const mockStats = {
     totalMembers: 1337,
@@ -2589,7 +1158,7 @@ app.get('/api/stats', async (req, res) => {
     const finalKerupuk = totalKerupuk || Math.floor(totalMembers * 0.31);
     const finalKeripik = totalKeripik || Math.floor(totalMembers * 0.52);
 
-    const result = {
+    res.json({
       totalMembers,
       totalKerupuk: finalKerupuk,
       totalKeripik: finalKeripik,
@@ -2598,9 +1167,7 @@ app.get('/api/stats', async (req, res) => {
       dnd,
       offline,
       mode: "Live Discord Connection"
-    };
-    cache.set(cacheKey, result, 60);
-    res.json(result);
+    });
 
   } catch (err) {
     console.error(`❌ Gagal mengambil stats dari Guild: ${err.message}`);
@@ -2660,12 +1227,8 @@ async function resolveMentions(content, guild) {
   return result;
 }
 
-// 3. GET Broadcast Messages — cached 5 menit
+// 3. GET Broadcast Messages
 app.get('/api/broadcasts', async (req, res) => {
-  const cacheKey = 'api:broadcasts';
-  const cached = cache.get(cacheKey);
-  if (cached) return res.json(cached);
-
   const mockBroadcasts = [
     {
       id: "b1",
@@ -2696,28 +1259,13 @@ app.get('/api/broadcasts', async (req, res) => {
     const channelKey = process.env.BROADCAST_CHANNEL || 'broadcast';
 
     // Find the #broadcast channel (by name or ID)
-    let channel = guild.channels.cache.find(c =>
+    const channel = guild.channels.cache.find(c =>
       c.id === channelKey ||
       (c.name.toLowerCase() === channelKey.toLowerCase() && c.type === ChannelType.GuildText)
     );
 
-    // If not in cache, try fetching all channels from Discord
     if (!channel) {
-      try {
-        const fetchedChannels = await guild.channels.fetch();
-        channel = fetchedChannels.find(c =>
-          c && (
-            c.id === channelKey ||
-            (c.name && c.name.toLowerCase() === channelKey.toLowerCase() && c.type === ChannelType.GuildText)
-          )
-        ) || null;
-      } catch (fetchErr) {
-        console.warn(`⚠️ Gagal fetch channels dari guild: ${fetchErr.message}`);
-      }
-    }
-
-    if (!channel) {
-      // Silently fallback without spamming logs
+      console.log(`⚠️ Channel Broadcast (${channelKey}) tidak ditemukan di guild.`);
       return res.json(mockBroadcasts);
     }
 
@@ -3161,11 +1709,6 @@ function getDeterministicValue(id, key, min, max) {
 
 // 7. GET Leaderboards (Cakey Bot & CV$ Wealth)
 app.get('/api/leaderboard', async (req, res) => {
-  const cacheKey = 'api:leaderboard';
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    return res.json(cached);
-  }
   const mockLeaderboard = {
     leveling: [
       { rank: 1, id: "661135501226672129", username: "sim.tsx", displayName: "[Raiid] Sim | 46 ⭐", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=sim", level: 64, xp: 14200, nextXp: 15000 },
@@ -3221,118 +1764,191 @@ app.get('/api/leaderboard', async (req, res) => {
     const guildId = GUILD_ID || '1403255548698300416';
     let resolvedCakey = null;
 
-    // ─── Cakey Bot Scraping (dengan proxy fallback untuk bypass Cloudflare) ───
     try {
+      console.log(`📡 [API/leaderboard] Mengambil data real-time langsung dari Cakey Bot untuk Guild: "${guildId}"...`);
       const cakeyUrl = `https://cakey.bot/leaderboard/id/${guildId}?tab=leveling`;
-      const browserHeaders = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8',
-        'Cache-Control': 'no-cache',
-      };
 
-      // Try direct first (works on localhost/residential IP), then proxy chain for VPS
-      const VERCEL_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kranciweb.vercel.app';
-      const fetchAttempts = [
-        () => fetch(cakeyUrl, { headers: browserHeaders, signal: AbortSignal.timeout(6000) })
-          .then(r => r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`))),
-        () => fetch(`${VERCEL_URL}/api/cakey-proxy?guildId=${guildId}`, { signal: AbortSignal.timeout(10000) })
-          .then(r => r.ok ? r.text() : Promise.reject(new Error(`vercel-proxy HTTP ${r.status}`))),
-        () => fetch(`https://corsproxy.io/?url=${encodeURIComponent(cakeyUrl)}`, { headers: browserHeaders, signal: AbortSignal.timeout(8000) })
-          .then(r => r.ok ? r.text() : Promise.reject(new Error(`proxy2 HTTP ${r.status}`))),
-        () => fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(cakeyUrl)}`, { signal: AbortSignal.timeout(8000) })
-          .then(r => r.ok ? r.json() : Promise.reject(new Error(`proxy3 HTTP ${r.status}`)))
-          .then(data => data.contents),
-      ];
+      const cakeyRes = await fetch(cakeyUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        },
+        signal: AbortSignal.timeout(6000) // 6 seconds timeout for robust operation
+      });
 
-      let html = null;
-      for (let i = 0; i < fetchAttempts.length; i++) {
-        try {
-          console.log(`📡 [API/leaderboard] Mencoba fetch Cakey Bot (attempt ${i + 1}/4)...`);
-          html = await fetchAttempts[i]();
-          console.log(`✅ [API/leaderboard] Berhasil fetch Cakey Bot via attempt ${i + 1}`);
-          break;
-        } catch (attemptErr) {
-          console.warn(`⚠️ [API/leaderboard] Attempt ${i + 1} gagal: ${attemptErr.message}`);
-        }
-      }
-
-      if (!html) throw new Error('Semua proxy gagal');
+      if (!cakeyRes.ok) throw new Error(`HTTP ${cakeyRes.status}`);
+      const html = await cakeyRes.text();
 
       const tables = html.split(/<table/gi);
-      if (tables.length < 3) throw new Error("Tidak ada cukup tabel di HTML Cakey Bot");
+      if (tables.length < 3) {
+        throw new Error("Could not find enough tables in Cakey Bot HTML");
+      }
 
-      const getTdText = (tdStr) => tdStr.substring(tdStr.indexOf('>') + 1).replace(/<[^>]*>/g, '').trim();
+      // Helper to get text inside TD safely skipping attributes
+      const getTdText = (tdStr) => {
+        const textPart = tdStr.substring(tdStr.indexOf('>') + 1);
+        return textPart.replace(/<[^>]*>/g, '').trim();
+      };
 
-      // ─── 1. LEVELING ───
+      // ─── 1. LEVELING (TABLE 0) ───
       const table1 = tables[1];
       const t1Start = table1.indexOf('<tbody>');
       const t1End = table1.indexOf('</tbody>', t1Start);
-      if (t1Start === -1 || t1End === -1) throw new Error("Tbody tidak ditemukan di Table 1");
-      const t1Rows = table1.substring(t1Start + 7, t1End).split(/<tr/gi).filter(r => r.includes('<td'));
+      if (t1Start === -1 || t1End === -1) throw new Error("Tbody not found in Table 1");
+      const t1RowsHtml = table1.substring(t1Start + 7, t1End);
+      const t1Rows = t1RowsHtml.split(/<tr/gi).filter(r => r.includes('<td'));
 
       const levelingList = [];
       t1Rows.forEach((row, idx) => {
         try {
           const tds = row.split(/<td/gi).filter(td => td.includes('</td>'));
           if (tds.length < 5) return;
+
+          // Rank
           let rank = idx + 1;
           const starMatch = tds[0].match(/\/assets\/images\/(\d+)\.svg/);
           if (starMatch) rank = parseInt(starMatch[1], 10);
+          else {
+            const textRankMatch = tds[0].match(/<h4[^>]*>\s*(\d+)\s*<\/h4>/i) || tds[0].match(/>\s*(\d+)\s*</);
+            if (textRankMatch) rank = parseInt(textRankMatch[1], 10);
+          }
+
+          // Avatar & Username
           const avatarMatch = tds[1].match(/src="([^"]+)"/);
           const avatar = avatarMatch ? avatarMatch[1] : null;
+
           const usernameMatch = tds[1].match(/<span class="text-sm font-semibold">([^<]+)<\/span>/) || tds[1].match(/<span class="text-theme font-medium">([^<]+)<\/span>/) || tds[1].match(/>\s*([a-zA-Z0-9_.-]+)\s*</);
-          const username = usernameMatch ? usernameMatch[1].trim() : 'Unknown';
-          const voiceMinutes = parseInt(getTdText(tds[3]).replace(/,/g, ''), 10) || 0;
+          const username = usernameMatch ? usernameMatch[1].trim() : "Unknown";
+
+          // Messages
+          const msgStr = getTdText(tds[2]).replace(/,/g, '');
+          const messages = parseInt(msgStr, 10) || 0;
+
+          // Voice Minutes
+          const voiceStr = getTdText(tds[3]).replace(/,/g, '');
+          const voiceMinutes = parseInt(voiceStr, 10) || 0;
+
+          // Level & XP
           const levelMatch = tds[4].match(/Level\s*<span[^>]*>(\d+)<\/span>/i) || tds[4].match(/Level\s*(\d+)/i) || tds[4].match(/(\d+)/);
           const level = levelMatch ? parseInt(levelMatch[1], 10) : 0;
+
           const xpMatch = tds[4].match(/>\s*([\d.MK]+)\s*XP/i);
-          const xpStr = xpMatch ? xpMatch[1].trim() : '0';
-          let xpVal = xpStr.endsWith('M') ? parseFloat(xpStr) * 1e6 : xpStr.endsWith('K') ? parseFloat(xpStr) * 1e3 : parseFloat(xpStr) || 0;
-          const pctMatch = tds[4].match(/style="width:\s*([\d.]+)%/i);
-          const pct = pctMatch ? parseFloat(pctMatch[1]) : 0;
+          const xpStr = xpMatch ? xpMatch[1].trim() : "0";
+
+          // Parse XP string (like '8.7M' or '24.5K' or '1250') to number
+          let xpVal = 0;
+          if (xpStr.endsWith('M')) xpVal = parseFloat(xpStr.slice(0, -1)) * 1000000;
+          else if (xpStr.endsWith('K')) xpVal = parseFloat(xpStr.slice(0, -1)) * 1000;
+          else xpVal = parseFloat(xpStr) || 0;
+
+          // Extract width percent (like 'style="width: 20.5%"')
+          const styleMatch = tds[4].match(/style="width:\s*([\d.]+)%/i);
+          const pct = styleMatch ? parseFloat(styleMatch[1]) : 0;
+
+          // Calculate next XP based on percent
+          let nextXp = Math.round(xpVal * 1.5); // fallback
+          if (pct > 0) {
+            nextXp = Math.round((xpVal / pct) * 100);
+          }
+
+          // Extract real user ID from avatar URL if possible
           let userIdVal = `cakey-lvl-${rank}`;
-          if (avatar) { const m = avatar.match(/\/avatars\/(\d+)\//); if (m) userIdVal = m[1]; }
-          levelingList.push({ rank, id: userIdVal, username, displayName: username, avatar, level, xp: xpVal, nextXp: pct > 0 ? Math.round((xpVal / pct) * 100) : Math.round(xpVal * 1.5), voiceMinutes });
-        } catch (e) { console.warn('⚠️ Gagal parse leveling row:', e.message); }
+          if (avatar) {
+            const match = avatar.match(/\/avatars\/(\d+)\//);
+            if (match) userIdVal = match[1];
+          }
+
+          levelingList.push({
+            rank,
+            id: userIdVal,
+            username,
+            displayName: username,
+            avatar,
+            level,
+            xp: xpVal,
+            nextXp: nextXp,
+            voiceMinutes
+          });
+        } catch (rowErr) {
+          console.warn("⚠️ Gagal parsing baris leveling:", rowErr.message);
+        }
       });
 
-      // ─── 2. STREAKS ───
+      // ─── 2. STREAKS (TABLE 1) ───
       const table2 = tables[2];
       const t2Start = table2.indexOf('<tbody>');
       const t2End = table2.indexOf('</tbody>', t2Start);
-      if (t2Start === -1 || t2End === -1) throw new Error("Tbody tidak ditemukan di Table 2");
-      const t2Rows = table2.substring(t2Start + 7, t2End).split(/<tr/gi).filter(r => r.includes('<td'));
+      if (t2Start === -1 || t2End === -1) throw new Error("Tbody not found in Table 2");
+      const t2RowsHtml = table2.substring(t2Start + 7, t2End);
+      const t2Rows = t2RowsHtml.split(/<tr/gi).filter(r => r.includes('<td'));
 
       const streakList = [];
       t2Rows.forEach((row, idx) => {
         try {
           const tds = row.split(/<td/gi).filter(td => td.includes('</td>'));
           if (tds.length < 3) return;
+
+          // Rank
           let rank = idx + 1;
           const starMatch = tds[0].match(/\/assets\/images\/(\d+)\.svg/);
           if (starMatch) rank = parseInt(starMatch[1], 10);
+          else {
+            const textRankMatch = tds[0].match(/<h4[^>]*>\s*(\d+)\s*<\/h4>/i) || tds[0].match(/>\s*(\d+)\s*</);
+            if (textRankMatch) rank = parseInt(textRankMatch[1], 10);
+          }
+
+          // Avatar & Username
           const avatarMatch = tds[1].match(/src="([^"]+)"/);
           const avatar = avatarMatch ? avatarMatch[1] : null;
+
           const usernameMatch = tds[1].match(/<span class="text-sm font-semibold">([^<]+)<\/span>/) || tds[1].match(/<span class="text-theme font-medium">([^<]+)<\/span>/) || tds[1].match(/>\s*([a-zA-Z0-9_.-]+)\s*</);
-          const username = usernameMatch ? usernameMatch[1].trim() : 'Unknown';
-          const streak = parseInt(getTdText(tds[2]).replace(/,/g, ''), 10) || 0;
+          const username = usernameMatch ? usernameMatch[1].trim() : "Unknown";
+
+          // Current Streak
+          const streakStr = getTdText(tds[2]).replace(/,/g, '');
+          const streak = parseInt(streakStr, 10) || 0;
+
+          // Extract real user ID from avatar URL if possible
           let userIdVal = `cakey-strk-${rank}`;
-          if (avatar) { const m = avatar.match(/\/avatars\/(\d+)\//); if (m) userIdVal = m[1]; }
-          streakList.push({ rank, id: userIdVal, username, displayName: username, avatar, streak });
-        } catch (e) { console.warn('⚠️ Gagal parse streak row:', e.message); }
+          if (avatar) {
+            const match = avatar.match(/\/avatars\/(\d+)\//);
+            if (match) userIdVal = match[1];
+          }
+
+          streakList.push({
+            rank,
+            id: userIdVal,
+            username,
+            displayName: username,
+            avatar,
+            streak
+          });
+        } catch (rowErr) {
+          console.warn("⚠️ Gagal parsing baris streak:", rowErr.message);
+        }
       });
 
-      // ─── 3. VOICE (dari leveling) ───
+      // ─── 3. VOICE HOURS (DERIVED FROM LEVELING) ───
       const voiceList = [...levelingList]
         .sort((a, b) => b.voiceMinutes - a.voiceMinutes)
-        .map((item, idx) => ({ rank: idx + 1, id: item.id, username: item.username, displayName: item.displayName, avatar: item.avatar, hours: Math.round(item.voiceMinutes / 60) }));
+        .map((item, idx) => ({
+          rank: idx + 1,
+          id: item.id,
+          username: item.username,
+          displayName: item.displayName,
+          avatar: item.avatar,
+          hours: Math.round(item.voiceMinutes / 60)
+        }));
 
-      resolvedCakey = { leveling: levelingList, streak: streakList, voice: voiceList };
-      console.log(`✅ [API/leaderboard] Sukses parse 3 papan peringkat dari Cakey Bot!`);
+      resolvedCakey = {
+        leveling: levelingList,
+        streak: streakList,
+        voice: voiceList
+      };
+
+      console.log(`✅ [API/leaderboard] Sukses meresolusi 3 Papan peringkat live langsung dari Cakey Bot!`);
 
     } catch (cakeyErr) {
-      console.warn(`⚠️ [API/leaderboard] Cakey Bot tidak tersedia: ${cakeyErr.message}. Menggunakan fallback Discord member.`);
+      console.warn(`⚠️ [API/leaderboard] Gagal scraping Cakey Bot: ${cakeyErr.message}. Menggunakan simulator/fallback.`);
     }
 
     // Calculate CV$ Wealth (from live Discord server or mock fallback)
@@ -3559,14 +2175,12 @@ app.get('/api/leaderboard', async (req, res) => {
       if (finalStreak.length === 0) finalStreak = mockLeaderboard.streak;
       if (finalVoice.length === 0) finalVoice = mockLeaderboard.voice;
 
-      const finalResult = {
+      res.json({
         leveling: finalLeveling,
         streak: finalStreak,
         voice: finalVoice,
         cvWealth: finalCvWealth
-      };
-      cache.set(cacheKey, finalResult, 30); // Cache selama 30 detik
-      res.json(finalResult);
+      });
     }
   } catch (err) {
     console.error(`❌ [API/leaderboard] Gagal meresolusi leaderboard: ${err.message}`);
@@ -3782,7 +2396,7 @@ async function autoRankRoleCheck() {
 }
 
 // POST /api/rank-roles/update — trigger dari tombol web "Integrasikan"
-app.post('/api/rank-roles/update', requireClientToken, async (req, res) => {
+app.post('/api/rank-roles/update', async (req, res) => {
   console.log('\n🔄 [RankRoles] Memulai pembaruan nama + assignment role Rank #1 dari Web...');
 
   if (!isDiscordReady || !client || !GUILD_ID) {
@@ -3969,7 +2583,7 @@ app.get('/api/discord-user/:userId', async (req, res) => {
   }
 });
 
-const USERS_FILE = path.join(__dirname, '../database/users.json');
+const USERS_FILE = path.join(__dirname, 'users.json');
 
 function loadLocalUsers() {
   try {
@@ -4076,7 +2690,7 @@ async function updatePlayerProgressRoles(member, userId) {
   }
 }
 
-const VOLUNTEERABLES_FILE = path.join(__dirname, '../database/volunteerables.json');
+const VOLUNTEERABLES_FILE = path.join(__dirname, 'volunteerables.json');
 
 function loadLocalVolunteerables() {
   try {
@@ -4097,109 +2711,22 @@ function saveLocalVolunteerables(list) {
   }
 }
 
-async function syncVolunteerablesFromFirestore() {
-  if (!db) return;
-  try {
-    console.log("🔄 [Volunteerables] Memulai sinkronisasi dari Firestore...");
-    const querySnapshot = await withTimeout(getDocs(collection(db, "volunteerables")), 5000);
-    const list = [];
-    querySnapshot.forEach(doc => {
-      list.push(doc.data());
-    });
-    if (list.length > 0) {
-      saveLocalVolunteerables(list);
-      console.log(`🔄 [Volunteerables] Berhasil sinkronisasi ${list.length} data dari Firestore ke lokal.`);
-    } else {
-      console.log("🔄 [Volunteerables] Tidak ada data di Firestore.");
-    }
-  } catch (err) {
-    console.warn("⚠️ [Volunteerables] Gagal sinkronisasi dari Firestore pada saat startup/GET:", err.message);
-  }
-}
-
-// Jalankan sync setelah startup (5 detik) jika Firebase terhubung
-setTimeout(() => {
-  if (db) {
-    syncVolunteerablesFromFirestore().catch(err => {
-      console.error("Gagal sinkronisasi volunteerables pada startup:", err.message);
-    });
-  }
-}, 5000);
-
 // GET all volunteerables
-app.get('/api/volunteerables', async (req, res) => {
-  let list = [];
-  if (db) {
-    try {
-      const querySnapshot = await withTimeout(getDocs(collection(db, "volunteerables")), 5000);
-      const fsList = [];
-      querySnapshot.forEach(doc => {
-        fsList.push(doc.data());
-      });
-      if (fsList.length > 0) {
-        list = fsList;
-        saveLocalVolunteerables(list);
-      } else {
-        list = loadLocalVolunteerables();
-      }
-    } catch (err) {
-      console.warn("⚠️ Gagal mengambil volunteerables dari Firestore, menggunakan local fallback:", err.message);
-      list = loadLocalVolunteerables();
-    }
-  } else {
-    list = loadLocalVolunteerables();
-  }
-
-  // Hydrate each volunteer with Discord profile data if client is ready
-  const hydratedList = await Promise.all(list.map(async (v) => {
-    let username = "";
-    let globalName = "";
-    let avatarUrl = "";
-    if (client && isDiscordReady) {
-      try {
-        const user = await client.users.fetch(v.discordId);
-        username = user.username;
-        globalName = user.globalName || user.username;
-        avatarUrl = user.displayAvatarURL({ dynamic: true, size: 128 });
-      } catch (err) {
-        console.warn(`Gagal fetch Discord user ${v.discordId}:`, err.message);
-      }
-    }
-    return {
-      ...v,
-      username,
-      globalName,
-      avatarUrl
-    };
-  }));
-
-  res.json(hydratedList);
+app.get('/api/volunteerables', (req, res) => {
+  const list = loadLocalVolunteerables();
+  res.json(list);
 });
 
 // GET single volunteerable status
-app.get('/api/volunteerables/:id', async (req, res) => {
+app.get('/api/volunteerables/:id', (req, res) => {
   const { id } = req.params;
-  let list = loadLocalVolunteerables();
-  let isVolunteerable = list.some(v => v.discordId === id);
-
-  if (!isVolunteerable && db) {
-    try {
-      const volDoc = await withTimeout(getDoc(doc(db, "volunteerables", id)), 3000);
-      if (volDoc.exists()) {
-        isVolunteerable = true;
-        list.push(volDoc.data());
-        saveLocalVolunteerables(list);
-      }
-    } catch (e) {
-      console.warn(`Gagal fetch single volunteerable ${id} dari Firestore:`, e.message);
-    }
-  }
-
+  const list = loadLocalVolunteerables();
+  const isVolunteerable = list.some(v => v.discordId === id);
   res.json({ isVolunteerable });
 });
 
 // POST add a volunteerable
-app.post('/api/volunteerables', requireClientToken, async (req, res) => {
+app.post('/api/volunteerables', async (req, res) => {
   const { discordId, addedBy } = req.body;
   if (!discordId) {
     return res.status(400).json({ error: "discordId wajib diisi" });
@@ -4235,24 +2762,16 @@ app.post('/api/volunteerables', requireClientToken, async (req, res) => {
   // Proactive Firestore update (wrapped in try-catch)
   if (db) {
     try {
-      // Simpan ke collection volunteerables
-      await withTimeout(setDoc(doc(db, "volunteerables", discordId), {
-        discordId,
-        addedAt: new Date().toISOString(),
-        addedBy: addedBy || "Sim"
-      }));
-
-      // Update role di collection users
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("discordId", "==", discordId));
-      const querySnapshot = await withTimeout(getDocs(q));
-      for (const userDoc of querySnapshot.docs) {
-        await withTimeout(updateDoc(doc(db, "users", userDoc.id), {
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (userDoc) => {
+        await updateDoc(doc(db, "users", userDoc.id), {
           role: "Volunteer Theater"
-        }));
-      }
+        });
+      });
     } catch (e) {
-      console.warn("Firestore unreachable saat update role/simpan volunteer:", e.message);
+      console.warn("Firestore unreachable saat update role volunteer:", e.message);
     }
   }
 
@@ -4260,7 +2779,7 @@ app.post('/api/volunteerables', requireClientToken, async (req, res) => {
 });
 
 // DELETE a volunteerable
-app.delete('/api/volunteerables/:id', requireClientToken, async (req, res) => {
+app.delete('/api/volunteerables/:id', async (req, res) => {
   const { id } = req.params;
   let list = loadLocalVolunteerables();
   list = list.filter(v => v.discordId !== id);
@@ -4287,23 +2806,18 @@ app.delete('/api/volunteerables/:id', requireClientToken, async (req, res) => {
   }
 
   // Proactive Firestore update (wrapped in try-catch)
-  if (db) {
+  if (db && id !== "661135501226672129" && id !== "1410583272173600819") {
     try {
-      // Hapus dari collection volunteerables
-      await withTimeout(deleteDoc(doc(db, "volunteerables", id)));
-
-      if (id !== "661135501226672129" && id !== "1410583272173600819") {
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, where("discordId", "==", id));
-        const querySnapshot = await withTimeout(getDocs(q));
-        for (const userDoc of querySnapshot.docs) {
-          await withTimeout(updateDoc(doc(db, "users", userDoc.id), {
-            role: "Penonton Teater"
-          }));
-        }
-      }
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("discordId", "==", id));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (userDoc) => {
+        await updateDoc(doc(db, "users", userDoc.id), {
+          role: "Penonton Teater"
+        });
+      });
     } catch (e) {
-      console.warn("Firestore unreachable saat revert role/hapus volunteer:", e.message);
+      console.warn("Firestore unreachable saat revert role volunteer:", e.message);
     }
   }
 
@@ -4373,8 +2887,8 @@ app.get('/api/users/:uid', async (req, res) => {
 
 // ================= Sparxie Bot Chat API =================
 
-const CUSTOM_CHANNELS_FILE = path.join(__dirname, '../database/custom-channels.json');
-const CHAT_MESSAGES_FILE = path.join(__dirname, '../database/chat-messages.json');
+const CUSTOM_CHANNELS_FILE = path.join(__dirname, 'custom-channels.json');
+const CHAT_MESSAGES_FILE = path.join(__dirname, 'chat-messages.json');
 
 function loadCustomChannels() {
   if (!fs.existsSync(CUSTOM_CHANNELS_FILE)) {
@@ -4507,7 +3021,7 @@ const sparxieQuotes = [
   "Sparxie di sini! Aku baru saja memeriksa status live TikTok Volunteer, dia sangat bersemangat bernyanyi! 🎤👾"
 ];
 
-const ACTIVE_CHANNELS_FILE = path.join(__dirname, '../database/active-channels.json');
+const ACTIVE_CHANNELS_FILE = path.join(__dirname, 'active-channels.json');
 
 function loadActiveChannels() {
   try {
@@ -4529,7 +3043,7 @@ function saveActiveChannels(channels) {
 }
 
 // POST list of channels to save custom channel list
-app.post('/api/chat/channels', requireClientToken, (req, res) => {
+app.post('/api/chat/channels', (req, res) => {
   const { channels } = req.body;
   if (!Array.isArray(channels)) {
     return res.status(400).json({ error: "Channels must be an array" });
@@ -4641,7 +3155,7 @@ app.get('/api/chat/channels/:channelId/messages', async (req, res) => {
 });
 
 // POST send message to channel
-app.post('/api/chat/channels/:channelId/messages', requireClientToken, async (req, res) => {
+app.post('/api/chat/channels/:channelId/messages', async (req, res) => {
   const { channelId } = req.params;
   const { content, mediaUrl, replyToMsgId, authorName, authorAvatar } = req.body;
 
@@ -4795,14 +3309,7 @@ app.post('/api/chat/channels/:channelId/messages', requireClientToken, async (re
 
       chatMessages[channelId].push(botMsg);
       console.log(`🤖 [Sparxie Chatbot] Menjawab otomatis di channel ${channelId}: "${quote}"`);
-      if (global.broadcastWsUpdate) {
-        global.broadcastWsUpdate('chat', channelId);
-      }
     }, 1000);
-  }
-
-  if (global.broadcastWsUpdate) {
-    global.broadcastWsUpdate('chat', channelId);
   }
 
   res.json({ success: true, message: newMsg });
@@ -4811,7 +3318,7 @@ app.post('/api/chat/channels/:channelId/messages', requireClientToken, async (re
 // ==============================================================================
 // =================== Discord OAuth2 & Linked Roles (Role Connections) ============
 // ==============================================================================
-const LINKED_ACCOUNTS_FILE = path.join(__dirname, '../database/linked-accounts.json');
+const LINKED_ACCOUNTS_FILE = path.join(__dirname, 'linked-accounts.json');
 
 // Cache to prevent errors on duplicate/prefetch OAuth callback requests
 const EXCHANGED_CODES = new Map();
@@ -5233,7 +3740,7 @@ app.get('/api/discord-role/:roleId', async (req, res) => {
 });
 
 // POST Submissions approve manually via Web Admin
-app.post('/api/submissions/approve', requireClientToken, async (req, res) => {
+app.post('/api/submissions/approve', async (req, res) => {
   const { submissionId, userId, discordId, roleId, points, questId, username, userEmail, discordMessageId } = req.body;
   if (!submissionId) {
     return res.status(400).json({ error: "Missing submissionId parameter." });
@@ -5250,15 +3757,12 @@ app.post('/api/submissions/approve', requireClientToken, async (req, res) => {
       saveLocalSubmissions(localSubs);
     }
 
-    // Update local user decks card status to "Completed" and delete/remove the quest from cards
+    // Update local user decks card status to "Completed"
     if (userId && questId) {
       const decks = loadLocalDecks();
       if (decks[userId]) {
         decks[userId].statuses = decks[userId].statuses || {};
         decks[userId].statuses[questId] = "Completed";
-        if (decks[userId].cards) {
-          decks[userId].cards = decks[userId].cards.filter(c => c.id !== questId);
-        }
         saveLocalDecks(decks);
       }
     }
@@ -5289,42 +3793,38 @@ app.post('/api/submissions/approve', requireClientToken, async (req, res) => {
     if (db) {
       try {
         const subRef = doc(db, "submissions", submissionId);
-        await withTimeout(updateDoc(subRef, { status: "approved" }));
+        await updateDoc(subRef, { status: "approved" });
 
         const userRef = doc(db, "users", userId);
-        const userDoc = await withTimeout(getDoc(userRef));
+        const userDoc = await getDoc(userRef);
         let newPoints = Number(points) || 0;
         if (userDoc.exists()) {
           const userData = userDoc.data();
           const currentPoints = userData.cv || userData.points || 0;
           newPoints += currentPoints;
-          await withTimeout(updateDoc(userRef, {
+          await updateDoc(userRef, {
             cv: newPoints,
             points: newPoints
-          }));
+          });
         } else {
-          await withTimeout(setDoc(userRef, {
+          await setDoc(userRef, {
             uid: userId,
             name: username || "Pemain",
             email: userEmail || "",
             role: "Penonton Teater",
             cv: newPoints,
             points: newPoints
-          }));
+          });
         }
 
-        // Update card status inside user's hand to "Completed" and remove the card
+        // Update card status inside user's hand to "Completed"
         if (questId) {
           const deckRef = doc(db, "user_decks", userId);
-          const deckDoc = await withTimeout(getDoc(deckRef));
+          const deckDoc = await getDoc(deckRef);
           if (deckDoc.exists()) {
             const deckData = deckDoc.data();
             const updatedStatuses = { ...deckData.statuses, [questId]: "Completed" };
-            const updatedCards = (deckData.cards || []).filter(c => c.id !== questId);
-            await withTimeout(updateDoc(deckRef, { 
-              statuses: updatedStatuses,
-              cards: updatedCards
-            }));
+            await updateDoc(deckRef, { statuses: updatedStatuses });
           }
         }
       } catch (fsErr) {
@@ -5343,7 +3843,7 @@ app.post('/api/submissions/approve', requireClientToken, async (req, res) => {
         let targetDiscordId = discordId;
         if (!targetDiscordId && db) {
           try {
-            const userDoc = await withTimeout(getDoc(doc(db, "users", userId)));
+            const userDoc = await getDoc(doc(db, "users", userId));
             if (userDoc.exists()) {
               targetDiscordId = userDoc.data().discordId;
             }
@@ -5410,9 +3910,6 @@ app.post('/api/submissions/approve', requireClientToken, async (req, res) => {
       }
     }
 
-    // Invalidate submissions cache
-    cache.deletePrefix('api:submissions:');
-
     res.json({ success: true, roleAssigned, roleName });
   } catch (err) {
     console.error("❌ [API/Approve] Gagal memproses persetujuan:", err.message);
@@ -5421,7 +3918,7 @@ app.post('/api/submissions/approve', requireClientToken, async (req, res) => {
 });
 
 // POST Submissions reject manually via Web Admin
-app.post('/api/submissions/reject', requireClientToken, async (req, res) => {
+app.post('/api/submissions/reject', async (req, res) => {
   const { submissionId, userId, questId, discordMessageId, username } = req.body;
   if (!submissionId) {
     return res.status(400).json({ error: "Missing submissionId parameter." });
@@ -5452,16 +3949,16 @@ app.post('/api/submissions/reject', requireClientToken, async (req, res) => {
     if (db) {
       try {
         const subRef = doc(db, "submissions", submissionId);
-        await withTimeout(deleteDoc(subRef));
+        await deleteDoc(subRef);
 
         // Set card status inside user's hand to "Denied"
         if (questId && userId) {
           const deckRef = doc(db, "user_decks", userId);
-          const deckDoc = await withTimeout(getDoc(deckRef));
+          const deckDoc = await getDoc(deckRef);
           if (deckDoc.exists()) {
             const deckData = deckDoc.data();
             const updatedStatuses = { ...deckData.statuses, [questId]: "Denied" };
-            await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
+            await updateDoc(deckRef, { statuses: updatedStatuses });
           }
         }
       } catch (fsErr) {
@@ -5484,9 +3981,6 @@ app.post('/api/submissions/reject', requireClientToken, async (req, res) => {
       }
     }
 
-    // Invalidate submissions cache
-    cache.deletePrefix('api:submissions:');
-
     res.json({ success: true });
   } catch (err) {
     console.error("❌ [API/Reject] Gagal memproses penolakan:", err.message);
@@ -5495,94 +3989,23 @@ app.post('/api/submissions/reject', requireClientToken, async (req, res) => {
 });
 
 // POST Submissions upload
-app.post('/api/submissions/submit', requireClientToken, async (req, res) => {
+app.post('/api/submissions/submit', async (req, res) => {
   const {
     questId,
+    questTitle,
+    questDescription,
+    points,
     userId,
     username,
     userEmail,
     fileName,
-    mediaData
+    mediaData,
+    roleId,
+    roleName
   } = req.body;
 
-  if (!questId || !userId || !username || !mediaData) {
-    return res.status(400).json({ error: "Missing required fields: questId, userId, username, or mediaData" });
-  }
-
-  // 1. Resolve originalQuestId dari user's deck
-  let originalQuestId = questId;
-  const userDeck = await getUserDeck(userId);
-  if (userDeck && userDeck.cards) {
-    const card = userDeck.cards.find(c => c.id === questId);
-    if (card) {
-      originalQuestId = card.originalQuestId || card.id;
-    }
-  }
-
-  if (db) {
-    try {
-      const deckRef = doc(db, "user_decks", userId);
-      const deckSnap = await withTimeout(getDoc(deckRef));
-      if (deckSnap.exists()) {
-        const deckData = deckSnap.data();
-        if (deckData.cards) {
-          const card = deckData.cards.find(c => c.id === questId);
-          if (card) {
-            originalQuestId = card.originalQuestId || card.id;
-          }
-        }
-      }
-    } catch (err) {
-      console.warn("⚠️ [API/Submission] Gagal mengambil user deck dari Firestore:", err.message);
-    }
-  }
-
-  // 2. Resolve detail quest dari database lokal atau Firestore untuk mencegah pemalsuan nilai poin/role
-  let quest = null;
-  const localQuests = loadLocalQuests();
-  quest = localQuests.find(q => q.id === originalQuestId);
-
-  if (db) {
-    try {
-      const questRef = doc(db, "quests", originalQuestId);
-      const questSnap = await withTimeout(getDoc(questRef));
-      if (questSnap.exists()) {
-        quest = { id: originalQuestId, ...questSnap.data() };
-      }
-    } catch (err) {
-      console.warn("⚠️ [API/Submission] Gagal mengambil detail quest dari Firestore:", err.message);
-    }
-  }
-
-  if (!quest) {
-    return res.status(404).json({ error: "Tantangan tidak ditemukan di database." });
-  }
-
-  const { title: questTitle, description: questDescription, points, roleId, roleName } = quest;
-
-  // 3. Validasi keamanan: pastikan user belum pernah menyelesaikan tantangan ini sebelumnya
-  if (decks[userId] && decks[userId].statuses && (decks[userId].statuses[questId] === "Completed" || decks[userId].statuses[originalQuestId] === "Completed")) {
-    return res.status(400).json({ error: "Tantangan ini sudah Anda selesaikan!" });
-  }
-  const localSubs = loadLocalSubmissions();
-  const alreadyCompleted = localSubs.some(s => s.userId === userId && (s.questId === questId || s.questId === originalQuestId) && s.status === "approved");
-  if (alreadyCompleted) {
-    return res.status(400).json({ error: "Tantangan ini sudah Anda selesaikan!" });
-  }
-
-  if (db) {
-    try {
-      const deckRef = doc(db, "user_decks", userId);
-      const deckSnap = await withTimeout(getDoc(deckRef));
-      if (deckSnap.exists()) {
-        const deckData = deckSnap.data();
-        if (deckData.statuses && (deckData.statuses[questId] === "Completed" || deckData.statuses[originalQuestId] === "Completed")) {
-          return res.status(400).json({ error: "Tantangan ini sudah Anda selesaikan!" });
-        }
-      }
-    } catch (err) {
-      console.warn("⚠️ [API/Submission] Gagal verifikasi deck di Firestore:", err.message);
-    }
+  if (!questTitle || !userId || !username || !mediaData) {
+    return res.status(400).json({ error: "Missing required fields: questTitle, userId, username, or mediaData" });
   }
 
   console.log(`📥 [API/Submission] Menerima upload media dari pemain: ${username} (UID: ${userId}) untuk quest: "${questTitle}"`);
@@ -5641,6 +4064,8 @@ app.post('/api/submissions/submit', requireClientToken, async (req, res) => {
   }
 
   try {
+    // Save to local submissions database
+    const localSubs = loadLocalSubmissions();
     const submissionId = `sub-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const submissionDoc = {
       id: submissionId,
@@ -5658,39 +4083,18 @@ app.post('/api/submissions/submit', requireClientToken, async (req, res) => {
       roleId: roleId || "",
       roleName: roleName || ""
     };
-    
-    // Simpan ke local database submissions.json
     localSubs.push(submissionDoc);
     saveLocalSubmissions(localSubs);
 
-    // Simpan ke local database user_decks.json
-    if (decks[userId]) {
-      decks[userId].statuses = decks[userId].statuses || {};
-      decks[userId].statuses[questId] = "pending";
-      saveLocalDecks(decks);
-    }
-
-    // Tulis submission & update status deck langsung ke Firestore dari backend
-    if (db) {
-      try {
-        const subRef = doc(db, "submissions", submissionId);
-        await withTimeout(setDoc(subRef, submissionDoc));
-
-        const deckRef = doc(db, "user_decks", userId);
-        const deckDoc = await withTimeout(getDoc(deckRef));
-        if (deckDoc.exists()) {
-          const deckData = deckDoc.data();
-          const updatedStatuses = { ...deckData.statuses, [questId]: "pending" };
-          await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
-        }
-        console.log(`🔥 [Firebase] Backend berhasil menulis submission ${submissionId} dan memperbarui deck ke pending.`);
-      } catch (fsErr) {
-        console.warn("⚠️ [Firebase] Backend gagal menulis ke Firestore pada submit:", fsErr.message);
+    // Update user's deck card status to "pending" in user_decks.json
+    if (userId && questId) {
+      const decks = loadLocalDecks();
+      if (decks[userId]) {
+        decks[userId].statuses = decks[userId].statuses || {};
+        decks[userId].statuses[questId] = "pending";
+        saveLocalDecks(decks);
       }
     }
-
-    // Hapus cache submissions
-    cache.delete('api:submissions');
 
     res.json({
       success: true,
@@ -5703,224 +4107,26 @@ app.post('/api/submissions/submit', requireClientToken, async (req, res) => {
   }
 });
 
-// GET /api/submissions dengan cache
+// GET /api/submissions
 app.get('/api/submissions', (req, res) => {
   const status = req.query.status;
-  const cacheKey = `api:submissions:${status || 'all'}`;
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    return res.json(cached);
-  }
   const submissions = loadLocalSubmissions();
-  const result = status ? submissions.filter(s => s.status === status) : submissions;
-  cache.set(cacheKey, result, 15); // Cache selama 15 detik
-  res.json(result);
-});
-
-// POST /api/submissions/reset-specific - Reset completed quest progress specifically
-app.post('/api/submissions/reset-specific', requireClientToken, async (req, res) => {
-  const { userId, questId } = req.body;
-  if (!userId || !questId) {
-    return res.status(400).json({ error: "Missing userId or questId parameter." });
+  if (status) {
+    return res.json(submissions.filter(s => s.status === status));
   }
-
-  console.log(`🧹 [API/ResetSpecific] Mereset quest ${questId} untuk user ${userId}`);
-
-  try {
-    // 1. Remove submission from local submissions
-    const localSubs = loadLocalSubmissions();
-    const filteredSubs = localSubs.filter(s => !(s.userId === userId && s.questId === questId));
-    saveLocalSubmissions(filteredSubs);
-
-    // 2. Query and delete from Firestore submissions if active
-    let pointsToDeduct = 0;
-    const questsObj = loadLocalQuests();
-    const matchedQuest = questsObj.find(q => q.id === questId);
-    if (matchedQuest) {
-      pointsToDeduct = matchedQuest.points || 0;
-    }
-
-    if (db) {
-      try {
-        const q = query(collection(db, "submissions"), where("userId", "==", userId), where("questId", "==", questId));
-        const querySnapshot = await withTimeout(getDocs(q), 2000);
-        querySnapshot.forEach(async (docSnap) => {
-          await deleteDoc(docSnap.ref).catch(() => {});
-        });
-      } catch (e) {
-        console.warn("⚠️ Gagal menghapus submission di Firestore:", e.message);
-      }
-    }
-
-    // 3. Update local user deck: remove status and add back to cards if space
-    const decks = loadLocalDecks();
-    if (decks[userId]) {
-      if (decks[userId].statuses) {
-        delete decks[userId].statuses[questId];
-      }
-      decks[userId].cards = decks[userId].cards || [];
-      const alreadyInHand = decks[userId].cards.some(c => c.id === questId);
-      if (!alreadyInHand && decks[userId].cards.length < 5) {
-        if (matchedQuest) {
-          decks[userId].cards.push(matchedQuest);
-        }
-      }
-      saveLocalDecks(decks);
-    }
-    
-    // Also remove from Firestore user_decks if active
-    if (db) {
-      try {
-        const deckRef = doc(db, "user_decks", userId);
-        const deckDoc = await withTimeout(getDoc(deckRef), 2000);
-        if (deckDoc.exists()) {
-          const deckData = deckDoc.data();
-          const updatedStatuses = { ...deckData.statuses };
-          delete updatedStatuses[questId];
-          
-          let updatedCards = deckData.cards || [];
-          const alreadyInHand = updatedCards.some(c => c.id === questId);
-          if (!alreadyInHand && updatedCards.length < 5 && matchedQuest) {
-            updatedCards = [...updatedCards, matchedQuest];
-          }
-          await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses, cards: updatedCards }));
-        }
-      } catch (e) {
-        console.warn("⚠️ Gagal update deck di Firestore:", e.message);
-      }
-    }
-
-    // 4. Deduct points locally
-    const localUsers = loadLocalUsers();
-    if (localUsers[userId]) {
-      localUsers[userId].cv = Math.max(0, (localUsers[userId].cv || 0) - pointsToDeduct);
-      saveLocalUsers(localUsers);
-    }
-
-    // Deduct points from Firestore users if active
-    if (db && pointsToDeduct > 0) {
-      try {
-        const userRef = doc(db, "users", userId);
-        const userDoc = await getDoc(userRef);
-        if (userDoc.exists()) {
-          const currentCv = userDoc.data().cv || 0;
-          await updateDoc(userRef, { cv: Math.max(0, currentCv - pointsToDeduct) });
-        }
-      } catch (e) {
-        console.warn("⚠️ Gagal update CV user di Firestore:", e.message);
-      }
-    }
-
-    // Invalidate cache
-    cache.deletePrefix('api:submissions:');
-    
-    // Live update clients
-    global.broadcastWsUpdate('user', userId);
-    global.broadcastWsUpdate('admin');
-
-    res.json({ success: true, message: "Quest progress reset successfully." });
-  } catch (err) {
-    console.error("Error resetting quest:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// POST /api/submissions/reset-all - Reset all completed quests progress for a user (Overall Reset)
-app.post('/api/submissions/reset-all', requireClientToken, async (req, res) => {
-  const { userId } = req.body;
-  if (!userId) {
-    return res.status(400).json({ error: "Missing userId parameter." });
-  }
-
-  console.log(`🧹 [API/ResetAll] Mereset seluruh quest untuk user ${userId}`);
-
-  try {
-    // 1. Remove all submissions for this user from local submissions
-    const localSubs = loadLocalSubmissions();
-    const filteredSubs = localSubs.filter(s => s.userId !== userId);
-    saveLocalSubmissions(filteredSubs);
-
-    // 2. Query and delete from Firestore submissions if active
-    if (db) {
-      try {
-        const q = query(collection(db, "submissions"), where("userId", "==", userId));
-        const querySnapshot = await withTimeout(getDocs(q), 2000);
-        querySnapshot.forEach(async (docSnap) => {
-          await deleteDoc(docSnap.ref).catch(() => {});
-        });
-      } catch (e) {
-        console.warn("⚠️ Gagal menghapus seluruh submission di Firestore:", e.message);
-      }
-    }
-
-    // 3. Clear all statuses in local user deck and restore cards hand to 5 quests
-    const decks = loadLocalDecks();
-    const questsObj = loadLocalQuests();
-    if (decks[userId]) {
-      decks[userId].statuses = {};
-      const availableQuests = questsObj.filter(q => q.difficulty !== "Legendaris");
-      const shuffled = [...availableQuests].sort(() => 0.5 - Math.random());
-      decks[userId].cards = shuffled.slice(0, 5);
-      decks[userId].dealt = true;
-      saveLocalDecks(decks);
-    }
-
-    // Clear all statuses in Firestore user_decks if active
-    if (db) {
-      try {
-        const deckRef = doc(db, "user_decks", userId);
-        const deckDoc = await withTimeout(getDoc(deckRef), 2000);
-        if (deckDoc.exists()) {
-          const availableQuests = questsObj.filter(q => q.difficulty !== "Legendaris");
-          const shuffled = [...availableQuests].sort(() => 0.5 - Math.random());
-          const newCards = shuffled.slice(0, 5);
-          await withTimeout(updateDoc(deckRef, { statuses: {}, cards: newCards, dealt: true }));
-        }
-      } catch (e) {
-        console.warn("⚠️ Gagal reset deck di Firestore:", e.message);
-      }
-    }
-
-    // 4. Reset points to 0 locally
-    const localUsers = loadLocalUsers();
-    if (localUsers[userId]) {
-      localUsers[userId].cv = 0;
-      saveLocalUsers(localUsers);
-    }
-
-    // Reset points to 0 in Firestore users if active
-    if (db) {
-      try {
-        const userRef = doc(db, "users", userId);
-        await updateDoc(userRef, { cv: 0 });
-      } catch (e) {
-        console.warn("⚠️ Gagal reset CV user di Firestore:", e.message);
-      }
-    }
-
-    // Invalidate cache
-    cache.deletePrefix('api:submissions:');
-
-    // Live update clients
-    global.broadcastWsUpdate('user', userId);
-    global.broadcastWsUpdate('admin');
-
-    res.json({ success: true, message: "All player progress reset successfully." });
-  } catch (err) {
-    console.error("Error resetting all progress:", err);
-    res.status(500).json({ error: err.message });
-  }
+  res.json(submissions);
 });
 
 // GET /api/decks/:uid
-app.get('/api/decks/:uid', async (req, res) => {
+app.get('/api/decks/:uid', (req, res) => {
   const { uid } = req.params;
-  const deck = await getUserDeck(uid);
+  const decks = loadLocalDecks();
+  const deck = decks[uid] || { uid, dealt: false, cards: [], statuses: {} };
   res.json(deck);
 });
 
-// POST /api/decks/deal dengan sinkronisasi Firestore (asinkron di background)
-app.post('/api/decks/deal', requireClientToken, async (req, res) => {
+// POST /api/decks/deal
+app.post('/api/decks/deal', (req, res) => {
   const { uid, cards, statuses } = req.body;
   if (!uid) {
     return res.status(400).json({ error: "Missing uid" });
@@ -5933,23 +4139,11 @@ app.post('/api/decks/deal', requireClientToken, async (req, res) => {
     statuses: statuses || {}
   };
   saveLocalDecks(decks);
-
-  // Sinkronisasi ke Firestore langsung dari backend di background
-  if (db) {
-    withTimeout(setDoc(doc(db, "user_decks", uid), decks[uid]))
-      .then(() => {
-        console.log(`🔥 [Firebase] Backend sukses update deal deck untuk user ${uid} di Firestore secara asinkron.`);
-      })
-      .catch((fsErr) => {
-        console.warn("⚠️ [Firebase] Backend gagal update deal deck di Firestore secara asinkron:", fsErr.message);
-      });
-  }
-
   res.json({ success: true, deck: decks[uid] });
 });
 
-// POST /api/decks/update-status dengan sinkronisasi Firestore (asinkron di background)
-app.post('/api/decks/update-status', requireClientToken, async (req, res) => {
+// POST /api/decks/update-status
+app.post('/api/decks/update-status', (req, res) => {
   const { uid, questId, status } = req.body;
   if (!uid || !questId || !status) {
     return res.status(400).json({ error: "Missing uid, questId or status" });
@@ -5959,47 +4153,19 @@ app.post('/api/decks/update-status', requireClientToken, async (req, res) => {
     decks[uid].statuses = decks[uid].statuses || {};
     decks[uid].statuses[questId] = status;
     saveLocalDecks(decks);
-
-    // Sinkronisasi ke Firestore langsung dari backend di background
-    if (db) {
-      (async () => {
-        try {
-          const deckRef = doc(db, "user_decks", uid);
-          const deckDoc = await withTimeout(getDoc(deckRef));
-          if (deckDoc.exists()) {
-            const deckData = deckDoc.data();
-            const updatedStatuses = { ...deckData.statuses, [questId]: status };
-            await withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
-            console.log(`🔥 [Firebase] Backend sukses update status quest ${questId} menjadi ${status} di Firestore secara asinkron.`);
-          } else {
-            await withTimeout(setDoc(deckRef, decks[uid]));
-            console.log(`🔥 [Firebase] Backend sukses inisialisasi deck untuk user ${uid} di Firestore.`);
-          }
-        } catch (fsErr) {
-          console.warn("⚠️ [Firebase] Backend gagal update status deck di Firestore secara asinkron:", fsErr.message);
-        }
-      })();
-    }
-
     return res.json({ success: true, deck: decks[uid] });
   }
   res.status(404).json({ error: "Deck not found" });
 });
 
-// GET /api/quests dengan cache TTL 60 detik
+// GET /api/quests
 app.get('/api/quests', (req, res) => {
-  const cacheKey = 'api:quests';
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    return res.json(cached);
-  }
   const quests = loadLocalQuests();
-  cache.set(cacheKey, quests, 60); // Cache selama 60 detik
   res.json(quests);
 });
 
 // POST /api/quests
-app.post('/api/quests', requireClientToken, async (req, res) => {
+app.post('/api/quests', (req, res) => {
   const { akt, title, description, difficulty, points, roleId, roleName, roleColor, roleCv } = req.body;
   if (!title || !description) {
     return res.status(400).json({ error: "Missing title or description" });
@@ -6019,81 +4185,27 @@ app.post('/api/quests', requireClientToken, async (req, res) => {
   };
   quests.push(newQuest);
   saveLocalQuests(quests);
-
-  // Sinkronisasi ke Firestore langsung dari backend
-  if (db) {
-    try {
-      await withTimeout(setDoc(doc(db, "quests", newQuest.id), newQuest));
-      console.log(`🔥 [Firebase] Backend sukses menyimpan quest baru ${newQuest.id} ke Firestore.`);
-    } catch (fsErr) {
-      console.warn("⚠️ [Firebase] Backend gagal menyimpan quest baru ke Firestore:", fsErr.message);
-    }
-  }
-
-  cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true, quest: newQuest });
 });
 
 // DELETE /api/quests/:id
-app.delete('/api/quests/:id', requireClientToken, async (req, res) => {
+app.delete('/api/quests/:id', (req, res) => {
   const { id } = req.params;
   const quests = loadLocalQuests();
   const filtered = quests.filter(q => q.id !== id);
   saveLocalQuests(filtered);
-
-  // Sinkronisasi ke Firestore langsung dari backend
-  if (db) {
-    try {
-      await withTimeout(deleteDoc(doc(db, "quests", id)));
-      console.log(`🔥 [Firebase] Backend sukses menghapus quest ${id} dari Firestore.`);
-    } catch (fsErr) {
-      console.warn("⚠️ [Firebase] Backend gagal menghapus quest dari Firestore:", fsErr.message);
-    }
-  }
-
-  cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true });
 });
 
 // POST /api/quests/load-defaults
-app.post('/api/quests/load-defaults', requireClientToken, async (req, res) => {
+app.post('/api/quests/load-defaults', (req, res) => {
   saveLocalQuests(DEFAULT_QUESTS);
-
-  // Sinkronisasi ke Firestore langsung dari backend
-  if (db) {
-    try {
-      for (const quest of DEFAULT_QUESTS) {
-        await withTimeout(setDoc(doc(db, "quests", quest.id), quest));
-      }
-      console.log(`🔥 [Firebase] Backend sukses memuat default quests ke Firestore.`);
-    } catch (fsErr) {
-      console.warn("⚠️ [Firebase] Backend gagal memuat default quests ke Firestore:", fsErr.message);
-    }
-  }
-
-  cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true, quests: DEFAULT_QUESTS });
 });
 
 // POST /api/quests/delete-all
-app.post('/api/quests/delete-all', requireClientToken, async (req, res) => {
+app.post('/api/quests/delete-all', (req, res) => {
   saveLocalQuests([]);
-
-  // Sinkronisasi ke Firestore langsung dari backend
-  if (db) {
-    try {
-      const q = collection(db, "quests");
-      const snap = await withTimeout(getDocs(q));
-      for (const d of snap.docs) {
-        await withTimeout(deleteDoc(doc(db, "quests", d.id)));
-      }
-      console.log(`🔥 [Firebase] Backend sukses menghapus semua quests dari Firestore.`);
-    } catch (fsErr) {
-      console.warn("⚠️ [Firebase] Backend gagal menghapus semua quests dari Firestore:", fsErr.message);
-    }
-  }
-
-  cache.delete('api:quests'); // Invalidate quests cache
   res.json({ success: true, quests: [] });
 });
 
@@ -6124,141 +4236,128 @@ app.post('/api/oauth/update-stats/:id', async (req, res) => {
   }
 });
 
-// [Cleaned Up] Duplicate VoiceAFK REST API Endpoints removed (defined at line 1647)
-
 // ==============================================================================
-// ========== ENDPOINT KEEPALIVE (dipanggil cron job untuk 24/7) ================
+// ========================= VoiceAFK REST API Endpoints ========================
 // ==============================================================================
 
-// GET /api/voice-afk/keepalive
-// Dipanggil oleh cron-job.org / UptimeRobot setiap 10 menit.
-// Tugasnya: (1) buat server tidak tidur, (2) reconnect voice kalau putus.
-app.get('/api/voice-afk/keepalive', async (req, res) => {
-  const savedCfg = loadVoiceAfkConfig();
-  const status = {
-    botOnline: isDiscordReady,
-    voiceConnected: connectionState.isConnectedToVoice,
-    guildId: connectionState.guildId || savedCfg?.guildId || null,
-    channelId: connectionState.channelId || savedCfg?.channelId || null,
-    action: 'none',
-    timestamp: new Date().toISOString()
-  };
+app.get('/api/voice-afk/status', (req, res) => {
+  let guilds = [];
+  let inviteLink = null;
 
-  // Kalau bot offline, tidak bisa reconnect voice
-  if (!isDiscordReady || !client) {
-    status.action = 'skipped_bot_offline';
-    return res.json({ ...status, message: 'Bot Discord offline. Tidak bisa reconnect.' });
-  }
-
-  // Kalau sudah connected, tidak perlu apa-apa
-  if (connectionState.isConnectedToVoice) {
-    status.action = 'already_connected';
-    return res.json({ ...status, message: '✅ Voice 24/7 aktif. Tidak perlu reconnect.' });
-  }
-
-  // Kalau disconnected tapi ada config tersimpan → reconnect!
-  if (savedCfg && savedCfg.isConnected && savedCfg.guildId && savedCfg.channelId) {
+  if (client && isDiscordReady) {
+    inviteLink = `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=3145728&scope=bot`;
     try {
-      addVoiceAfkLog(`[Keepalive/CronJob] Reconnecting ke voice channel ${savedCfg.channelId}...`, 'warning');
-      await connectToVoiceChannel(savedCfg.guildId, savedCfg.channelId);
-      status.action = 'reconnected';
-      status.voiceConnected = true;
-      return res.json({ ...status, message: `✅ [Keepalive] Berhasil reconnect ke voice channel ${savedCfg.channelId}!` });
+      guilds = client.guilds.cache.map(g => {
+        const voiceChannels = g.channels.cache
+          .filter(c => c.type === ChannelType.GuildVoice || c.type === 2)
+          .map(c => ({
+            id: c.id,
+            name: c.name
+          }));
+        return {
+          id: g.id,
+          name: g.name,
+          icon: g.iconURL(),
+          channels: voiceChannels
+        };
+      });
     } catch (err) {
-      status.action = 'reconnect_failed';
-      return res.status(500).json({ ...status, message: `❌ [Keepalive] Gagal reconnect: ${err.message}` });
+      console.error('Error fetching guilds in VoiceAFK status:', err);
     }
   }
 
-  status.action = 'no_config';
-  return res.json({ ...status, message: 'Tidak ada konfigurasi voice tersimpan. Silakan connect manual dari Control Booth.' });
+  res.json({
+    ...connectionState,
+    guilds,
+    inviteLink
+  });
+});
+
+app.post('/api/voice-afk/connect', async (req, res) => {
+  const { guildId, channelId } = req.body;
+
+  if (!guildId || !channelId) {
+    return res.status(400).json({
+      success: false,
+      message: 'guildId dan channelId wajib diisi.'
+    });
+  }
+
+  try {
+    if (!client || !isDiscordReady) {
+      return res.status(400).json({
+        success: false,
+        message: 'Klien Discord belum login atau belum siap.'
+      });
+    }
+
+    await connectToVoiceChannel(guildId, channelId);
+    res.json({
+      success: true,
+      message: 'Berhasil tersambung ke voice channel.',
+      state: connectionState
+    });
+  } catch (error) {
+    connectionState.status = client && isDiscordReady ? 'ready' : 'offline';
+    addVoiceAfkLog(`Gagal menyambung ke voice channel: ${error.message}`, 'error');
+    res.status(500).json({
+      success: false,
+      message: `Error koneksi: ${error.message}`
+    });
+  }
+});
+
+app.post('/api/voice-afk/disconnect', (req, res) => {
+  if (!connectionState.isConnectedToVoice || !connectionState.guildId) {
+    return res.json({
+      success: true,
+      message: 'Bot memang sedang tidak tersambung ke voice channel mana pun.',
+      state: connectionState
+    });
+  }
+
+  try {
+    addVoiceAfkLog(`Mencoba memutuskan koneksi dari Voice Channel di server ${connectionState.guildId}...`, 'info');
+    const connection = getVoiceConnection(connectionState.guildId);
+    if (connection) {
+      connection.destroy();
+    }
+
+    connectionState.isConnectedToVoice = false;
+    connectionState.guildId = null;
+    connectionState.channelId = null;
+    connectionState.status = 'ready';
+
+    addVoiceAfkLog('Koneksi suara diputuskan secara bersih.', 'success');
+    saveVoiceAfkConfig({ guildId: null, channelId: null, isConnected: false });
+
+    res.json({
+      success: true,
+      message: 'Berhasil memutuskan koneksi dari voice channel.',
+      state: connectionState
+    });
+  } catch (error) {
+    addVoiceAfkLog(`Gagal memutuskan koneksi suara: ${error.message}`, 'error');
+    res.status(500).json({
+      success: false,
+      message: `Error diskoneksi: ${error.message}`
+    });
+  }
+});
+
+app.post('/api/voice-afk/logs/clear', (req, res) => {
+  connectionState.logs = [];
+  addVoiceAfkLog('Log konsol dibersihkan oleh web client.', 'info');
+  res.json({ success: true });
 });
 
 setInterval(runMetadataSyncCycle, 900000);
 setTimeout(runMetadataSyncCycle, 15000);
 
-const server = app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n======================================================`);
   console.log(`🎪 Server API CrunchyVerse Bot berjalan dengan sukses!`);
   console.log(`📡 URL API Lokal: http://localhost:${PORT}`);
   console.log(`🖥️  Endpoint Stats: http://localhost:${PORT}/api/stats`);
   console.log(`======================================================\n`);
-});
-
-// ==============================================================================
-// ========== WEBSOCKET SYNC SERVER (PENGGANTI HTTP POLLING) ===================
-// ==============================================================================
-
-const { WebSocketServer } = require('ws');
-const wss = new WebSocketServer({ server });
-const wsClients = new Map(); // ws -> clientState { uid, chatChannelId, voiceChannelId, isAdmin }
-
-global.wsClients = wsClients;
-global.sendWsSyncPayload = async function(ws, state) {
-  if (ws.readyState !== 1) return;
-  try {
-    const data = await gatherSyncData(state);
-    ws.send(JSON.stringify({ action: 'syncResponse', data }));
-  } catch (err) {
-    console.error("❌ Error sending WS sync payload:", err.message);
-  }
-};
-
-global.broadcastWsUpdate = function(type, key) {
-  for (const [ws, state] of wsClients.entries()) {
-    if (ws.readyState === 1) {
-      let shouldSend = false;
-      if (type === 'global') shouldSend = true;
-      else if (type === 'chat' && state.chatChannelId === key) shouldSend = true;
-      else if (type === 'user' && state.uid === key) shouldSend = true;
-      else if (type === 'admin' && state.isAdmin) shouldSend = true;
-      
-      if (shouldSend) {
-        global.sendWsSyncPayload(ws, state).catch(() => {});
-      }
-    }
-  }
-};
-
-wss.on('connection', (ws) => {
-  wsClients.set(ws, { uid: null, chatChannelId: null, voiceChannelId: null, isAdmin: false });
-  
-  ws.on('message', async (message) => {
-    try {
-      const payload = JSON.parse(message);
-      if (payload.action === 'sync') {
-        const state = wsClients.get(ws);
-        if (state) {
-          const { uid, chatChannelId, voiceChannelId } = payload.data || {};
-          state.uid = uid || null;
-          state.chatChannelId = chatChannelId || null;
-          state.voiceChannelId = voiceChannelId || null;
-          state.isAdmin = await verifyIsAdmin(uid);
-          await global.sendWsSyncPayload(ws, state);
-        }
-      }
-    } catch (err) {
-      // ignore
-    }
-  });
-  
-  ws.on('close', () => {
-    wsClients.delete(ws);
-  });
-});
-
-// Periodic background sync update pushed every 15s to all active WS clients
-setInterval(() => {
-  for (const [ws, state] of wsClients.entries()) {
-    global.sendWsSyncPayload(ws, state).catch(() => {});
-  }
-}, 15000);
-
-// Global exception and rejection handler to prevent crashes
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('[Anti-Crash] Unhandled Promise Rejection at:', promise, 'reason:', reason);
-});
-
-process.on('uncaughtException', (err, origin) => {
-  console.error('[Anti-Crash] Uncaught Exception:', err, 'origin:', origin);
 });

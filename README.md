@@ -1,117 +1,58 @@
 # 🎪 CrunchyVerse: Interactive Theatrical Stage & Quest System
 
-Selamat datang di **CrunchyVerse**, portfolio interaktif berbasis teater pertunjukan modern yang terintegrasi secara real-time dengan bot Discord **Sparxie**. Proyek ini terdiri dari dua komponen utama:
-1. **Frontend (Next.js)**: Menyajikan UI interaktif panggung teater, dashboard statistik, papan jawara, arsip kasta, dan Quest Game (Tirai Tantangan).
-2. **Backend (Node.js/Express + Discord Bot)**: Menjalankan bot Discord Sparxie, sinkronisasi status voice/chat, validasi role, monitoring livestream otomatis (TikTok/YouTube), dan API database submissions.
+<p align="center">
+  <img src="public/pixel_fox.png" alt="CrunchyVerse" width="120" style="image-rendering: pixelated;" />
+</p>
+
+<p align="center">
+  <strong>Panggung teater virtual interaktif premium yang tersinkronisasi langsung secara real-time dengan Bot Discord Sparxie.</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Express-Backend-blue?style=for-the-badge&logo=express" alt="Express" />
+  <img src="https://img.shields.io/badge/Discord.js-v14-5865F2?style=for-the-badge&logo=discord" alt="Discord.js" />
+  <img src="https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firestore" />
+  <img src="https://img.shields.io/badge/TypeScript-Ready-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript" />
+</p>
 
 ---
 
-## 🛠️ Panduan Integrasi Repositori GitHub
+## 🎭 Sekilas Tentang CrunchyVerse
 
-Repositori ini siap diunggah ke GitHub dan di-deploy secara terpisah untuk frontend (Vercel) dan backend (Render).
+**CrunchyVerse** adalah platform teater panggung virtual interaktif modern berestetika premium yang menghubungkan interaksi komunitas Discord secara langsung ke dalam website. User dapat masuk menggunakan otorisasi **Discord OAuth**, menikmati transisi visual cuaca panggung (pagi, sore, malam), melihat live leaderboard panggung, dan mengikuti tantangan interaktif di **Tirai Tantangan**.
 
-### 1. Inisialisasi & Push ke GitHub
-Untuk mengunggah kode lokal Anda ke repositori GitHub `https://github.com/AnataSim/CV.git`, jalankan perintah berikut di terminal komputer lokal Anda:
+Seluruh data statistik user (level, jam voice channel, streak, dan kekayaan teater/CV$) akan terhubung dan ter-render secara native langsung di profil Discord user melalui fitur **Discord Profile Widgets v2 (Board)** resmi!
 
-```bash
-# Inisialisasi git jika belum dilakukan
-git init
+---
 
-# Tambahkan remote repository
-git remote add origin https://github.com/AnataSim/CV.git
+## ✨ Fitur-Fitur Utama
 
-# Buat branch utama ke main
-git branch -M main
+* **🪐 Panggung Teater Virtual Dinamis**: Menggunakan *Gradient-Sky Graphics Engine* yang berubah warna secara dinamis berdasarkan jam lokal (Pagi ☀️, Senja 🌅, Malam 🌌 lengkap dengan efek kerlip bintang pixel art).
+* **🤖 Bot Discord Sparxie**: Bertugas melakukan sinkronisasi status voice, memantau live stream TikTok/YouTube, memvalidasi role kasta teater, dan mengelola pengerjaan quest secara real-time.
+* **🔮 Discord Profile Widget v2 (Native Board)**: Integrasi termutakhir yang memungkinkan statistik teater CrunchyVerse user (Level, Voice Hours, Streak, CV$) tampil elegan dan interaktif di tab **Board** profil Discord asli mereka.
+* **🃏 Tirai Tantangan (Quest Game)**: Mini-game kartu quest di mana pengguna dapat mengklaim quest, mengunggah bukti penyelesaian, dan diproses oleh admin/volunteer langsung dari panel panggung.
+* **👑 Sistem Keamanan & Kasta**: Integrasi login 100% menggunakan Discord OAuth. Fitur-fitur sensitif dan panel admin terkunci otomatis khusus untuk role `Volunteer Theater`, `Ketua Kerupuk`, dan `Ketua Keripik`.
+* **💾 Database Fail-Safe**: Menggunakan Firestore sebagai database utama dengan *timeout handling* 1.5 detik yang otomatis fallback ke penyimpanan JSON lokal jika Firebase mengalami kendala, menjamin website 24/7 anti-crash.
 
-# Add & Commit semua file (node_modules, rahasia .env otomatis diabaikan oleh .gitignore)
-git add .
-git commit -m "feat: setup deployment vercel & render, countdown timer, dan login discord only"
+---
 
-# Push ke GitHub
-git push -u origin main
+## 🏗️ Arsitektur Sistem
+
+```mermaid
+graph TD
+    User([User / Viewer]) -->|Otorisasi OAuth2| Web[Next.js Frontend]
+    Web -->|Kirim Bukti Quest & Sync| Backend[Express Bot Backend]
+    Backend -->|Penyimpanan Utama| Firestore[(Firestore Database)]
+    Backend -->|Fallback Aman| JSON[(Local JSON Files)]
+    Backend -->|Push Stats & Pemasangan Board| DiscordAPI[Discord API Gateway v9/v10]
+    DiscordAPI -->|Tampilkan Stats Real-time| Widget[User Profile Board Widget]
+    Bot[Bot Sparxie] -->|Watchdog Voice & Reactions| DiscordAPI
 ```
 
 ---
 
-## 🚀 Panduan Deployment & Hosting
-
-### 📡 A. Backend & Bot Discord (Render)
-Karena bot Discord memerlukan koneksi persistent WebSocket (tidak bisa berjalan di serverless Vercel), backend diletakkan di **Render** sebagai **Web Service** agar Express API dan Bot Discord dapat berjalan bersamaan.
-
-1. Masuk ke [Dashboard Render](https://dashboard.render.com/) dan buat **New Web Service**.
-2. Hubungkan repositori GitHub Anda (`AnataSim/CV`).
-3. Konfigurasikan detail service sebagai berikut:
-   - **Name**: `crunchyverse-backend` (atau nama pilihan Anda)
-   - **Environment**: `Node`
-   - **Region**: Pilih terdekat (misal `Singapore`)
-   - **Branch**: `main`
-   - **Root Directory**: `discord-bot` *(Sangat Penting! Ini mengarahkan Render hanya memproses subfolder bot)*
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
-4. Tambahkan **Environment Variables** berikut di menu **Environment**:
-   - `PORT`: `3001`
-   - `DISCORD_TOKEN`: *(Token bot Discord Anda dari Discord Developer Portal)*
-   - `DISCORD_CLIENT_ID`: *(Client ID aplikasi Discord Anda)*
-   - `DISCORD_CLIENT_SECRET`: *(Client Secret OAuth2 Anda)*
-   - `DISCORD_REDIRECT_URI`: `https://<nama-aplikasi-anda>.onrender.com/api/oauth/callback` *(Sesuaikan dengan domain Web Service Render Anda)*
-   - `TIKTOK_USERNAME`: `jobetmaritoas` *(Untuk monitoring live)*
-   - *(Opsional - Firebase)* `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` *(Untuk sinkronisasi database Firestore)*
-5. Klik **Create Web Service**. Setelah build selesai, backend Anda akan aktif di `https://crunchyverse-backend.onrender.com`.
-
-> [!WARNING]
-> **Penyimpanan Database Lokal**: Layanan gratis Render bersifat ephemeral (data terhapus saat server restart). Untuk produksi skala besar, sangat disarankan menggunakan integrasi **Firestore** (otomatis aktif jika env Firebase diisi). 
-> Jika ingin tetap memakai database JSON lokal di Render, Anda harus membuat **Persistent Disk** (misal ukuran 1GB) di Render, dipasang di `/opt/database`, dan ubah path penyimpanan di `src/index.js` mengarah ke volume eksternal tersebut.
-
----
-
-### 🎨 B. Frontend (Vercel)
-Frontend Next.js di-deploy ke **Vercel** yang dirancang khusus untuk optimasi static & serverless rendering Next.js.
-
-1. Masuk ke [Vercel](https://vercel.com/) dan buat project baru (**Add New Project**).
-2. Hubungkan repositori GitHub Anda (`AnataSim/CV`).
-3. Konfigurasikan proyek sebagai berikut:
-   - **Framework Preset**: `Next.js`
-   - **Root Directory**: `./` *(Biarkan default di root)*
-4. Tambahkan **Environment Variables** berikut di Vercel:
-   - `NEXT_PUBLIC_BACKEND_URL`: `https://crunchyverse-backend.onrender.com` *(Gunakan URL Web Service Render Anda tanpa slash di akhir)*
-   - *(Opsional - Firebase Client)* `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, dll.
-5. Klik **Deploy**. Vercel akan otomatis melakukan build dan memberikan Anda domain publik teater Anda (misal `https://cv-seven.vercel.app`).
-
----
-
-## ⏰ Konfigurasi Cron Job (Stay 24/7)
-
-Layanan gratis Render memiliki fitur tidur otomatis jika tidak menerima trafik dalam 15 menit. Agar **Sparxie Bot**, **Panggung Jawara**, dan **Stream Tracker** tetap menyala 24/7 secara konstan, kita harus menyetel Cron Job eksternal untuk melakukan ping ke backend secara rutin.
-
-### Cara Menyiapkan Uptime Ping (Gratis):
-1. Daftar akun gratis di [cron-job.org](https://cron-job.org/) atau [UptimeRobot](https://uptimerobot.com/).
-2. Buat Cron Job baru dengan konfigurasi:
-   - **Title**: `CrunchyVerse Backend Keep-Alive`
-   - **Address (URL)**: `https://crunchyverse-backend.onrender.com/api/stats` *(Ganti dengan domain backend Render Anda)*
-   - **Request Method**: `GET`
-   - **Schedule (Execution)**: Setiap **10 menit** (`*/10 * * * *`)
-3. Simpan Cron Job.
-4. Ping rutin ini akan mencegah Render mematikan server Anda, sehingga Sparxie Bot selalu standby di Voice Channel 24/7 dan status stream langsung diperbarui tepat waktu!
-
----
-
-## 🔒 Sistem Keamanan & Autentikasi Pengguna
-
-Untuk meningkatkan keamanan platform teater saat digunakan oleh banyak orang serentak, beberapa penyesuaian keamanan penting telah diterapkan:
-
-1. **Discord OAuth Only**: Metode pendaftaran tiket manual, login Google, dan login email/password konvensional telah dihapus. Pengguna hanya dapat masuk teater menggunakan **Discord Login**. Hal ini memastikan integritas identitas penonton, mencegah spam akun palsu, dan menyinkronkan kasta (role) Discord secara otomatis.
-2. **Role-Based Authorization**:
-   - Menu sensitif seperti **Sinyal Bot**, **Toggle Simulasi Live**, **Integrasikan**, dan **Frame 6 (Obrolan Anomali)** disembunyikan dan dikunci total bagi pengguna dengan kasta `Penonton`. Hanya pemilik role `Volunteer Theater`, `Ketua Kerupuk`, atau `Ketua Keripik` yang dapat mengakses dan mengoperasikannya.
-3. **Gerbang Tirai Tantangan (Countdown)**:
-   - Akses Quest Game (Frame 7 - Tirai Tantangan) ditutup untuk `Penonton` umum hingga pembukaan resmi pada **1 September 2026**.
-   - Sistem akan memunculkan menu countdown teatrikal yang premium dan interaktif dengan hitung mundur real-time.
-   - Admin (`Volunteer Theater`, `Ketua Kerupuk`, dan `Ketua Keripik`) melewati gerbang countdown secara otomatis dan dapat masuk ke area Tirai Tantangan kapan saja untuk pengujian quest.
-4. **Firestore Timeout Safety**:
-   - Semua koneksi database Firestore dilengkapi dengan timeout wrapper 1.5 detik. Apabila jaringan bermasalah atau kuota Firebase habis, sistem akan secara aman melakukan fallback ke dataset local JSON, sehingga website tidak akan pernah crash/hang.
-
----
-
-## 📂 Struktur Direktori Proyek
+## 📂 Struktur Direktori
 
 ```
 CrunchyVerse/
@@ -135,7 +76,89 @@ CrunchyVerse/
 │   └── lib/
 │       └── firebase.ts        # Inisialisasi Firebase & Firestore
 ├── public/                    # Aset statis & gambar teater
-├── package.json               # Package Root script
-├── tsconfig.json              # Konfigurasi TypeScript (mengabaikan folder bot)
-└── README.md                  # Panduan Teknis
+└── package.json               # Package Root script
 ```
+
+---
+
+## 🚀 Panduan Teknis & Deployment
+
+<details>
+<summary>📦 1. Inisialisasi & Push ke GitHub</summary>
+
+Untuk mengunggah kode lokal ke repositori GitHub `https://github.com/AnataSim/CV.git`, jalankan perintah berikut di terminal:
+
+```bash
+# Inisialisasi git jika belum dilakukan
+git init
+
+# Tambahkan remote repository
+git remote add origin https://github.com/AnataSim/CV.git
+
+# Buat branch utama ke main
+git branch -M main
+
+# Add & Commit semua file
+git add .
+git commit -m "feat: setup deployment vercel & render, countdown timer, dan login discord only"
+
+# Push ke GitHub
+git push -u origin main
+```
+</details>
+
+<details>
+<summary>📡 2. Deployment Backend & Bot Discord (Render)</summary>
+
+Karena bot memerlukan koneksi persistent WebSocket, taruh backend di **Render** sebagai **Web Service**:
+
+1. Masuk ke [Dashboard Render](https://dashboard.render.com/) dan buat **New Web Service**.
+2. Hubungkan repositori GitHub Anda (`AnataSim/CV`).
+3. Set detail service sebagai berikut:
+   * **Name**: `crunchyverse-backend`
+   * **Environment**: `Node`
+   * **Region**: `Singapore`
+   * **Branch**: `main`
+   * **Root Directory**: `discord-bot` *(Sangat Penting!)*
+   * **Build Command**: `npm install`
+   * **Start Command**: `npm start`
+4. Tambahkan **Environment Variables** di menu **Environment**:
+   * `PORT`: `3001`
+   * `DISCORD_TOKEN`: *(Token bot Discord)*
+   * `DISCORD_CLIENT_ID`: *(Client ID)*
+   * `DISCORD_CLIENT_SECRET`: *(Client Secret)*
+   * `DISCORD_REDIRECT_URI`: `https://<nama-web-service>.onrender.com/api/oauth/callback`
+   * `TIKTOK_USERNAME`: `jobetmaritoas`
+   * *(Opsional - Firebase)* `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`
+5. Klik **Create Web Service**.
+</details>
+
+<details>
+<summary>🎨 3. Deployment Frontend (Vercel)</summary>
+
+Frontend Next.js di-deploy ke **Vercel**:
+
+1. Masuk ke [Vercel](https://vercel.com/) dan buat project baru (**Add New Project**).
+2. Hubungkan repositori GitHub Anda (`AnataSim/CV`).
+3. Konfigurasikan proyek sebagai berikut:
+   * **Framework Preset**: `Next.js`
+   * **Root Directory**: `./`
+4. Tambahkan **Environment Variables**:
+   * `NEXT_PUBLIC_BACKEND_URL`: `https://crunchyverse-backend.onrender.com` *(URL backend Render)*
+   * *(Opsional - Firebase Client)* `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, dll.
+5. Klik **Deploy**.
+</details>
+
+<details>
+<summary>⏰ 4. Konfigurasi Cron Job (Stay 24/7)</summary>
+
+Agar Sparxie Bot tetap menyala 24/7 secara konstan pada tier gratis Render, pasang Cron Job eksternal:
+
+1. Daftar akun di [cron-job.org](https://cron-job.org/) atau [UptimeRobot](https://uptimerobot.com/).
+2. Buat Cron Job baru dengan konfigurasi:
+   * **Title**: `CrunchyVerse Backend Keep-Alive`
+   * **Address (URL)**: `https://crunchyverse-backend.onrender.com/api/stats`
+   * **Request Method**: `GET`
+   * **Schedule**: Setiap **10 menit** (`*/10 * * * *`)
+3. Simpan. Ping rutin ini akan mencegah Render menidurkan server Anda.
+</details>
