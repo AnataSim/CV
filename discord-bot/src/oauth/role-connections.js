@@ -932,6 +932,53 @@ router.post('/api/linked-role/update-metadata', async (req, res) => {
   }
 });
 
+// Manual widget sync endpoint — doesn't require linked OAuth account
+// Uses bot token directly; accepts plain Discord User ID
+router.post('/api/widget/sync', async (req, res) => {
+  const { userId } = req.body;
+  if (!userId) {
+    return res.status(400).json({ error: 'userId wajib diisi.' });
+  }
+
+  // Try both id formats: plain Discord ID and sim-discord-<id>
+  const plainId = userId.replace('sim-discord-', '');
+  const simId = userId.startsWith('sim-discord-') ? userId : `sim-discord-${userId}`;
+
+  let stats = { level: 0, voice: 0, streak: 0, cv_wealth: 0 };
+
+  try {
+    const lbUrl = `http://localhost:${ctx.PORT}/api/leaderboard`;
+    const lbRes = await fetch(lbUrl);
+    if (lbRes.ok) {
+      const data = await lbRes.json();
+      const tryIds = [plainId, simId];
+
+      const levelUser  = data.leveling?.find(u => tryIds.includes(u.id));
+      const streakUser = data.streak?.find(u => tryIds.includes(u.id));
+      const voiceUser  = data.voice?.find(u => tryIds.includes(u.id));
+      const cvUser     = data.cvWealth?.find(u => tryIds.includes(u.id));
+
+      stats = {
+        level:     levelUser?.level || 0,
+        streak:    streakUser?.streak || 0,
+        voice:     voiceUser?.hours || 0,
+        cv_wealth: parseInt((cvUser?.cvAmount || '0').replace(/\./g, ''), 10) || 0,
+      };
+    }
+  } catch (err) {
+    console.error('[Widget Sync] Gagal fetch leaderboard:', err.message);
+  }
+
+  console.log(`[Widget Sync] Menyinkronkan ${plainId}:`, stats);
+  const success = await updateDiscordProfileWidget(plainId, stats);
+
+  if (success) {
+    res.json({ success: true, stats, message: 'Widget berhasil disinkronisasi!' });
+  } else {
+    res.status(500).json({ error: 'Gagal update widget Discord.', stats });
+  }
+});
+
 // Initialization function
 function initRoleConnections(context) {
   Object.assign(ctx, context);

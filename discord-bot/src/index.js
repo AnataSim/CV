@@ -4878,12 +4878,78 @@ async function getUserStats(userId) {
   return { level, voice, streak, cv_wealth };
 }
 
+// Helper to push profile widget metadata to Discord (Identities API)
+async function updateDiscordProfileWidget(userId, stats) {
+  const appId = process.env.DISCORD_CLIENT_ID;
+  const botToken = process.env.DISCORD_TOKEN;
+  
+  if (!appId || !botToken) {
+    console.error("❌ [Widget] DISCORD_CLIENT_ID atau DISCORD_TOKEN tidak terkonfigurasi di env.");
+    return false;
+  }
+
+  const url = `https://discord.com/api/v9/applications/${appId}/users/${userId}/identities/0/profile`;
+  const payload = {
+    data: {
+      dynamic: [
+        {
+          type: 2,
+          name: "level", // Sesuai Data Field Key di Developer Portal
+          value: stats.level
+        },
+        {
+          type: 2,
+          name: "voice",
+          value: stats.voice
+        },
+        {
+          type: 2,
+          name: "streak",
+          value: stats.streak
+        },
+        {
+          type: 2,
+          name: "cv_wealth",
+          value: stats.cv_wealth
+        }
+      ]
+    }
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bot ${botToken}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'DiscordBot (CrunchyVerse Widget Sync, 1.0.0)'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      console.log(`✅ [Widget] Successfully updated profile widget for user ${userId}`);
+      return true;
+    } else {
+      const errText = await response.text();
+      console.error(`❌ [Widget] Failed to update profile widget:`, errText);
+      return false;
+    }
+  } catch (err) {
+    console.error(`❌ [Widget] Error updating profile widget:`, err.message);
+    return false;
+  }
+}
+
 // Helper to push connection metadata to Discord
 async function updateConnectionMetadata(userId, username, accessToken) {
   console.log(`📡 [OAuth] Updating connection metadata for @${username} (ID: ${userId})...`);
 
   const stats = await getUserStats(userId);
   console.log(`📊 [OAuth] User Stats:`, stats);
+
+  // Sync profile widget dynamically
+  await updateDiscordProfileWidget(userId, stats);
 
   const url = `https://discord.com/api/v10/users/@me/applications/${process.env.DISCORD_CLIENT_ID}/role-connection`;
 
@@ -6104,6 +6170,53 @@ app.post('/api/oauth/update-stats/:id', async (req, res) => {
     res.json({ success: true, message: `Pembaruan data metadata untuk @${acc.username} sukses!` });
   } else {
     res.status(500).json({ error: "Failed to push statistics to Discord." });
+  }
+});
+
+// Manual widget sync endpoint — doesn't require linked OAuth account
+// Uses bot token directly; accepts plain Discord User ID
+app.post('/api/widget/sync', async (req, res) => {
+  const { userId } = req.body;
+  if (!userId) {
+    return res.status(400).json({ error: 'userId wajib diisi.' });
+  }
+
+  // Try both id formats: plain Discord ID and sim-discord-<id>
+  const plainId = userId.replace('sim-discord-', '');
+  const simId = userId.startsWith('sim-discord-') ? userId : `sim-discord-${userId}`;
+
+  let stats = { level: 0, voice: 0, streak: 0, cv_wealth: 0 };
+
+  try {
+    const lbUrl = `http://localhost:${PORT}/api/leaderboard`;
+    const lbRes = await fetch(lbUrl);
+    if (lbRes.ok) {
+      const data = await lbRes.json();
+      const tryIds = [plainId, simId];
+
+      const levelUser  = data.leveling?.find(u => tryIds.includes(u.id));
+      const streakUser = data.streak?.find(u => tryIds.includes(u.id));
+      const voiceUser  = data.voice?.find(u => tryIds.includes(u.id));
+      const cvUser     = data.cvWealth?.find(u => tryIds.includes(u.id));
+
+      stats = {
+        level:     levelUser?.level || 0,
+        streak:    streakUser?.streak || 0,
+        voice:     voiceUser?.hours || 0,
+        cv_wealth: parseInt((cvUser?.cvAmount || '0').replace(/\./g, ''), 10) || 0,
+      };
+    }
+  } catch (err) {
+    console.error('[Widget Sync] Gagal fetch leaderboard:', err.message);
+  }
+
+  console.log(`[Widget Sync] Menyinkronkan ${plainId}:`, stats);
+  const success = await updateDiscordProfileWidget(plainId, stats);
+
+  if (success) {
+    res.json({ success: true, stats, message: 'Widget berhasil disinkronisasi!' });
+  } else {
+    res.status(500).json({ error: 'Gagal update widget Discord.', stats });
   }
 });
 
