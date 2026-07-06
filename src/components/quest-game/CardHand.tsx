@@ -50,7 +50,7 @@ export default function CardHand({
 }: CardHandProps) {
   // Visual 3D Card Deck Stack (Uno Style, Top-Left below Clock)
   const renderDeck = () => (
-    <div className="absolute top-24 left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 z-20 flex flex-col items-center gap-2">
+    <div className="absolute top-24 left-16 md:left-24 z-20 flex flex-col items-center gap-2">
       <div 
         onClick={handleDealCards}
         className="relative w-28 h-36 md:w-36 md:h-48 cursor-pointer group select-none"
@@ -95,7 +95,7 @@ export default function CardHand({
             </div>
             <h3 className="text-xs font-black text-white uppercase tracking-wider mb-2">Tarik Kartu Anda</h3>
             <p className="text-[10px] text-neutral-400 font-sans leading-relaxed">
-              Silakan klik tumpukan kartu <span className="hidden md:inline">di sebelah kiri atas </span>untuk mengambil 5 kartu tantangan teater!
+              Silakan klik tumpukan kartu di sebelah kiri untuk mengambil 5 kartu tantangan teater!
             </p>
           </div>
         )}
@@ -128,8 +128,7 @@ export default function CardHand({
 
                   // Check if card is newly drawn
                   const isNewCard = !dealtQuests.some(oldQ => oldQ.id === quest.id);
-                  const currentNewIdx = isNewCard ? newCardIdx++ : 0;
-                  const delay = `${currentNewIdx * 0.04}s`;
+                  const delay = "0s";
 
                   // Fanning calculations
                   const offset = idx - (count - 1) / 2;

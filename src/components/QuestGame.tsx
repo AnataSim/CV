@@ -650,27 +650,7 @@ export default function QuestGame({
         statuses: initialStatuses
       };
 
-      let apiSuccess = false;
-      try {
-        const res = await signedFetch(`${BACKEND_URL}/api/decks/deal`, {
-          method: "POST",
-          body: JSON.stringify({
-            uid: currentUser.uid,
-            cards: finalSelected,
-            statuses: initialStatuses
-          }),
-          sensitive: true
-        });
-        if (res.ok) apiSuccess = true;
-      } catch (err: any) {
-        console.warn("⚠️ Gagal menyimpan deck ke Bot API:", err.message);
-      }
-
-      let firestoreSuccess = apiSuccess;
-      if (!apiSuccess && !firestoreSuccess) {
-        localStorage.setItem(`crunchyverse_user_deck_${currentUser.uid}`, JSON.stringify(deckData));
-      }
-      
+      // Optimistic instant local updates
       setDealtQuests(finalSelected);
       const flips: Record<string, boolean> = {};
       finalSelected.forEach(q => {
@@ -680,11 +660,27 @@ export default function QuestGame({
       if (currentUser?.uid) {
         const localFlipsKey = `crunchyverse_card_flips_${currentUser.uid}`;
         localStorage.setItem(localFlipsKey, JSON.stringify(flips));
+        localStorage.setItem(`crunchyverse_user_deck_${currentUser.uid}`, JSON.stringify(deckData));
       }
       setActiveQuestId(null);
       setDealt(true);
-      if (onTriggerSync) onTriggerSync();
-      else fetchDeckFromApi();
+
+      // Asynchronous API call in the background
+      signedFetch(`${BACKEND_URL}/api/decks/deal`, {
+        method: "POST",
+        body: JSON.stringify({
+          uid: currentUser.uid,
+          cards: finalSelected,
+          statuses: initialStatuses
+        }),
+        sensitive: true
+      }).then((res) => {
+        if (res.ok) {
+          if (onTriggerSync) onTriggerSync();
+        }
+      }).catch((err) => {
+        console.warn("⚠️ Gagal menyimpan deck ke Bot API:", err.message);
+      });
     } finally {
       setIsDealing(false);
     }
@@ -970,13 +966,13 @@ export default function QuestGame({
 
             {/* Return to Menu Button */}
             {dealt && (
-              <div className="absolute bottom-6 right-6 z-20">
+              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30">
                 <button
                   onClick={() => {
                     setDealt(false);
                     setGameState("menu");
                   }}
-                  className="text-[8px] font-extrabold text-neutral-500 hover:text-white uppercase tracking-widest transition-colors cursor-pointer bg-neutral-950/60 hover:bg-neutral-900 border border-neutral-900/60 px-3 py-1.5 rounded-lg"
+                  className="bg-[#2b2d31]/80 hover:bg-[#35373c]/90 border border-theater-gold/40 hover:border-theater-gold text-theater-gold hover:text-white px-5 py-2.5 rounded-xl text-[9px] font-black tracking-widest uppercase transition-all duration-300 shadow-xl hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
                 >
                   Kembali ke Menu Utama
                 </button>
