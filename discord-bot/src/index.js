@@ -1758,9 +1758,13 @@ function initializeBot(token) {
         .setDescription(
           'Tampilkan Level, Voice Hours, Streak, dan Kekayaan Teater (CV$) Anda secara live langsung di profil Discord Anda (di bawah tab **Board**, Widget v2)!\n\n' +
           '**Langkah-langkah Setup:**\n' +
-          '1️⃣ Klik tombol **Otorisasi Stats Widget** → izinkan Sparxie membaca & update stats Anda.\n' +
-          '2️⃣ Klik tombol **Dapatkan Script Pasang Widget** → salin script yang dikirim, lalu buka [discord.com/app](https://discord.com/app) di browser, tekan `Ctrl+Shift+I`, buka tab **Console**, tempel script, dan tekan Enter.\n' +
-          '3️⃣ Reload Discord (`Ctrl+R`) dan buka tab **Board** di profil Anda!'
+          '1️⃣ **Otorisasi Widget:** Klik tombol **Otorisasi Stats Widget** 🔗 di bawah → izinkan Sparxie membaca & update stats Anda.\n' +
+          '2️⃣ **Pasang Widget:** Klik tombol **Dapatkan Script Pasang Widget** 📋 → salin script yang dikirim bot lewat DM, lalu buka [discord.com/app](https://discord.com/app) di browser, tekan `Ctrl+Shift+I`, buka tab **Console**, tempel script, dan tekan Enter.\n' +
+          '3️⃣ **Sinkronisasikan Angka Stats:** Jalankan perintah PowerShell ini di komputer Anda untuk memicu sinkronisasi stats terbaru secara instan:\n' +
+          '```powershell\n' +
+          `Invoke-RestMethod -Uri "https://crunchyverse-backend.onrender.com/api/widget/sync" -Method Post -ContentType "application/json" -Body '{"userId":"${message.author.id}"}'\n` +
+          '```\n' +
+          '4️⃣ **Reload Discord:** Tekan `Ctrl+R` pada aplikasi Discord Anda, buka profil Anda, dan cek tab **Board**!'
         )
         .setColor('#D4AF37')
         .setThumbnail(client.user.displayAvatarURL());
