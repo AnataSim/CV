@@ -1758,22 +1758,24 @@ function initializeBot(token) {
         .setDescription(
           'Tampilkan Level, Voice Hours, Streak, dan Kekayaan Teater (CV$) Anda secara live langsung di profil Discord Anda (di bawah tab **Board**, Widget v2)!\n\n' +
           '**Langkah-langkah Setup:**\n' +
-          '1️⃣ Klik tombol **1. Otorisasi Link Widget** untuk menghubungkan akun Anda.\n' +
-          '2️⃣ Setelah sukses otorisasi di browser, kembali ke Discord dan klik tombol **2. Pasang Widget ke Profile Board**.\n' +
-          '3️⃣ Reload Discord client Anda (`Ctrl + R`) lalu buka profil Anda untuk melihat tab **Board**!'
+          '1️⃣ Klik tombol **Otorisasi Stats Widget** → izinkan Sparxie membaca & update stats Anda.\n' +
+          '2️⃣ Klik tombol **Dapatkan Script Pasang Widget** → salin script yang dikirim, lalu buka [discord.com/app](https://discord.com/app) di browser, tekan `Ctrl+Shift+I`, buka tab **Console**, tempel script, dan tekan Enter.\n' +
+          '3️⃣ Reload Discord (`Ctrl+R`) dan buka tab **Board** di profil Anda!'
         )
         .setColor('#D4AF37')
         .setThumbnail(client.user.displayAvatarURL());
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setLabel('1. Otorisasi Link Widget')
+          .setLabel('Otorisasi Stats Widget')
           .setStyle(ButtonStyle.Link)
-          .setURL(oauthUrl),
+          .setURL(oauthUrl)
+          .setEmoji('🔗'),
         new ButtonBuilder()
-          .setCustomId('krpk_widget_install')
-          .setLabel('2. Pasang Widget ke Profile Board')
+          .setCustomId('krpk_widget_script')
+          .setLabel('Dapatkan Script Pasang Widget')
           .setStyle(ButtonStyle.Success)
+          .setEmoji('📋')
       );
 
       await message.reply({ embeds: [embed], components: [row] });
@@ -2120,55 +2122,37 @@ function initializeBot(token) {
       }
     });
 
-    // ===== KRPK-0421: Ghost Mode Button Interaction Handler =====
+    // ===== KRPK-0421: Ghost Mode Button + Widget Script Button Handler =====
     client.on('interactionCreate', async (interaction) => {
       if (!interaction.isButton()) return;
-      if (!['krpk_ghost_enable', 'krpk_ghost_disable', 'krpk_widget_install'].includes(interaction.customId)) return;
+      if (!['krpk_ghost_enable', 'krpk_ghost_disable', 'krpk_widget_script'].includes(interaction.customId)) return;
 
-      if (interaction.customId === 'krpk_widget_install') {
-        await interaction.deferReply({ ephemeral: true });
-        
-        const userId = interaction.user.id;
-        if (!roleConn) {
-          return interaction.editReply({ content: '❌ Sistem widget/role-connections belum diinisialisasi.' });
-        }
-        
-        const accounts = roleConn.loadLinkedAccounts();
-        const acc = accounts[userId];
+      // Widget script button: kirim script siap-paste ke browser console Discord
+      if (interaction.customId === 'krpk_widget_script') {
+        const APP_ID = client.user.id;
+        // Script ini dijalankan di console browser Discord (discord.com/app)
+        // Menggunakan internal Discord webpack API untuk PUT /users/@me/widgets
+        const script = `let _m=webpackChunkdiscord_app.push([[Symbol()],{},e=>e.c]);webpackChunkdiscord_app.pop();let fbp=(...e)=>{for(let t of Object.values(_m))try{if(!t.exports||t.exports===window)continue;if(e.every(e=>t.exports?.[e]))return t.exports;for(let r in t.exports)if(e.every(e=>t.exports?.[r]?.[e])&&"IntlMessagesProxy"!==t.exports[r][Symbol.toStringTag])return t.exports[r]}catch{}}; let api=fbp("Bo","Cu").Bo; let id=fbp("getCurrentUser").getCurrentUser().id; let cw=(await api.get("/users/"+id+"/profile")).body.widgets||[]; if(cw.map(x=>x.data?.application_id).includes("${APP_ID}")){console.log("✅ Widget sudah terpasang! Tidak ada yang perlu dilakukan.")}else{cw.unshift({data:{type:"application",application_id:"${APP_ID}"}}); await api.put({url:"/users/@me/widgets",body:{widgets:cw}}); console.log("✅ Widget CrunchyVerse berhasil dipasang! Tekan Ctrl+R untuk reload Discord.")}`;
 
-        if (!acc) {
-          return interaction.editReply({
-            content: '🚫 **Akun Anda belum terhubung!** Silakan klik tombol **1. Otorisasi Link Widget** terlebih dahulu.'
-          });
-        }
-
-        let token = acc.access_token;
-        if (Date.now() > (acc.expires_at - 300000)) {
-          token = await roleConn.refreshAccessToken(userId, acc.refresh_token);
-        }
-
-        if (!token) {
-          return interaction.editReply({
-            content: '❌ **Gagal otentikasi.** Silakan klik tombol **1. Otorisasi Link Widget** kembali untuk menyegarkan token Anda.'
-          });
-        }
-
-        const result = await roleConn.installUserProfileWidget(userId, token);
-
-        if (result.success) {
-          // Kirim reply DULU agar tidak stuck "is thinking"
-          await interaction.editReply({
-            content: '✅ **Widget CrunchyVerse berhasil dipasang ke profil Anda!**\nSilakan reload Discord client Anda (`Ctrl + R`), buka profil Anda, dan cek tab **Board**.'
-          });
-
-          // Update metadata di background (tidak blokir reply)
-          roleConn.updateConnectionMetadata(userId, acc.username, token)
-            .catch(err => console.warn("⚠️ Gagal update status widget secara instan setelah instalasi:", err.message));
-        } else {
-          await interaction.editReply({
-            content: `❌ **Gagal memasang widget ke profil:** ${result.error || 'Unknown error'}\nPastikan Anda sudah melakukan otorisasi link widget dengan benar.`
-          });
-        }
+        await interaction.reply({
+          ephemeral: true,
+          embeds: [
+            {
+              title: '📋 Script Pasang Widget — Instruksi',
+              description:
+                '**Cara memasang Widget CrunchyVerse ke profil Board Discord kamu:**\n\n' +
+                '1️⃣ Buka **[discord.com/app](https://discord.com/app)** di browser (Chrome/Edge).\n' +
+                '2️⃣ Tekan **`Ctrl + Shift + I`** (Windows) atau **`Cmd + Option + I`** (Mac) untuk buka DevTools.\n' +
+                '3️⃣ Klik tab **Console**.\n' +
+                '4️⃣ **Salin script di bawah ini**, tempel di Console, lalu tekan **Enter**.\n' +
+                '5️⃣ Setelah muncul ✅ di console, tekan **`Ctrl + R`** untuk reload Discord.\n' +
+                '6️⃣ Buka profil kamu dan cek tab **Board**! 🎪\n\n' +
+                '> ⚠️ Script ini **hanya** memanggil API resmi Discord dari sesi browser kamu sendiri. Tidak ada token yang dikirim ke server kami.',
+              color: 0xD4AF37
+            }
+          ],
+          content: `\`\`\`js\n${script}\n\`\`\``
+        });
         return;
       }
 
