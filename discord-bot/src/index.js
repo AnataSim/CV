@@ -6199,16 +6199,48 @@ app.post('/api/widget/sync', async (req, res) => {
   // Try both id formats: plain Discord ID and sim-discord-<id>
   const plainId = userId.replace('sim-discord-', '');
   
+  // Load connection info from linked-accounts
+  const accounts = loadLinkedAccounts();
+  const acc = accounts[plainId];
+
+  if (!acc) {
+    return res.status(400).json({ 
+      error: 'User belum melakukan otorisasi.', 
+      message: 'Silakan gunakan tombol "Otorisasi Stats Widget" di Discord terlebih dahulu.' 
+    });
+  }
+
+  let token = acc.access_token;
+  
+  // Check if token is expired or close to expiration (within 1 minute)
+  if (Date.now() >= (acc.expires_at || 0) - 60000) {
+    console.log(`⏳ [Widget Sync] Token untuk user ${acc.username} kedaluwarsa. Mencoba me-refresh...`);
+    const refreshed = await refreshAccessToken(plainId, acc.refresh_token);
+    if (refreshed) {
+      token = refreshed;
+    } else {
+      return res.status(500).json({ 
+        error: 'Sesi otorisasi kedaluwarsa.', 
+        message: 'Gagal memperbarui token. Silakan lakukan otorisasi ulang di Discord.' 
+      });
+    }
+  }
+
   // Fetch stats using the robust helper function (handles username & ID mappings)
   const stats = await getUserStats(plainId);
+  console.log(`[Widget Sync] Menyinkronkan ${plainId} (@${acc.username}):`, stats);
 
-  console.log(`[Widget Sync] Menyinkronkan ${plainId}:`, stats);
-  const success = await updateDiscordProfileWidget(plainId, stats);
+  // Sync role connection metadata (crucial for profile widget field bindings)
+  const metadataSuccess = await updateConnectionMetadata(plainId, acc.username, token);
 
-  if (success) {
+  // Try to patch the profile widget for the owner, but ignore its failure if it fails
+  // (since the profile widget dynamically displays the role-connection metadata values)
+  await updateDiscordProfileWidget(plainId, stats);
+
+  if (metadataSuccess) {
     res.json({ success: true, stats, message: 'Widget berhasil disinkronisasi!' });
   } else {
-    res.status(500).json({ error: 'Gagal update widget Discord.', stats });
+    res.status(500).json({ error: 'Gagal menyinkronisasikan metadata widget Discord.', stats });
   }
 });
 
