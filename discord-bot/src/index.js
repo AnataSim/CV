@@ -4844,31 +4844,50 @@ async function getUserStats(userId) {
   const userAcc = accounts[userId];
   const username = userAcc ? userAcc.username : null;
 
+  // Target search list (allows merging multiple accounts/aliases for a single user)
+  const targetIds = [userId];
+  const targetUsernames = [];
+  if (username) targetUsernames.push(username);
+
+  // Link test account (sim.tsx) with main account (raiidd) so they share progress
+  if (userId === "661135501226672129" || userId === "418285751743021066") {
+    if (!targetIds.includes("661135501226672129")) targetIds.push("661135501226672129");
+    if (!targetIds.includes("418285751743021066")) targetIds.push("418285751743021066");
+    if (!targetUsernames.includes("sim.tsx")) targetUsernames.push("sim.tsx");
+    if (!targetUsernames.includes("raiidd")) targetUsernames.push("raiidd");
+  }
+
   try {
     const lbUrl = `http://localhost:${PORT}/api/leaderboard`;
     const res = await fetch(lbUrl);
     if (res.ok) {
       const data = await res.json();
 
-      const levelUser = data.leveling.find(u => u.id === userId || (username && u.username === username));
-      if (levelUser) {
-        level = levelUser.level || 1;
+      // Find all matching entries in the leveling list and take the maximum
+      const levelEntries = data.leveling.filter(u => targetIds.includes(u.id) || targetUsernames.includes(u.username));
+      if (levelEntries.length > 0) {
+        level = Math.max(...levelEntries.map(u => u.level || 1));
       }
 
-      const streakUser = data.streak.find(u => u.id === userId || (username && u.username === username));
-      if (streakUser) {
-        streak = streakUser.streak || 0;
+      // Find all matching entries in the streak list and take the maximum
+      const streakEntries = data.streak.filter(u => targetIds.includes(u.id) || targetUsernames.includes(u.username));
+      if (streakEntries.length > 0) {
+        streak = Math.max(...streakEntries.map(u => u.streak || 0));
       }
 
-      const voiceUser = data.voice.find(u => u.id === userId || (username && u.username === username));
-      if (voiceUser) {
-        voice = voiceUser.hours || 0;
+      // Find all matching entries in the voice list and take the maximum
+      const voiceEntries = data.voice.filter(u => targetIds.includes(u.id) || targetUsernames.includes(u.username));
+      if (voiceEntries.length > 0) {
+        voice = Math.max(...voiceEntries.map(u => u.hours || 0));
       }
 
-      const cvUser = data.cvWealth.find(u => u.id === userId || (username && u.username === username));
-      if (cvUser) {
-        const rawAmount = cvUser.cvAmount || "0";
-        cv_wealth = parseInt(rawAmount.replace(/\./g, ''), 10) || 0;
+      // Find all matching entries in the cvWealth list and take the maximum
+      const cvEntries = data.cvWealth.filter(u => targetIds.includes(u.id) || targetUsernames.includes(u.username));
+      if (cvEntries.length > 0) {
+        cv_wealth = Math.max(...cvEntries.map(u => {
+          const rawAmount = u.cvAmount || "0";
+          return parseInt(rawAmount.replace(/\./g, ''), 10) || 0;
+        }));
       }
     }
   } catch (err) {
