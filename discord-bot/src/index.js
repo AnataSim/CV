@@ -6183,32 +6183,9 @@ app.post('/api/widget/sync', async (req, res) => {
 
   // Try both id formats: plain Discord ID and sim-discord-<id>
   const plainId = userId.replace('sim-discord-', '');
-  const simId = userId.startsWith('sim-discord-') ? userId : `sim-discord-${userId}`;
-
-  let stats = { level: 0, voice: 0, streak: 0, cv_wealth: 0 };
-
-  try {
-    const lbUrl = `http://localhost:${PORT}/api/leaderboard`;
-    const lbRes = await fetch(lbUrl);
-    if (lbRes.ok) {
-      const data = await lbRes.json();
-      const tryIds = [plainId, simId];
-
-      const levelUser  = data.leveling?.find(u => tryIds.includes(u.id));
-      const streakUser = data.streak?.find(u => tryIds.includes(u.id));
-      const voiceUser  = data.voice?.find(u => tryIds.includes(u.id));
-      const cvUser     = data.cvWealth?.find(u => tryIds.includes(u.id));
-
-      stats = {
-        level:     levelUser?.level || 0,
-        streak:    streakUser?.streak || 0,
-        voice:     voiceUser?.hours || 0,
-        cv_wealth: parseInt((cvUser?.cvAmount || '0').replace(/\./g, ''), 10) || 0,
-      };
-    }
-  } catch (err) {
-    console.error('[Widget Sync] Gagal fetch leaderboard:', err.message);
-  }
+  
+  // Fetch stats using the robust helper function (handles username & ID mappings)
+  const stats = await getUserStats(plainId);
 
   console.log(`[Widget Sync] Menyinkronkan ${plainId}:`, stats);
   const success = await updateDiscordProfileWidget(plainId, stats);
