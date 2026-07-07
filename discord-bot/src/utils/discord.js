@@ -286,6 +286,23 @@ function initializeBot(token) {
           let banSuccess = false;
           let banError = null;
 
+          // Send DM notice to user BEFORE banning them (so they are still in the server and the DM succeeds)
+          try {
+            const banDmEmbed = new EmbedBuilder()
+              .setTitle('🚨 PEMBERITAHUAN BAN OTOMATIS 🚨')
+              .setDescription(
+                `Halo ${message.author.username},\n\n` +
+                `Akun Anda telah di-ban secara otomatis dari server **CrunchyVerse** karena berinteraksi atau mengirim pesan di channel keamanan (**honeypot**).\n\n` +
+                `Jika akun Anda baru saja diretas atau ini merupakan ketidaksengajaan, silakan hubungi Administrator/Moderator server untuk mengajukan unban.`
+              )
+              .setColor('#ff3e3e')
+              .setTimestamp();
+            await message.author.send({ embeds: [banDmEmbed] });
+            console.log(`✉️ [Honeypot] DM notifikasi ban berhasil dikirim ke ${message.author.tag}`);
+          } catch (dmErr) {
+            console.warn(`⚠️ [Honeypot] Gagal mengirim DM ban ke ${message.author.tag}: ${dmErr.message}`);
+          }
+
           try {
             await guild.members.ban(message.author.id, {
               deleteMessageSeconds: 604800,
@@ -371,6 +388,75 @@ function initializeBot(token) {
       );
 
       await message.reply({ embeds: [embed], components: [row] });
+    });
+
+    // ===== ADMIN COMMAND: Purge messages from a specific user =====
+    state.client.on('messageCreate', async (message) => {
+      if (message.author.bot) return;
+      if (!message.content.startsWith('!purgeuser')) return;
+
+      const isAdmin = await helpers.verifyIsAdmin(message.author.id);
+      if (!isAdmin) {
+        return message.reply('🚫 **Akses Ditolak.** Perintah ini hanya untuk Administrator/Moderator.');
+      }
+
+      const args = message.content.split(/\s+/);
+      const targetUserId = args[1]?.replace(/[<@!>]/g, '');
+
+      if (!targetUserId) {
+        return message.reply('⚠️ **Format Salah.** Gunakan: `!purgeuser <UserId/Mention>`');
+      }
+
+      const statusMsg = await message.channel.send(`⏳ **Memulai pembersihan pesan untuk user ID:** \`${targetUserId}\` di channel ini...`);
+
+      try {
+        let deletedCount = 0;
+        let fetched;
+        let beforeId = message.id;
+        let iteration = 0;
+
+        do {
+          fetched = await message.channel.messages.fetch({ limit: 100, before: beforeId });
+          if (fetched.size === 0) break;
+
+          const userMessages = fetched.filter(m => m.author.id === targetUserId);
+          if (userMessages.size > 0) {
+            const now = Date.now();
+            const fourteenDaysAgo = now - 14 * 24 * 60 * 60 * 1000;
+            const bulkDeletable = [];
+            const manualDelete = [];
+
+            userMessages.forEach(m => {
+              if (m.createdTimestamp > fourteenDaysAgo) {
+                bulkDeletable.push(m);
+              } else {
+                manualDelete.push(m);
+              }
+            });
+
+            if (bulkDeletable.length > 0) {
+              await message.channel.bulkDelete(bulkDeletable, true);
+              deletedCount += bulkDeletable.length;
+            }
+
+            if (manualDelete.length > 0) {
+              for (const m of manualDelete.slice(0, 20)) {
+                await m.delete().catch(() => {});
+                deletedCount++;
+                await new Promise(r => setTimeout(r, 500));
+              }
+            }
+          }
+
+          beforeId = fetched.lastKey();
+          iteration++;
+        } while (fetched.size > 0 && iteration < 3);
+
+        await statusMsg.edit(`🧹 **Selesai!** Berhasil menghapus **${deletedCount}** pesan dari user <@${targetUserId}> di channel ini.`);
+      } catch (err) {
+        console.error("❌ [PurgeUser] Gagal melakukan purge:", err.message);
+        await statusMsg.edit(`❌ **Gagal melakukan pembersihan:** ${err.message}`);
+      }
     });
 
     // Listen to Jockie Music (Jing Liu) messages to capture playing track
