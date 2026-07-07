@@ -174,6 +174,16 @@ async function transcribeAudioBuffer(pcmBuffer) {
   throw new Error(`Semua provider transkripsi gagal. Error terakhir: ${lastError.message}`);
 }
 
+function debugLog(channelId, message) {
+  console.log(`[STT Debug] ${message}`);
+  if (state.client && state.isDiscordReady) {
+    const channel = state.client.channels.cache.get(channelId);
+    if (channel && channel.isTextBased()) {
+      channel.send(`⚙️ **[STT Debug]** ${message}`).catch(() => {});
+    }
+  }
+}
+
 /**
  * Starts listening to speaking events on the given VoiceConnection.
  */
@@ -184,7 +194,7 @@ function startSttListening(connection, guildId, channelId) {
   }
 
   if (activeListeners.has(guildId)) {
-    console.log(`[STT] Speaking listener already active for guild ${guildId}`);
+    debugLog(channelId, `Speaking listener already active for guild ${guildId}`);
     return;
   }
 
@@ -203,7 +213,7 @@ function startSttListening(connection, guildId, channelId) {
     if (!member || member.user.bot) return;
 
     const speakerName = member.displayName;
-    console.log(`[STT] 🎙️ Recording voice stream for user: ${speakerName} (${userId})`);
+    debugLog(channelId, `🎙️ Mulai merekam suara: **${speakerName}**`);
 
     // Subscribe to user speaking stream (finishes after 1.5s of silence to group sentences and reduce rate limits)
     const opusStream = receiver.subscribe(userId, {
@@ -226,17 +236,18 @@ function startSttListening(connection, guildId, channelId) {
 
     decoder.on('end', async () => {
       activeSubscriptions.delete(userId);
-      console.log(`[STT] 🛑 Recording ended for user: ${speakerName}`);
-
       const pcmBuffer = Buffer.concat(chunks);
+      debugLog(channelId, `🛑 Selesai merekam **${speakerName}**. Ukuran audio: ${pcmBuffer.length} bytes`);
+
       // Skip if audio is less than 0.5 seconds
       // ByteRate = 48000 * 2 channels * 2 bytes = 192000 bytes/sec
       if (pcmBuffer.length < 192000 * 0.5) {
-        console.log(`[STT] Audio from ${speakerName} too short (${pcmBuffer.length} bytes), skipping transcription.`);
+        debugLog(channelId, `⚠️ Audio **${speakerName}** terlalu pendek (${pcmBuffer.length} bytes), melewati transkripsi.`);
         return;
       }
 
       try {
+        debugLog(channelId, `⏳ Mengirim audio ke API transkripsi...`);
         const text = await transcribeAudioBuffer(pcmBuffer);
         if (text && text.trim().length > 0) {
           const trimmed = text.trim();
@@ -248,37 +259,39 @@ function startSttListening(connection, guildId, channelId) {
             'subtitles by', 'terima kasih', 'nonton', 'terima kasih telah menonton'
           ];
           if (hallucinations.some(h => lowerText === h || lowerText.startsWith(h + '.'))) {
-            console.log(`[STT] Hallucination filtered for ${speakerName}: "${trimmed}"`);
+            debugLog(channelId, `🧹 Filtered halusinasi: "${trimmed}"`);
             return;
           }
 
-          console.log(`[STT] Transcribed ${speakerName}: "${trimmed}"`);
+          debugLog(channelId, `✨ Hasil transkripsi: "${trimmed}"`);
 
           // Send transcript to the voice channel text chat
           const voiceChannel = state.client?.channels.cache.get(channelId);
           if (voiceChannel && voiceChannel.isTextBased()) {
             await voiceChannel.send(`🗣️ **${speakerName}**: ${trimmed}`);
           }
+        } else {
+          debugLog(channelId, `📝 Hasil transkripsi kosong.`);
         }
       } catch (err) {
-        console.error(`[STT] Transcription failed for ${speakerName}:`, err.message);
+        debugLog(channelId, `❌ Gagal transkripsi: ${err.message}`);
       }
     });
 
     decoder.on('error', (err) => {
-      console.error(`[STT] Decoder error for ${speakerName}:`, err.message);
+      debugLog(channelId, `❌ Decoder error untuk ${speakerName}: ${err.message}`);
       activeSubscriptions.delete(userId);
     });
 
     opusStream.on('error', (err) => {
-      console.error(`[STT] Opus stream error for ${speakerName}:`, err.message);
+      debugLog(channelId, `❌ Opus stream error untuk ${speakerName}: ${err.message}`);
       activeSubscriptions.delete(userId);
     });
   };
 
   receiver.speaking.on('start', speakingListener);
   activeListeners.set(guildId, speakingListener);
-  console.log(`[STT] Registered speaking listener for guild ${guildId}, channel ${channelId}`);
+  debugLog(channelId, `✅ Memasang listener suara di channel ini. Silakan mulai berbicara!`);
 }
 
 /**
