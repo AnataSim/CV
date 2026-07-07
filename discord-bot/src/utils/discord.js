@@ -395,9 +395,10 @@ function initializeBot(token) {
       if (message.author.bot) return;
       if (!message.content.startsWith('!purgeuser')) return;
 
-      const isAdmin = await helpers.verifyIsAdmin(message.author.id);
-      if (!isAdmin) {
-        return message.reply('🚫 **Akses Ditolak.** Perintah ini hanya untuk Administrator/Moderator.');
+      const hasModRole = message.member?.roles.cache.has('1403364896242139187');
+      const isServerAdmin = message.member?.permissions.has('Administrator');
+      if (!hasModRole && !isServerAdmin) {
+        return message.reply('🚫 **Akses Ditolak.** Perintah ini hanya untuk Moderator Server (dengan role Mod Server).');
       }
 
       const args = message.content.split(/\s+/);
