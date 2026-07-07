@@ -469,9 +469,9 @@ function initializeBot(token) {
         const guildId = message.guildId;
         if (!guildId) return;
 
-        // Check if OPENAI_API_KEY is configured
-        if (!process.env.OPENAI_API_KEY) {
-          return message.reply('⚠️ **Error:** `OPENAI_API_KEY` tidak ditemukan di environment (`.env`). Harap tambahkan API key OpenAI Anda untuk menggunakan fitur Speech-to-Text!');
+        // Check if API key is configured
+        if (!process.env.GROQ_API_KEY && !process.env.OPENAI_API_KEY) {
+          return message.reply('⚠️ **Error:** `GROQ_API_KEY` atau `OPENAI_API_KEY` tidak ditemukan di environment (`.env`). Harap tambahkan salah satu API key untuk menggunakan fitur Speech-to-Text!');
         }
 
         // Set state to enabled

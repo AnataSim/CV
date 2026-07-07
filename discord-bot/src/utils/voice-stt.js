@@ -41,12 +41,19 @@ function getWavHeader(audioLength, sampleRate = 48000, channels = 2, bitsPerSamp
 }
 
 /**
- * Transcribes raw PCM audio buffer using OpenAI's Whisper API.
+ * Transcribes raw PCM audio buffer using OpenAI's Whisper API or Groq's free Whisper API.
  */
 async function transcribeAudioBuffer(pcmBuffer) {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not configured in .env file.');
+  const apiKey = process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GROQ_API_KEY atau OPENAI_API_KEY tidak dikonfigurasi di file .env.');
   }
+
+  const isGroq = !!process.env.GROQ_API_KEY;
+  const endpoint = isGroq 
+    ? 'https://api.groq.com/openai/v1/audio/transcriptions'
+    : 'https://api.openai.com/v1/audio/transcriptions';
+  const model = isGroq ? 'whisper-large-v3-turbo' : 'whisper-1';
 
   // Prepend WAV header to raw PCM
   const wavHeader = getWavHeader(pcmBuffer.length, 48000, 2, 16);
@@ -56,20 +63,20 @@ async function transcribeAudioBuffer(pcmBuffer) {
   const formData = new FormData();
   const fileBlob = new Blob([wavBuffer], { type: 'audio/wav' });
   formData.append('file', fileBlob, 'speech.wav');
-  formData.append('model', 'whisper-1');
+  formData.append('model', model);
   formData.append('language', 'id'); // Optimize for Indonesian
 
-  const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      'Authorization': `Bearer ${apiKey}`
     },
     body: formData
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`OpenAI API returned status ${response.status}: ${errorText}`);
+    throw new Error(`${isGroq ? 'Groq' : 'OpenAI'} API returned status ${response.status}: ${errorText}`);
   }
 
   const result = await response.json();
