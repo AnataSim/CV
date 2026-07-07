@@ -477,7 +477,7 @@ function initializeBot(token) {
         // Set state to enabled
         state.connectionState.sttEnabled = true;
 
-        const { getVoiceConnection, joinVoiceChannel } = require('@discordjs/voice');
+        const { getVoiceConnection, joinVoiceChannel, entersState, VoiceConnectionStatus } = require('@discordjs/voice');
         const connection = getVoiceConnection(guildId);
 
         if (connection) {
@@ -486,7 +486,7 @@ function initializeBot(token) {
             const channelId = connection.joinConfig.channelId;
             
             // Rejoin with selfDeaf: false to start receiving audio
-            joinVoiceChannel({
+            const newConn = joinVoiceChannel({
               channelId: channelId,
               guildId: guildId,
               adapterCreator: guild.voiceAdapterCreator,
@@ -494,9 +494,20 @@ function initializeBot(token) {
               selfMute: false
             });
 
-            const { startSttListening } = require('./voice-stt');
-            startSttListening(connection, guildId, channelId);
-            return message.reply(`🎙️ **Speech-to-Text diaktifkan!** Bot sekarang mendengarkan suara di voice channel <#${channelId}> dan akan menuliskan transkrip di voice chat.`);
+            const loadingMsg = await message.reply('⏳ **Menghubungkan ulang suara untuk memulai pendengaran...**');
+
+            entersState(newConn, VoiceConnectionStatus.Ready, 5000)
+              .then(() => {
+                const { startSttListening, stopSttListening } = require('./voice-stt');
+                stopSttListening(newConn, guildId); // Clear old listeners first
+                startSttListening(newConn, guildId, channelId);
+                loadingMsg.edit(`🎙️ **Speech-to-Text diaktifkan!** Bot sekarang mendengarkan suara di voice channel <#${channelId}> dan akan menuliskan transkrip di voice chat.`);
+              })
+              .catch(err => {
+                console.error("❌ [STT] Gagal menunggu status Ready saat mengaktifkan STT:", err.message);
+                loadingMsg.edit(`❌ **Gagal mengaktifkan STT:** Koneksi suara re-negotiation timed out.`);
+              });
+            return;
           }
         } else {
           // If bot is not connected, try connecting to the user's voice channel

@@ -286,8 +286,12 @@ function startSttListening(connection, guildId, channelId) {
  */
 function stopSttListening(connection, guildId) {
   const speakingListener = activeListeners.get(guildId);
-  if (speakingListener && connection && connection.receiver) {
-    connection.receiver.speaking.off('start', speakingListener);
+  if (speakingListener) {
+    if (connection && connection.receiver && connection.receiver.speaking) {
+      try {
+        connection.receiver.speaking.off('start', speakingListener);
+      } catch (e) {}
+    }
     activeListeners.delete(guildId);
     console.log(`[STT] Deregistered speaking listener for guild ${guildId}`);
   }
