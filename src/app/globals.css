@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/misans-webfont/misans-style.css');
 @import "tailwindcss";
 
 :root {
@@ -8,8 +8,8 @@
 }
 
 @theme {
-  --font-display: "Cinzel", serif;
-  --font-sans: "Outfit", sans-serif;
+  --font-display: "MiSans", sans-serif;
+  --font-sans: "MiSans", sans-serif;
   
   --color-theater-red-light: #e51a2d;
   --color-theater-red: #800020;
@@ -66,7 +66,7 @@
 html, body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Outfit", sans-serif;
+  font-family: "MiSans", sans-serif;
   scroll-behavior: smooth;
   overflow-x: hidden;
   margin: 0;
