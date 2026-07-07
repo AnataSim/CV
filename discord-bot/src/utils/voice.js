@@ -29,7 +29,7 @@ async function connectToVoiceChannel(guildId, channelId) {
     channelId: channelId,
     guildId: guildId,
     adapterCreator: guild.voiceAdapterCreator,
-    selfDeaf: true,
+    selfDeaf: !state.connectionState.sttEnabled,
     selfMute: false
   });
 
@@ -40,6 +40,16 @@ async function connectToVoiceChannel(guildId, channelId) {
     state.connectionState.status = 'connected_voice';
     addVoiceAfkLog(`Bot berhasil masuk ke voice channel ${channelId} dan stay 24/7!`, 'success');
     db.saveVoiceAfkConfig({ guildId, channelId, isConnected: true });
+
+    // Start listening for STT if enabled
+    if (state.connectionState.sttEnabled) {
+      try {
+        const { startSttListening } = require('./voice-stt');
+        startSttListening(voiceConnection, guildId, channelId);
+      } catch (err) {
+        console.error('❌ [Voice] Gagal memulai STT listening:', err.message);
+      }
+    }
   });
 
   voiceConnection.on(VoiceConnectionStatus.Disconnected, async () => {

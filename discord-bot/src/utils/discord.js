@@ -460,6 +460,91 @@ function initializeBot(token) {
       }
     });
 
+    // ===== SPEECH-TO-TEXT COMMANDS: 'stt on / 'stt off =====
+    state.client.on('messageCreate', async (message) => {
+      if (message.author.bot) return;
+
+      const content = message.content.trim();
+      if (content === "'stt on") {
+        const guildId = message.guildId;
+        if (!guildId) return;
+
+        // Check if OPENAI_API_KEY is configured
+        if (!process.env.OPENAI_API_KEY) {
+          return message.reply('⚠️ **Error:** `OPENAI_API_KEY` tidak ditemukan di environment (`.env`). Harap tambahkan API key OpenAI Anda untuk menggunakan fitur Speech-to-Text!');
+        }
+
+        // Set state to enabled
+        state.connectionState.sttEnabled = true;
+
+        const { getVoiceConnection, joinVoiceChannel } = require('@discordjs/voice');
+        const connection = getVoiceConnection(guildId);
+
+        if (connection) {
+          const guild = state.client.guilds.cache.get(guildId);
+          if (guild) {
+            const channelId = connection.joinConfig.channelId;
+            
+            // Rejoin with selfDeaf: false to start receiving audio
+            joinVoiceChannel({
+              channelId: channelId,
+              guildId: guildId,
+              adapterCreator: guild.voiceAdapterCreator,
+              selfDeaf: false,
+              selfMute: false
+            });
+
+            const { startSttListening } = require('./voice-stt');
+            startSttListening(connection, guildId, channelId);
+            return message.reply(`🎙️ **Speech-to-Text diaktifkan!** Bot sekarang mendengarkan suara di voice channel <#${channelId}> dan akan menuliskan transkrip di voice chat.`);
+          }
+        } else {
+          // If bot is not connected, try connecting to the user's voice channel
+          const memberVoiceChannel = message.member?.voice?.channel;
+          if (memberVoiceChannel) {
+            try {
+              const loadingMsg = await message.reply('⏳ **Menghubungkan ke voice channel Anda...**');
+              await voice.connectToVoiceChannel(guildId, memberVoiceChannel.id);
+              return loadingMsg.edit(`🎙️ **Speech-to-Text diaktifkan!** Bot bergabung ke voice channel <#${memberVoiceChannel.id}> dan mendengarkan.`);
+            } catch (err) {
+              return message.reply(`❌ **Gagal bergabung ke voice channel:** ${err.message}`);
+            }
+          } else {
+            return message.reply('⚠️ **Error:** Anda harus berada di voice channel terlebih dahulu agar bot bisa bergabung dan mendengarkan!');
+          }
+        }
+      }
+
+      if (content === "'stt off") {
+        const guildId = message.guildId;
+        if (!guildId) return;
+
+        state.connectionState.sttEnabled = false;
+
+        const { getVoiceConnection, joinVoiceChannel } = require('@discordjs/voice');
+        const connection = getVoiceConnection(guildId);
+
+        if (connection) {
+          const { stopSttListening } = require('./voice-stt');
+          stopSttListening(connection, guildId);
+
+          const guild = state.client.guilds.cache.get(guildId);
+          if (guild) {
+            joinVoiceChannel({
+              channelId: connection.joinConfig.channelId,
+              guildId: guildId,
+              adapterCreator: guild.voiceAdapterCreator,
+              selfDeaf: true,
+              selfMute: false
+            });
+          }
+          return message.reply('🔇 **Speech-to-Text dinonaktifkan.** Bot tidak lagi mendengarkan suara Anda.');
+        } else {
+          return message.reply('ℹ️ **Speech-to-Text dinonaktifkan.** Bot saat ini tidak terhubung ke voice channel.');
+        }
+      }
+    });
+
     // Listen to Jockie Music (Jing Liu) messages to capture playing track
     state.client.on('messageCreate', (message) => {
       if (message.author.id === '411916947773587456') {

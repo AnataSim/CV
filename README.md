@@ -59,8 +59,9 @@ CrunchyVerse/
 ├── discord-bot/               # 🤖 Server Backend Express & Bot Discord (Render)
 │   ├── database/              # Penyimpanan data JSON lokal (user_decks, submissions, dll)
 │   ├── src/
-│   │   ├── index.js           # Main Express server & logic bot
-│   │   └── utils/
+│   │   ├── index.js           # Entrypoint Express server & logic bot
+│   │   ├── logic/             # Modular sub-modules (routes, websocket, sync, firebase)
+│   │   └── utils/             # Helper utilities (db, voice, discord, etc)
 │   ├── package.json
 │   └── reset-sim.js           # Script reset testing deck/score
 ├── src/                       # 🎨 Frontend Web Next.js (Vercel)

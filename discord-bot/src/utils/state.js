@@ -17,6 +17,7 @@ module.exports = {
     guildId: null,
     channelId: null,
     status: 'offline',
+    sttEnabled: false,
     logs: []
   },
 
