@@ -780,15 +780,131 @@ app.get('/api/voice-channel/:id', async (req, res) => {
 
 // GET Guild Roles list
 app.get('/api/roles', async (req, res) => {
+  const mockRoles = [
+    {
+      id: "1505186956731093113",
+      name: "Serial #1 — Crescent Eclipse | CV$ 12.982.500",
+      color: "#ffc107",
+      icon: "https://api.dicebear.com/7.x/identicon/svg?seed=crescent",
+      cvAmount: "12.982.500",
+      permissions: ["MANAGE_MESSAGES", "VIEW_CHANNEL", "SEND_MESSAGES"],
+      members: [
+        { id: "12714337000051128405", username: "yae.eva", displayName: "[Doomsday] Yae エヴァ", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=yae" },
+        { id: "661135501226672129", username: "sim.tsx", displayName: "[Raiid] Sim | 46 ⭐", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=sim" }
+      ]
+    },
+    {
+      id: "1403300491214983178",
+      name: "Sekte Kerupuk Gurih | CV$ 420.000",
+      color: "#ff3366",
+      icon: "https://api.dicebear.com/7.x/identicon/svg?seed=kerupuk",
+      cvAmount: "420.000",
+      permissions: ["VIEW_CHANNEL", "SEND_MESSAGES", "USE_EXTERNAL_EMOJIS"],
+      members: [
+        { id: "12714337000051128405", username: "yae.eva", displayName: "[Doomsday] Yae エヴァ", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=yae" }
+      ]
+    },
+    {
+      id: "1411319287720837230",
+      name: "Sekte Keripik Renyah | CV$ 690.000",
+      color: "#ff9900",
+      icon: "https://api.dicebear.com/7.x/identicon/svg?seed=keripik",
+      cvAmount: "690.000",
+      permissions: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES"],
+      members: [
+        { id: "661135501226672129", username: "sim.tsx", displayName: "[Raiid] Sim | 46 ⭐", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=sim" }
+      ]
+    }
+  ];
+
   if (!state.isDiscordReady || !state.client || !GUILD_ID) {
-    return res.status(503).json({ error: "Discord client is not ready" });
+    console.log("🤖 [API/roles] Discord Bot offline/standby. Mengembalikan list role simulasi.");
+    return res.json(mockRoles);
   }
+
   try {
+    console.log("🤖 [API/roles] Menghubungkan ke Discord Guild...");
     const guild = await state.client.guilds.fetch(GUILD_ID);
-    const roles = guild.roles.cache.map(r => ({ id: r.id, name: r.name, color: r.hexColor }));
-    res.json(roles);
+    if (!guild) {
+      console.log("⚠️ [API/roles] Guild tidak ditemukan. Mengembalikan list role simulasi.");
+      return res.json(mockRoles);
+    }
+    // Use cached members if available to avoid Discord gateway rate limit, otherwise fetch
+    if (guild.members.cache.size === 0) {
+      console.log("👥 [API/roles] Cache kosong, memuat member server...");
+      await guild.members.fetch().catch(err => {
+        console.warn("⚠️ [API/roles] Gagal memuat semua member secara langsung:", err.message);
+      });
+    } else {
+      console.log(`👥 [API/roles] Menggunakan ${guild.members.cache.size} member ter-cache.`);
+    }
+
+    const roles = await guild.roles.fetch();
+    console.log(`✅ [API/roles] Berhasil membaca ${roles.size} role dari server Discord.`);
+
+    const formattedRoles = roles
+      .filter(role => role.name !== "@everyone" && !role.managed)
+      .map(role => {
+        // Extract CV$ / CV / VR / Value Role from role name (excluding rank roles)
+        const cvMatch = !state.EXCLUDED_CV_ROLE_IDS.includes(role.id)
+          ? role.name.match(/(?:CV\$|CV|VR|Value\s*Role)\s*([\d.,\s]+)/i)
+          : null;
+        const cvAmount = cvMatch ? cvMatch[1].trim() : null;
+
+        // Map members having this role
+        const members = role.members.map(member => ({
+          id: member.id,
+          username: member.user.username,
+          displayName: member.displayName,
+          avatar: member.user.displayAvatarURL({ extension: 'webp', size: 64 }) || null
+        }));
+
+        // Map human-readable permissions
+        const permissions = role.permissions.toArray();
+
+        // Detect gradient colors
+        let gradientColors = null;
+        try {
+          if (role.colors && Array.isArray(role.colors) && role.colors.length >= 2) {
+            gradientColors = role.colors
+              .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+              .map(c => {
+                const hex = (c.color ?? c).toString(16).padStart(6, '0');
+                return `#${hex}`;
+              });
+          } else if (typeof role.colors === 'object' && role.colors !== null && !Array.isArray(role.colors)) {
+            const colorValues = Object.values(role.colors).filter(v => typeof v === 'number');
+            if (colorValues.length >= 2) {
+              gradientColors = colorValues.map(c => `#${c.toString(16).padStart(6, '0')}`);
+            }
+          }
+        } catch (e) {
+          gradientColors = null;
+        }
+
+        return {
+          id: role.id,
+          name: role.name,
+          color: role.hexColor,
+          gradientColors,
+          icon: role.iconURL({ extension: 'png', size: 128 }) || null,
+          position: role.position,
+          cvAmount,
+          permissions,
+          members
+        };
+      })
+      .sort((a, b) => b.position - a.position);
+
+    if (formattedRoles.length === 0) {
+      return res.json(mockRoles);
+    }
+
+    res.json(formattedRoles);
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(`❌ [API/roles] Gagal mengambil roles: ${err.message}`);
+    res.json(mockRoles);
   }
 });
 
