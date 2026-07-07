@@ -41,23 +41,63 @@ function getWavHeader(audioLength, sampleRate = 48000, channels = 2, bitsPerSamp
 }
 
 /**
- * Transcribes raw PCM audio buffer using OpenAI's Whisper API or Groq's free Whisper API.
+ * Transcribes raw PCM audio buffer using Gemini API, Groq's free API, or OpenAI's Whisper API.
  */
 async function transcribeAudioBuffer(pcmBuffer) {
-  const apiKey = process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error('GROQ_API_KEY atau OPENAI_API_KEY tidak dikonfigurasi di file .env.');
+    throw new Error('GEMINI_API_KEY, GROQ_API_KEY, atau OPENAI_API_KEY tidak dikonfigurasi di file .env.');
   }
 
+  // Prepend WAV header to raw PCM
+  const wavHeader = getWavHeader(pcmBuffer.length, 48000, 2, 16);
+  const wavBuffer = Buffer.concat([wavHeader, pcmBuffer]);
+
+  // Option 1: Gemini API (Free, high quality, directly handles audio/wav base64 inline)
+  if (process.env.GEMINI_API_KEY) {
+    const base64Data = wavBuffer.toString('base64');
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                inline_data: {
+                  mime_type: 'audio/wav',
+                  data: base64Data
+                }
+              },
+              {
+                text: 'Transkripsikan audio ini ke dalam teks bahasa Indonesia secara akurat dan tepat. Tuliskan teks hasil transkripsinya saja langsung tanpa tambahan keterangan atau tanda petik apa pun.'
+              }
+            ]
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gemini API returned status ${response.status}: ${errorText}`);
+    }
+
+    const result = await response.json();
+    const candidateText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    return candidateText || '';
+  }
+
+  // Option 2 & 3: Groq or OpenAI Whisper (multipart/form-data upload)
   const isGroq = !!process.env.GROQ_API_KEY;
   const endpoint = isGroq 
     ? 'https://api.groq.com/openai/v1/audio/transcriptions'
     : 'https://api.openai.com/v1/audio/transcriptions';
   const model = isGroq ? 'whisper-large-v3-turbo' : 'whisper-1';
-
-  // Prepend WAV header to raw PCM
-  const wavHeader = getWavHeader(pcmBuffer.length, 48000, 2, 16);
-  const wavBuffer = Buffer.concat([wavHeader, pcmBuffer]);
 
   // Create native FormData and Blob for the multipart upload
   const formData = new FormData();

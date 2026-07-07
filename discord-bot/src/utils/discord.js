@@ -470,8 +470,8 @@ function initializeBot(token) {
         if (!guildId) return;
 
         // Check if API key is configured
-        if (!process.env.GROQ_API_KEY && !process.env.OPENAI_API_KEY) {
-          return message.reply('⚠️ **Error:** `GROQ_API_KEY` atau `OPENAI_API_KEY` tidak ditemukan di environment (`.env`). Harap tambahkan salah satu API key untuk menggunakan fitur Speech-to-Text!');
+        if (!process.env.GEMINI_API_KEY && !process.env.GROQ_API_KEY && !process.env.OPENAI_API_KEY) {
+          return message.reply('⚠️ **Error:** `GEMINI_API_KEY`, `GROQ_API_KEY`, atau `OPENAI_API_KEY` tidak ditemukan di environment (`.env`). Harap tambahkan salah satu API key untuk menggunakan fitur Speech-to-Text!');
         }
 
         // Set state to enabled
