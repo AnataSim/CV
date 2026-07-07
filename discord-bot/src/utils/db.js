@@ -13,6 +13,7 @@ const CUSTOM_CHANNELS_FILE = path.join(__dirname, '../../database/custom-channel
 const CHAT_MESSAGES_FILE = path.join(__dirname, '../../database/chat-messages.json');
 const ACTIVE_CHANNELS_FILE = path.join(__dirname, '../../database/active-channels.json');
 const VOLUNTEERABLES_FILE = path.join(__dirname, '../../database/volunteerables.json');
+const LIVE_ANNOUNCEMENT_FILE = path.join(__dirname, '../../database/live-announcement.json');
 
 // Ensure database directory exists
 const dbDir = path.join(__dirname, '../../database');
@@ -233,6 +234,25 @@ function saveLocalVolunteerables(list) {
   }
 }
 
+function getLiveAnnouncement() {
+  try {
+    if (fs.existsSync(LIVE_ANNOUNCEMENT_FILE)) {
+      return JSON.parse(fs.readFileSync(LIVE_ANNOUNCEMENT_FILE, 'utf8'));
+    }
+  } catch (e) {
+    console.error("Gagal membaca live-announcement.json:", e.message);
+  }
+  return { lastLiveMessageId: null, lastLiveStatus: false };
+}
+
+function saveLiveAnnouncement(data) {
+  try {
+    fs.writeFileSync(LIVE_ANNOUNCEMENT_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    console.error("Gagal menulis live-announcement.json:", e.message);
+  }
+}
+
 async function getUserDeck(uid) {
   if (!uid) return { uid, dealt: false, cards: [], statuses: {} };
 
@@ -295,5 +315,7 @@ module.exports = {
   saveActiveChannels,
   loadLocalVolunteerables,
   saveLocalVolunteerables,
-  getUserDeck
+  getUserDeck,
+  getLiveAnnouncement,
+  saveLiveAnnouncement
 };

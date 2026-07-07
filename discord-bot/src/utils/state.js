@@ -24,9 +24,9 @@ module.exports = {
   tiktokState: {
     username: process.env.TIKTOK_USERNAME || "@crunchyverse.live",
     displayName: process.env.TIKTOK_DISPLAY_NAME || "CrunchyVerse Show",
-    isLive: true,
+    isLive: false,
     avatarUrl: process.env.TIKTOK_AVATAR_URL || "https://api.dicebear.com/7.x/adventurer/svg?seed=crunchy-tiktok",
-    liveTitle: "🎪 STAGE LIVE: Nobar Konser & Chit-chat Bareng Member Anomaly! 🍿",
+    liveTitle: null,
     manualOverride: false
   },
 

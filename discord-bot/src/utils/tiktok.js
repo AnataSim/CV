@@ -1,10 +1,116 @@
 const state = require('./state');
-const { ChannelType } = require('discord.js');
+const db = require('./db');
+const { ChannelType, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } = require('discord.js');
 
 let lastChannelNames = {
   '1480715185453793524': '',
   '1512685924771958846': ''
 };
+
+async function handleLiveAnnouncement(isLive, title, avatarUrl) {
+  if (!state.isDiscordReady || !state.client) return;
+
+  const channelId = '1403363286270873700';
+  const channel = await state.client.channels.fetch(channelId).catch(() => null);
+  if (!channel) {
+    console.error(`❌ [LiveAnnouncement] Channel ${channelId} tidak ditemukan.`);
+    return;
+  }
+
+  const announceData = db.getLiveAnnouncement();
+  const cleanUsername = state.tiktokState.username.startsWith('@')
+    ? state.tiktokState.username.slice(1)
+    : state.tiktokState.username;
+  const liveUrl = `https://www.tiktok.com/@${cleanUsername}/live`;
+
+  // Only act if there is a status change or message is missing
+  if (isLive === announceData.lastLiveStatus && announceData.lastLiveMessageId) {
+    return;
+  }
+
+  if (isLive) {
+    const embed = new EmbedBuilder()
+      .setColor('#ff0050')
+      .setTitle('🔴 KRANCI SEDANG LIVE STREAMING TIKTOK!')
+      .setDescription(`**Judul Live:**\n${title || 'Panggung Pertunjukan CrunchyVerse! 🍿'}`)
+      .setThumbnail(avatarUrl || 'https://api.dicebear.com/7.x/adventurer/svg?seed=crunchy-tiktok')
+      .addFields(
+        { name: 'Status', value: '🔴 **Airing** (Sedang berlangsung)', inline: true },
+        { name: 'Panggung', value: `[@${cleanUsername}](${liveUrl})`, inline: true }
+      )
+      .setTimestamp();
+
+    const button = new ButtonBuilder()
+      .setLabel('Tonton Live TikTok')
+      .setURL(liveUrl)
+      .setStyle(ButtonStyle.Link);
+
+    const row = new ActionRowBuilder().addComponents(button);
+
+    try {
+      let message;
+      if (announceData.lastLiveMessageId) {
+        const existingMsg = await channel.messages.fetch(announceData.lastLiveMessageId).catch(() => null);
+        if (existingMsg) {
+          message = await existingMsg.edit({ content: '🔔 **Pemberitahuan:** Kranci sedang live di TikTok!', embeds: [embed], components: [row] });
+          console.log(`📡 [LiveAnnouncement] Mengupdate pesan live lama ke Airing: ${message.id}`);
+        }
+      }
+
+      if (!message) {
+        message = await channel.send({ content: '🔔 **Pemberitahuan:** Kranci sedang live di TikTok!', embeds: [embed], components: [row] });
+        console.log(`📡 [LiveAnnouncement] Mengirim pesan live baru: ${message.id}`);
+      }
+
+      announceData.lastLiveMessageId = message.id;
+      announceData.lastLiveStatus = true;
+      db.saveLiveAnnouncement(announceData);
+    } catch (err) {
+      console.error(`❌ [LiveAnnouncement] Gagal mengirim/mengupdate pesan live:`, err.message);
+    }
+  } else {
+    if (announceData.lastLiveMessageId) {
+      try {
+        const existingMsg = await channel.messages.fetch(announceData.lastLiveMessageId).catch(() => null);
+        if (existingMsg) {
+          const embed = new EmbedBuilder()
+            .setColor('#555555')
+            .setTitle('⚫ LIVE STREAMING TIKTOK TELAH SELESAI')
+            .setDescription(`**Judul Live:**\n${title || 'Panggung Pertunjukan CrunchyVerse! 🍿'}`)
+            .setThumbnail(avatarUrl || 'https://api.dicebear.com/7.x/adventurer/svg?seed=crunchy-tiktok')
+            .addFields(
+              { name: 'Status', value: '⚫ **Aired** (Sudah selesai)', inline: true },
+              { name: 'Panggung', value: `[@${cleanUsername}](${liveUrl})`, inline: true }
+            )
+            .setTimestamp();
+
+          const button = new ButtonBuilder()
+            .setLabel('Profil TikTok')
+            .setURL(`https://www.tiktok.com/@${cleanUsername}`)
+            .setStyle(ButtonStyle.Link);
+
+          const row = new ActionRowBuilder().addComponents(button);
+
+          await existingMsg.edit({ content: '⚫ **Siaran selesai.** Terimakasih sudah menonton!', embeds: [embed], components: [row] });
+          console.log(`📡 [LiveAnnouncement] Mengupdate pesan live ke Aired: ${existingMsg.id}`);
+        }
+        announceData.lastLiveStatus = false;
+        announceData.lastLiveMessageId = null;
+        db.saveLiveAnnouncement(announceData);
+      } catch (err) {
+        console.error(`❌ [LiveAnnouncement] Gagal mengupdate status Aired:`, err.message);
+      }
+    }
+  }
+}
+
+async function setLiveStatusAndAnnounce(isLive, title) {
+  state.tiktokState.isLive = isLive;
+  state.tiktokState.liveTitle = isLive ? (title || "🎪 STAGE LIVE: Panggung Pertunjukan CrunchyVerse! 🍿") : null;
+  
+  await updateDiscordLiveStatusChannels();
+  await handleLiveAnnouncement(isLive, state.tiktokState.liveTitle, state.tiktokState.avatarUrl);
+}
 
 async function updateDiscordLiveStatusChannels() {
   if (!state.isDiscordReady || !state.client) {
@@ -86,21 +192,16 @@ async function checkTikTokLiveStatus() {
           if (avatar) state.tiktokState.avatarUrl = avatar;
         }
 
-        state.tiktokState.isLive = isLiveDetected;
-        state.tiktokState.liveTitle = isLiveDetected ? (json.data.title || "🎪 STAGE LIVE: Panggung Pertunjukan CrunchyVerse! 🍿") : null;
-
         if (isLiveDetected) {
-          console.log(`✅ [AUTOCRON] (Webcast API) @${cleanUsername} SEDANG LIVE: "${state.tiktokState.liveTitle}"`);
-          await updateDiscordLiveStatusChannels();
+          console.log(`✅ [AUTOCRON] (Webcast API) @${cleanUsername} SEDANG LIVE: "${json.data.title || '🎪 STAGE LIVE: Panggung Pertunjukan CrunchyVerse! 🍿'}"`);
+          await setLiveStatusAndAnnounce(true, json.data.title);
           return;
         } else {
           console.log(`💤 [AUTOCRON] (Webcast API) @${cleanUsername} sedang offline (Intermission).`);
         }
       } else if (json.status_code === 30003) {
-        state.tiktokState.isLive = false;
-        state.tiktokState.liveTitle = null;
         console.log(`💤 [AUTOCRON] (Webcast API) @${cleanUsername} offline (status_code 30003).`);
-        await updateDiscordLiveStatusChannels();
+        await setLiveStatusAndAnnounce(false, null);
       }
     }
   } catch (webcastErr) {
@@ -157,16 +258,13 @@ async function checkTikTokLiveStatus() {
       isLiveDetected = pHtml.includes('"isLive":true') || (pHtml.includes('"roomId":"') && !pHtml.includes('"roomId":""') && !pHtml.includes('"roomId":"0"'));
     }
 
-    state.tiktokState.isLive = isLiveDetected;
     if (isLiveDetected) {
-      state.tiktokState.liveTitle = liveTitleDetected || "🎪 STAGE LIVE: Panggung Pertunjukan CrunchyVerse! 🍿";
-      console.log(`✅ [AUTOCRON] (Fallback) @${cleanUsername} SEDANG LIVE: "${state.tiktokState.liveTitle}"`);
+      console.log(`✅ [AUTOCRON] (Fallback) @${cleanUsername} SEDANG LIVE: "${liveTitleDetected || '🎪 STAGE LIVE: Panggung Pertunjukan CrunchyVerse! 🍿'}"`);
+      await setLiveStatusAndAnnounce(true, liveTitleDetected);
     } else {
-      state.tiktokState.liveTitle = null;
       console.log(`💤 [AUTOCRON] (Fallback) @${cleanUsername} sedang offline (Intermission).`);
+      await setLiveStatusAndAnnounce(false, null);
     }
-
-    await updateDiscordLiveStatusChannels();
 
   } catch (err) {
     console.error(`⚠️ [AUTOCRON] Gagal melakukan pengecekan live otomatis untuk ${username}: ${err.message}`);
@@ -175,5 +273,7 @@ async function checkTikTokLiveStatus() {
 
 module.exports = {
   updateDiscordLiveStatusChannels,
-  checkTikTokLiveStatus
+  checkTikTokLiveStatus,
+  handleLiveAnnouncement,
+  setLiveStatusAndAnnounce
 };

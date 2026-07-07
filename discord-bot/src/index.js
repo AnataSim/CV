@@ -665,6 +665,9 @@ app.post('/api/tiktok/override', requireClientToken, async (req, res) => {
   console.log(`📡 [LiveStatusOverride] Status TikTok live di-override secara manual: isLive=${isLive}, title="${state.tiktokState.liveTitle}"`);
 
   await tiktok.updateDiscordLiveStatusChannels();
+  if (typeof tiktok.handleLiveAnnouncement === 'function') {
+    await tiktok.handleLiveAnnouncement(isLive, state.tiktokState.liveTitle, state.tiktokState.avatarUrl);
+  }
   res.json({ success: true, status: state.tiktokState });
 });
 
