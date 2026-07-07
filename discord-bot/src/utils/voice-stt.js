@@ -42,85 +42,136 @@ function getWavHeader(audioLength, sampleRate = 48000, channels = 2, bitsPerSamp
 
 /**
  * Transcribes raw PCM audio buffer using Gemini API, Groq's free API, or OpenAI's Whisper API.
+ * Automatically falls back to the next configured provider if one fails or gets rate-limited.
  */
 async function transcribeAudioBuffer(pcmBuffer) {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY, GROQ_API_KEY, atau OPENAI_API_KEY tidak dikonfigurasi di file .env.');
+  const providers = [];
+
+  // Provider 1: Gemini (Free tier, 15 RPM)
+  if (process.env.GEMINI_API_KEY) {
+    providers.push({
+      name: 'Gemini',
+      transcribe: async (wavBuffer) => {
+        const base64Data = wavBuffer.toString('base64');
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    inline_data: {
+                      mime_type: 'audio/wav',
+                      data: base64Data
+                    }
+                  },
+                  {
+                    text: 'Transkripsikan audio ini ke dalam teks bahasa Indonesia secara akurat dan tepat. Tuliskan teks hasil transkripsinya saja langsung tanpa tambahan keterangan atau tanda petik apa pun.'
+                  }
+                ]
+              }
+            ]
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        const candidateText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        return candidateText || '';
+      }
+    });
+  }
+
+  // Provider 2: Groq (Free tier, 20 RPM)
+  if (process.env.GROQ_API_KEY) {
+    providers.push({
+      name: 'Groq',
+      transcribe: async (wavBuffer) => {
+        const endpoint = 'https://api.groq.com/openai/v1/audio/transcriptions';
+        const formData = new FormData();
+        const fileBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+        formData.append('file', fileBlob, 'speech.wav');
+        formData.append('model', 'whisper-large-v3-turbo');
+        formData.append('language', 'id');
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+          },
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result.text;
+      }
+    });
+  }
+
+  // Provider 3: OpenAI (Paid tier)
+  if (process.env.OPENAI_API_KEY) {
+    providers.push({
+      name: 'OpenAI',
+      transcribe: async (wavBuffer) => {
+        const endpoint = 'https://api.openai.com/v1/audio/transcriptions';
+        const formData = new FormData();
+        const fileBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+        formData.append('file', fileBlob, 'speech.wav');
+        formData.append('model', 'whisper-1');
+        formData.append('language', 'id');
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+          },
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result.text;
+      }
+    });
+  }
+
+  if (providers.length === 0) {
+    throw new Error('Tidak ada API Key (GEMINI_API_KEY, GROQ_API_KEY, atau OPENAI_API_KEY) yang terkonfigurasi di file .env.');
   }
 
   // Prepend WAV header to raw PCM
   const wavHeader = getWavHeader(pcmBuffer.length, 48000, 2, 16);
   const wavBuffer = Buffer.concat([wavHeader, pcmBuffer]);
 
-  // Option 1: Gemini API (Free, high quality, directly handles audio/wav base64 inline)
-  if (process.env.GEMINI_API_KEY) {
-    const base64Data = wavBuffer.toString('base64');
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
-
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                inline_data: {
-                  mime_type: 'audio/wav',
-                  data: base64Data
-                }
-              },
-              {
-                text: 'Transkripsikan audio ini ke dalam teks bahasa Indonesia secara akurat dan tepat. Tuliskan teks hasil transkripsinya saja langsung tanpa tambahan keterangan atau tanda petik apa pun.'
-              }
-            ]
-          }
-        ]
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Gemini API returned status ${response.status}: ${errorText}`);
+  // Try each configured provider in order of preference
+  let lastError = null;
+  for (const provider of providers) {
+    try {
+      console.log(`[STT] Mencoba transkripsi menggunakan provider: ${provider.name}`);
+      const text = await provider.transcribe(wavBuffer);
+      return text;
+    } catch (err) {
+      console.warn(`⚠️ [STT] Provider ${provider.name} gagal atau terlimit: ${err.message}. Mencoba fallback ke provider berikutnya...`);
+      lastError = err;
     }
-
-    const result = await response.json();
-    const candidateText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-    return candidateText || '';
   }
 
-  // Option 2 & 3: Groq or OpenAI Whisper (multipart/form-data upload)
-  const isGroq = !!process.env.GROQ_API_KEY;
-  const endpoint = isGroq 
-    ? 'https://api.groq.com/openai/v1/audio/transcriptions'
-    : 'https://api.openai.com/v1/audio/transcriptions';
-  const model = isGroq ? 'whisper-large-v3-turbo' : 'whisper-1';
-
-  // Create native FormData and Blob for the multipart upload
-  const formData = new FormData();
-  const fileBlob = new Blob([wavBuffer], { type: 'audio/wav' });
-  formData.append('file', fileBlob, 'speech.wav');
-  formData.append('model', model);
-  formData.append('language', 'id'); // Optimize for Indonesian
-
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: formData
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`${isGroq ? 'Groq' : 'OpenAI'} API returned status ${response.status}: ${errorText}`);
-  }
-
-  const result = await response.json();
-  return result.text;
+  throw new Error(`Semua provider transkripsi gagal. Error terakhir: ${lastError.message}`);
 }
 
 /**
@@ -154,11 +205,11 @@ function startSttListening(connection, guildId, channelId) {
     const speakerName = member.displayName;
     console.log(`[STT] 🎙️ Recording voice stream for user: ${speakerName} (${userId})`);
 
-    // Subscribe to user speaking stream (finishes after 1s of silence)
+    // Subscribe to user speaking stream (finishes after 1.5s of silence to group sentences and reduce rate limits)
     const opusStream = receiver.subscribe(userId, {
       end: {
         behavior: EndBehaviorType.AfterSilence,
-        duration: 1000
+        duration: 1500
       }
     });
 
