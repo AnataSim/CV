@@ -50,6 +50,16 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
   const [integrating, setIntegrating] = useState(false);
   const [integrateResult, setIntegrateResult] = useState<{ success: boolean; message: string } | null>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageInput, setPageInput] = useState("");
+  const USERS_PER_PAGE = 10;
+
+  // Reset page to 1 when changing tabs or search query
+  useEffect(() => {
+    setCurrentPage(1);
+    setPageInput("");
+  }, [activeTab, searchQuery]);
+
   const fetchLeaderboards = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     setError(null);
@@ -113,6 +123,36 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
     user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (user.roleName && user.roleName.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  const totalPages = Math.max(1, Math.ceil(filteredList.length / USERS_PER_PAGE));
+  const pagedList = filteredList.slice(
+    (currentPage - 1) * USERS_PER_PAGE,
+    currentPage * USERS_PER_PAGE
+  );
+
+  const goToPage = (p: number) => {
+    const clamped = Math.max(1, Math.min(totalPages, p));
+    setCurrentPage(clamped);
+    setPageInput("");
+  };
+
+  const getPageNumbers = (): (number | "...")[] => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages: (number | "...")[] = [];
+    const addRange = (from: number, to: number) => {
+      for (let i = from; i <= to; i++) pages.push(i);
+    };
+    if (currentPage <= 4) {
+      addRange(1, 5); pages.push("..."); pages.push(totalPages);
+    } else if (currentPage >= totalPages - 3) {
+      pages.push(1); pages.push("..."); addRange(totalPages - 4, totalPages);
+    } else {
+      pages.push(1); pages.push("...");
+      addRange(currentPage - 1, currentPage + 1);
+      pages.push("..."); pages.push(totalPages);
+    }
+    return pages;
+  };
 
   return (
     <div className="flex flex-col gap-6 w-full text-left">
@@ -249,16 +289,105 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
           {searchQuery ? `Tidak ada jawara yang cocok dengan "${searchQuery}"` : "Klasemen kosong atau belum tersinkronisasi."}
         </div>
       ) : (
-        <div className="flex flex-col gap-2.5">
-          {filteredList.map((user) => (
-            <LeaderboardRow
-              key={user.id}
-              user={user}
-              activeTab={activeTab}
-              expandedUser={expandedUser}
-              setExpandedUser={setExpandedUser}
-            />
-          ))}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2.5">
+            {pagedList.map((user) => (
+              <LeaderboardRow
+                key={user.id}
+                user={user}
+                activeTab={activeTab}
+                expandedUser={expandedUser}
+                setExpandedUser={setExpandedUser}
+              />
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2 px-1 py-3 border-t border-neutral-900/60">
+              {/* Pagination buttons */}
+              <div className="flex items-center gap-1">
+                {/* Prev */}
+                <button
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="h-8 w-8 rounded-lg border border-neutral-900 flex items-center justify-center text-xs font-bold text-neutral-500 hover:text-white hover:border-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  ‹
+                </button>
+
+                {getPageNumbers().map((pg, idx) =>
+                  pg === "..." ? (
+                    <span key={`ellipsis-${idx}`} className="h-8 px-1 flex items-center justify-center text-neutral-600 text-xs select-none font-mono">
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={pg}
+                      onClick={() => goToPage(pg as number)}
+                      className="h-8 min-w-[2rem] px-2 rounded-lg border text-xs font-black transition-all cursor-pointer"
+                      style={{
+                        background:   currentPage === pg ? "rgba(229, 26, 45, 0.1)" : "#0c0708",
+                        borderColor:  currentPage === pg ? "rgba(229, 26, 45, 0.4)" : "#221114",
+                        color:        currentPage === pg ? "#e51a2d" : "#776669",
+                        boxShadow:    currentPage === pg ? "0 0 12px rgba(229, 26, 45, 0.15)" : "none",
+                      }}
+                    >
+                      {pg}
+                    </button>
+                  )
+                )}
+
+                {/* Next */}
+                <button
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="h-8 w-8 rounded-lg border border-neutral-900 flex items-center justify-center text-xs font-bold text-neutral-500 hover:text-white hover:border-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  ›
+                </button>
+              </div>
+
+              {/* Page info + input row */}
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                <span className="text-[9px] text-neutral-600 font-mono uppercase tracking-widest">
+                  Halaman {currentPage} / {totalPages} &nbsp;·&nbsp; {filteredList.length} jawara
+                </span>
+                <div className="flex items-center gap-1.5 font-sans">
+                  <span className="text-[9px] text-neutral-600 font-mono uppercase">Ke halaman:</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={totalPages}
+                    value={pageInput}
+                    onChange={e => setPageInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") {
+                        const n = parseInt(pageInput);
+                        if (!isNaN(n)) goToPage(n);
+                      }
+                    }}
+                    placeholder="#"
+                    className="w-14 text-center bg-neutral-950 border border-neutral-900 focus:border-theater-red-light/40 focus:outline-none text-xs text-white rounded-lg py-1 px-2 font-mono"
+                  />
+                  <button
+                    onClick={() => { const n = parseInt(pageInput); if (!isNaN(n)) goToPage(n); }}
+                    className="text-[10px] font-bold px-2.5 py-1 rounded-lg border border-theater-red/30 text-theater-red-light hover:text-white hover:bg-theater-red/20 cursor-pointer transition-all uppercase tracking-wide"
+                    style={{ background: "rgba(229, 26, 45, 0.05)" }}
+                  >
+                    Go
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Footer count */}
+          {!loading && filteredList.length > 0 && totalPages <= 1 && (
+            <div className="text-center text-[9px] text-neutral-700 font-mono uppercase tracking-widest pb-2">
+              {filteredList.length} jawara terdaftar
+            </div>
+          )}
         </div>
       )}
     </div>
