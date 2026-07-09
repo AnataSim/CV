@@ -265,6 +265,18 @@ function startSttListening(connection, guildId, channelId) {
 
           debugLog(channelId, `✨ Hasil transkripsi: "${trimmed}"`);
 
+          // Save to Firestore under the collection 'live_subtitles' with docId as guildId
+          if (state.db) {
+            const { doc, setDoc } = require('firebase/firestore');
+            setDoc(doc(state.db, "live_subtitles", guildId), {
+              speaker: speakerName,
+              text: trimmed,
+              timestamp: Date.now()
+            }).catch(dbErr => {
+              console.error("❌ [STT] Gagal menyimpan transkrip ke Firestore:", dbErr.message);
+            });
+          }
+
           // Send transcript to the voice channel text chat
           const voiceChannel = state.client?.channels.cache.get(channelId);
           if (voiceChannel && voiceChannel.isTextBased()) {

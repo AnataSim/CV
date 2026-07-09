@@ -62,6 +62,7 @@ import {
 // Import modular subcomponents
 import LoginModal from "../components/LoginModal";
 import ConfigModal from "../components/ConfigModal";
+import LiveSubtitles from "../components/LiveSubtitles";
 import ControlBooth from "../components/ControlBooth";
 import BotStorage from "../components/BotStorage";
 import LeaderboardBoard from "../components/LeaderboardBoard";
@@ -2068,6 +2069,8 @@ export default function CrunchyVerseStage() {
           performUnifiedSync(false);
         }} 
       />
+
+      <LiveSubtitles guildId="1403255548698300416" />
 
       {/* FRAME 2: THE DASHBOARD & STATS STAGE */}
       <section 
