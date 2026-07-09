@@ -26,7 +26,7 @@ const app = express();
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-cv-client-token', 'x-cv-encoded']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-cv-client-token', 'x-cv-encoded', 'x-cv-timestamp', 'x-cv-client']
 }));
 
 app.use(express.json({ limit: '10mb' }));
