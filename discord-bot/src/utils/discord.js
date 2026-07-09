@@ -505,7 +505,10 @@ function initializeBot(token) {
               })
               .catch(err => {
                 console.error("❌ [STT] Gagal menunggu status Ready saat mengaktifkan STT:", err.message);
-                loadingMsg.edit(`❌ **Gagal mengaktifkan STT:** Koneksi suara re-negotiation timed out.`);
+                const { startSttListening, stopSttListening } = require('./voice-stt');
+                stopSttListening(newConn, guildId); // Clear old listeners first
+                startSttListening(newConn, guildId, channelId);
+                loadingMsg.edit(`🎙️ **Speech-to-Text diaktifkan (Fallback)!** Bot bergabung ke voice channel <#${channelId}> dan mencoba mendengarkan.`);
               });
             return;
           }

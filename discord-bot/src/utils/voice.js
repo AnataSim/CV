@@ -79,6 +79,16 @@ async function connectToVoiceChannel(guildId, channelId) {
     state.connectionState.channelId = channelId;
     state.connectionState.status = 'connected_voice';
     db.saveVoiceAfkConfig({ guildId, channelId, isConnected: true });
+
+    // Start listening for STT if enabled (Fallback)
+    if (state.connectionState.sttEnabled) {
+      try {
+        const { startSttListening } = require('./voice-stt');
+        startSttListening(voiceConnection, guildId, channelId);
+      } catch (sttErr) {
+        console.error('❌ [Voice Fallback] Gagal memulai STT listening:', sttErr.message);
+      }
+    }
   }
   return state.connectionState;
 }
