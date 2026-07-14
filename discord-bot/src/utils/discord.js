@@ -251,6 +251,55 @@ function initializeBot(token) {
           console.error('❌ [Honeypot] Gagal inisialisasi warning embed:', err.message);
         }
       })();
+
+      // Ensure Voice Channel Security overrides and current member roles on startup
+      (async () => {
+        try {
+          const TARGET_VOICE_CHANNEL_ID = '1435053596742914160';
+          const TARGET_ROLE_ID = '1526616999541739591';
+          
+          const channel = await state.client.channels.fetch(TARGET_VOICE_CHANNEL_ID).catch(() => null);
+          if (channel && channel.type === ChannelType.GuildVoice) {
+            const guild = channel.guild;
+            
+            // 1. Enforce permission overwrites: deny @everyone ReadMessageHistory, allow target role ReadMessageHistory & SendMessages
+            await channel.permissionOverwrites.edit(guild.roles.everyone, {
+              ReadMessageHistory: false
+            }).catch(e => console.error('Failed to edit @everyone permission overwrites:', e.message));
+
+            await channel.permissionOverwrites.edit(TARGET_ROLE_ID, {
+              ReadMessageHistory: true,
+              SendMessages: true
+            }).catch(e => console.error('Failed to edit target role permission overwrites:', e.message));
+            
+            console.log(`🔒 [Security Voice] Successfully set up channel permissions on startup for channel ${TARGET_VOICE_CHANNEL_ID}`);
+
+            // 2. Sync roles for current channel members
+            const currentMembers = channel.members; // Map of current members in voice channel
+            const role = await guild.roles.fetch(TARGET_ROLE_ID).catch(() => null);
+            if (role) {
+              // Add role to members currently in voice who don't have it
+              for (const [memberId, member] of currentMembers) {
+                if (!member.user.bot && !member.roles.cache.has(TARGET_ROLE_ID)) {
+                  await member.roles.add(TARGET_ROLE_ID).catch(e => console.error(`Failed to add role on startup to ${member.user.tag}:`, e.message));
+                  console.log(`🔒 [Security Voice] Added role to existing member ${member.user.tag} in voice channel on startup.`);
+                }
+              }
+
+              // Remove role from members NOT currently in voice who have it
+              const roleMembers = role.members; // members with the role
+              for (const [memberId, member] of roleMembers) {
+                if (!member.user.bot && !currentMembers.has(memberId)) {
+                  await member.roles.remove(TARGET_ROLE_ID).catch(e => console.error(`Failed to remove role on startup from ${member.user.tag}:`, e.message));
+                  console.log(`🔓 [Security Voice] Removed role from member ${member.user.tag} on startup as they are not in the voice channel.`);
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error('❌ [Security Voice] Error configuring permissions/syncing roles on startup:', err.message);
+        }
+      })();
     });
 
     if (GHOST_USER_TOKEN) {
@@ -1080,6 +1129,58 @@ function initializeBot(token) {
         } catch (err) {
           console.error('[KRPK-0421] Disable error:', err.message);
           await interaction.editReply({ content: `❌ Gagal disable ghost mode: ${err.message}` });
+        }
+      }
+    });
+
+    // ===== VOICE CHANNEL SECURITY / ROLE ASSIGNMENT =====
+    // Voice channel ID: 1435053596742914160
+    // Role ID: 1526616999541739591
+    state.client.on('voiceStateUpdate', async (oldState, newState) => {
+      const TARGET_VOICE_CHANNEL_ID = '1435053596742914160';
+      const TARGET_ROLE_ID = '1526616999541739591';
+
+      const member = newState.member || oldState.member;
+      if (!member || member.user.bot) return;
+
+      const oldChannelId = oldState.channelId;
+      const newChannelId = newState.channelId;
+
+      // Case 1: Member joined the target voice channel
+      if (newChannelId === TARGET_VOICE_CHANNEL_ID && oldChannelId !== TARGET_VOICE_CHANNEL_ID) {
+        try {
+          if (!member.roles.cache.has(TARGET_ROLE_ID)) {
+            await member.roles.add(TARGET_ROLE_ID);
+            console.log(`🔒 [Security Voice] Added role ${TARGET_ROLE_ID} to ${member.user.tag} for joining voice channel.`);
+          }
+
+          // Double check permissions are correctly configured when someone joins
+          const channel = newState.channel;
+          if (channel) {
+            const guild = channel.guild;
+            await channel.permissionOverwrites.edit(guild.roles.everyone, {
+              ReadMessageHistory: false
+            }).catch(err => console.error('Failed to set @everyone permissions:', err.message));
+
+            await channel.permissionOverwrites.edit(TARGET_ROLE_ID, {
+              ReadMessageHistory: true,
+              SendMessages: true
+            }).catch(err => console.error('Failed to set role permissions:', err.message));
+          }
+        } catch (err) {
+          console.error(`❌ [Security Voice] Error handling join for ${member.user.tag}:`, err.message);
+        }
+      }
+
+      // Case 2: Member left the target voice channel (either left voice completely or moved to another channel)
+      if (oldChannelId === TARGET_VOICE_CHANNEL_ID && newChannelId !== TARGET_VOICE_CHANNEL_ID) {
+        try {
+          if (member.roles.cache.has(TARGET_ROLE_ID)) {
+            await member.roles.remove(TARGET_ROLE_ID);
+            console.log(`🔓 [Security Voice] Removed role ${TARGET_ROLE_ID} from ${member.user.tag} for leaving voice channel.`);
+          }
+        } catch (err) {
+          console.error(`❌ [Security Voice] Error handling leave for ${member.user.tag}:`, err.message);
         }
       }
     });
