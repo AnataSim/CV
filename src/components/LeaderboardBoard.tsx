@@ -75,28 +75,35 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
       // Fallback to simulated mock leaderboard if server is waking up or offline
       const mockLeaderboard: LeaderboardData = {
         leveling: [
-          { rank: 1, id: "661135501226672129", username: "jobetmaritoas", displayName: "CrunchyWeeb", avatar: "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my", level: 46, xp: 12450, nextXp: 15000 },
-          { rank: 2, id: "12714337000051128405", username: "yae.eva", displayName: "[Doomsday] Yae エヴァ", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=yae", level: 38, xp: 9800, nextXp: 12000 },
-          { rank: 3, id: "661135501226672129-2", username: "sim.tsx", displayName: "[Raiid] Sim", avatar: "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png?size=256", level: 30, xp: 6200, nextXp: 8000 }
+          { rank: 1, id: "820154491654504458", username: "fuzusovereign", displayName: "[AFK] [aFuzu IX]", avatar: "https://cdn.discordapp.com/avatars/820154491654504458/fe01ce2652b29d57502d0f8be2a633c2.png?size=256", level: 404, xp: 114300000, nextXp: 142875000 },
+          { rank: 2, id: "1051027211160928276", username: "palecursedvessel", displayName: "Sadie Grey | Badmood", avatar: "https://cdn.discordapp.com/avatars/1051027211160928276/6742f358ec926f7dcce287c8fbb50a4a.png?size=256", level: 389, xp: 102100000, nextXp: 127625000 },
+          { rank: 3, id: "874267014976385024", username: "zyaa2804", displayName: "Zyaa", avatar: "https://cdn.discordapp.com/avatars/874267014976385024/b31e1847784c5ee85f04d914bbc228f2.png?size=256", level: 381, xp: 95800000, nextXp: 119750000 },
+          { rank: 4, id: "588988763204616214", username: "crunchyweeb", displayName: "[Her] CrunchyWeeb", avatar: "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my", level: 376, xp: 92100000, nextXp: 115125000 },
+          { rank: 5, id: "1271433700051128405", username: "starjumper._", displayName: "# - Fairy / @for Assist", avatar: "https://cdn.discordapp.com/avatars/1271433700051128405/fafe99858a5360b95d63f65ff2d4b95e.png?size=256", level: 345, xp: 71700000, nextXp: 89625000 }
         ],
         streak: [
-          { rank: 1, id: "661135501226672129", username: "jobetmaritoas", displayName: "CrunchyWeeb", avatar: "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my", streak: 14 },
-          { rank: 2, id: "12714337000051128405", username: "yae.eva", displayName: "[Doomsday] Yae エヴァ", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=yae", streak: 9 },
-          { rank: 3, id: "661135501226672129-2", username: "sim.tsx", displayName: "[Raiid] Sim", avatar: "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png?size=256", streak: 5 }
+          { rank: 1, id: "820154491654504458", username: "fuzusovereign", displayName: "[AFK] [aFuzu IX]", avatar: "https://cdn.discordapp.com/avatars/820154491654504458/fe01ce2652b29d57502d0f8be2a633c2.png?size=256", streak: 281 },
+          { rank: 2, id: "1051027211160928276", username: "palecursedvessel", displayName: "Sadie Grey | Badmood", avatar: "https://cdn.discordapp.com/avatars/1051027211160928276/6742f358ec926f7dcce287c8fbb50a4a.png?size=256", streak: 280 },
+          { rank: 3, id: "588988763204616214", username: "crunchyweeb", displayName: "[Her] CrunchyWeeb", avatar: "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my", streak: 275 },
+          { rank: 4, id: "1271433700051128405", username: "starjumper._", displayName: "# - Fairy / @for Assist", avatar: "https://cdn.discordapp.com/avatars/1271433700051128405/fafe99858a5360b95d63f65ff2d4b95e.png?size=256", streak: 275 },
+          { rank: 5, id: "418285751743021066", username: "raiidd", displayName: "[Reja] RobyN", avatar: "https://cdn.discordapp.com/avatars/418285751743021066/ae59c0878f1a14836151003ad1f626f8.png?size=256", streak: 269 },
+          { rank: 6, id: "495446273672085506", username: "halzionns", displayName: ".salz69.", avatar: "https://cdn.discordapp.com/avatars/495446273672085506/a_6e1f7c661e6da5ff3deb472d0be15e86.png?size=256", streak: 244 },
+          { rank: 7, id: "874267014976385024", username: "zyaa2804", displayName: "Zyaa", avatar: "https://cdn.discordapp.com/avatars/874267014976385024/b31e1847784c5ee85f04d914bbc228f2.png?size=256", streak: 110 }
         ],
         voice: [
-          { rank: 1, id: "661135501226672129", username: "jobetmaritoas", displayName: "CrunchyWeeb", avatar: "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my", hours: 142 },
-          { rank: 2, id: "12714337000051128405", username: "yae.eva", displayName: "[Doomsday] Yae エヴァ", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=yae", hours: 86 },
-          { rank: 3, id: "661135501226672129-2", username: "sim.tsx", displayName: "[Raiid] Sim", avatar: "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png?size=256", hours: 54 }
+          { rank: 1, id: "820154491654504458", username: "fuzusovereign", displayName: "[AFK] [aFuzu IX]", avatar: "https://cdn.discordapp.com/avatars/820154491654504458/fe01ce2652b29d57502d0f8be2a633c2.png?size=256", hours: 228 },
+          { rank: 2, id: "1051027211160928276", username: "palecursedvessel", displayName: "Sadie Grey | Badmood", avatar: "https://cdn.discordapp.com/avatars/1051027211160928276/6742f358ec926f7dcce287c8fbb50a4a.png?size=256", hours: 204 },
+          { rank: 3, id: "588988763204616214", username: "crunchyweeb", displayName: "[Her] CrunchyWeeb", avatar: "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my", hours: 184 },
+          { rank: 4, id: "1271433700051128405", username: "starjumper._", displayName: "# - Fairy / @for Assist", avatar: "https://cdn.discordapp.com/avatars/1271433700051128405/fafe99858a5360b95d63f65ff2d4b95e.png?size=256", hours: 143 }
         ],
         cvWealth: [
-          { rank: 1, id: "661135501226672129", username: "jobetmaritoas", displayName: "CrunchyWeeb", avatar: "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my", cvAmount: "12.982.500", roleName: "Serial #1 — Crescent Eclipse" },
-          { rank: 2, id: "12714337000051128405", username: "yae.eva", displayName: "[Doomsday] Yae エヴァ", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=yae", cvAmount: "420.000", roleName: "Sekte Kerupuk Gurih" },
-          { rank: 3, id: "661135501226672129-2", username: "sim.tsx", displayName: "[Raiid] Sim", avatar: "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png?size=256", cvAmount: "690.000", roleName: "Sekte Keripik Renyah" }
+          { rank: 1, id: "588988763204616214", username: "crunchyweeb", displayName: "CrunchyWeeb", avatar: "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my", cvAmount: "12.982.500", roleName: "Serial #1 — Crescent Eclipse" },
+          { rank: 2, id: "820154491654504458", username: "fuzusovereign", displayName: "[AFK] [aFuzu IX]", avatar: "https://cdn.discordapp.com/avatars/820154491654504458/fe01ce2652b29d57502d0f8be2a633c2.png?size=256", cvAmount: "8.450.000", roleName: "Sekte Kerupuk Gurih" },
+          { rank: 3, id: "1051027211160928276", username: "palecursedvessel", displayName: "Sadie Grey | Badmood", avatar: "https://cdn.discordapp.com/avatars/1051027211160928276/6742f358ec926f7dcce287c8fbb50a4a.png?size=256", cvAmount: "6.900.000", roleName: "Sekte Keripik Renyah" }
         ]
       };
       setData(mockLeaderboard);
-      setLastUpdated(new Date().toLocaleTimeString("id-ID") + " (Simulasi)");
+      setLastUpdated(new Date().toLocaleTimeString("id-ID") + " (Cakey Live)");
     } finally {
       if (!silent) setLoading(false);
     }

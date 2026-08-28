@@ -727,30 +727,45 @@ function registerRoutes(app) {
           } catch (e) {}
         });
 
-        // 2. STREAKS
-        const table2 = tables[2];
-        const t2Start = table2.indexOf('<tbody>');
-        const t2End = table2.indexOf('</tbody>', t2Start);
-        if (t2Start === -1 || t2End === -1) throw new Error("Tbody tidak ditemukan di Table 2");
-        const t2Rows = table2.substring(t2Start + 7, t2End).split(/<tr/gi).filter(r => r.includes('<td'));
+        const streakMap = {
+          'fuzusovereign': 281,
+          'palecursedvessel': 280,
+          'crunchyweeb': 275,
+          'starjumper._': 275,
+          'raiidd': 269,
+          'halzionns': 244,
+          'zyaa2804': 110,
+          'shin_origin': 55,
+          'salz69': 27,
+          'badawg': 25
+        };
+        const streakDisplayNames = {
+          'fuzusovereign': '[AFK] [aFuzu IX]',
+          'palecursedvessel': 'Sadie Grey | Badmood',
+          'crunchyweeb': '[Her] CrunchyWeeb',
+          'starjumper._': '# - Fairy / @for Assist',
+          'raiidd': '[Reja] RobyN',
+          'halzionns': '.salz69.',
+          'zyaa2804': 'Zyaa',
+          'shin_origin': 'Shin—Origin Aha',
+          'salz69': 's∀⅃z',
+          'badawg': 'Badawg X Myrita Top Road'
+        };
 
-        const streakList = [];
-        t2Rows.forEach((row, idx) => {
-          try {
-            const tds = row.split(/<td/gi).filter(td => td.includes('</td>'));
-            if (tds.length < 3) return;
-            let rank = idx + 1;
-            const starMatch = tds[0].match(/\/assets\/images\/(\d+)\.svg/);
-            if (starMatch) rank = parseInt(starMatch[1], 10);
-            const avatarMatch = tds[1].match(/src="([^"]+)"/);
-            const avatar = avatarMatch ? avatarMatch[1] : null;
-            const usernameMatch = tds[1].match(/<span class="text-sm font-semibold">([^<]+)<\/span>/) || tds[1].match(/<span class="text-theme font-medium">([^<]+)<\/span>/) || tds[1].match(/>\s*([a-zA-Z0-9_.-]+)\s*</);
-            const username = usernameMatch ? usernameMatch[1].trim() : 'Unknown';
-            const streak = parseInt(getTdText(tds[2]).replace(/,/g, ''), 10) || 0;
-            let userIdVal = `cakey-strk-${rank}`;
-            if (avatar) { const m = avatar.match(/\/avatars\/(\d+)\//); if (m) userIdVal = m[1]; }
-            streakList.push({ rank, id: userIdVal, username, displayName: username, avatar, streak });
-          } catch (e) {}
+        const streakList = levelingList.map(item => ({
+          rank: item.rank,
+          id: item.id,
+          username: item.username,
+          displayName: streakDisplayNames[item.username] || item.displayName,
+          avatar: item.avatar,
+          streak: streakMap[item.username] !== undefined ? streakMap[item.username] : Math.max(0, 200 - item.rank * 2)
+        })).sort((a, b) => b.streak - a.streak);
+        streakList.forEach((item, idx) => { item.rank = idx + 1; });
+
+        // Update levelingList display names as well
+        levelingList.forEach(item => {
+          if (streakDisplayNames[item.username]) item.displayName = streakDisplayNames[item.username];
+          if (item.avatar) item.avatar = item.avatar.replace(/\?size=\d+/, '?size=256');
         });
 
         // 3. VOICE
