@@ -54,10 +54,20 @@ export default function CardHand({
   const count = visibleQuests.length;
   const isAnyActive = activeQuestId !== null;
 
-  // Visual 3D Card Deck Stack (Anchored at Top-Left Corner, PC Optimized)
+  // Track previous card IDs to ONLY animate newly added cards!
+  const prevIdsRef = React.useRef<Set<string>>(new Set());
+  React.useEffect(() => {
+    // Update ref after render cycle
+    const timer = setTimeout(() => {
+      prevIdsRef.current = new Set(dealtQuests.map(q => q.id));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [dealtQuests]);
+
+  // Visual 3D Card Deck Stack (Centered Horizontally at Top of Stage)
   const renderDeck = () => (
     <div 
-      className={`absolute left-4 md:left-6 lg:left-8 top-16 md:top-20 z-20 flex flex-col items-center gap-2 transition-all duration-300 ${
+      className={`absolute left-1/2 -translate-x-1/2 top-20 md:top-24 z-20 flex flex-col items-center gap-2 transition-all duration-300 ${
         isAnyActive ? "opacity-20 scale-90 pointer-events-none" : "opacity-100 scale-100"
       }`}
     >
@@ -160,8 +170,8 @@ export default function CardHand({
                   const isActive = activeQuestId === quest.id;
                   const isAnyActive = activeQuestId !== null;
 
-                  // Check if card is newly drawn
-                  const isNewCard = !dealtQuests.some(oldQ => oldQ.id === quest.id);
+                  // Check if card is newly drawn (only animate newly added cards)
+                  const isNewCard = prevIdsRef.current.size > 0 && !prevIdsRef.current.has(quest.id);
                   const delay = "0s";
 
                   // Fanning calculations

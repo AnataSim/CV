@@ -615,6 +615,15 @@ export default function QuestGame({
       const isFirstTime = completedCount === 0;
 
       const retainedCards = dealt ? dealtQuests.filter(q => cardStatuses[q.id] === "active" || cardStatuses[q.id] === "pending") : [];
+
+      // 1. Hand Limit Check (Cannot draw if already 5 active cards in hand)
+      if (dealt && retainedCards.length >= 5) {
+        setUploadStatus("⚠️ Kartu di tangan Anda sudah penuh (5/5)! Selesaikan minimal 1 tantangan terlebih dahulu.");
+        setTimeout(() => setUploadStatus(null), 3000);
+        setIsDealing(false);
+        return;
+      }
+
       const selected: Quest[] = [...retainedCards];
       const selectedIds = new Set<string>(retainedCards.map(c => c.id));
       const pool = quests.filter(q => !completedQuestIds.has(q.id) && !selectedIds.has(q.id));
@@ -667,6 +676,10 @@ export default function QuestGame({
 
       const randomId = Math.random().toString(36).substring(2, 10);
       const finalSelected = selected.map((q, idx) => {
+        // Preserve ID for retained cards so existing cards don't re-animate
+        if (q.id && retainedCards.some(r => r.id === q.id)) {
+          return q;
+        }
         if (q.id && q.id.startsWith("quest-")) {
           return q;
         }
@@ -693,7 +706,9 @@ export default function QuestGame({
       setDealtQuests(finalSelected);
       const flips: Record<string, boolean> = {};
       finalSelected.forEach(q => {
-        flips[q.id] = false; // Always start 100% hidden (face down) initially!
+        // Retain existing flip status for retained cards, new cards start face down
+        const isRetained = retainedCards.some(r => r.id === q.id);
+        flips[q.id] = isRetained ? (cardFlipped[q.id] || false) : false;
       });
       setCardFlipped(flips);
       if (currentUser?.uid) {
