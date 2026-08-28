@@ -134,7 +134,14 @@ export default function LeaderboardRow({ user, activeTab, expandedUser, setExpan
                 : 'border-neutral-800'
             }`}>
               {user.avatar ? (
-                <img src={user.avatar} alt="Avatar" className="h-full w-full object-cover" />
+                <img
+                  src={user.avatar}
+                  alt="Avatar"
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user.username || "anomaly")}`;
+                  }}
+                />
               ) : (
                 <User size={14} className="text-neutral-600" />
               )}
