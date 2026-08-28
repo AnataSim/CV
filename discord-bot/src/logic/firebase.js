@@ -17,6 +17,10 @@ function initializeFirebase() {
       const firebaseApp = initializeApp(firebaseConfig);
       state.db = getFirestore(firebaseApp);
       console.log("🔥 [Firebase] Firebase Admin / SDK diinisialisasi.");
+      
+      // Auto sync local JSON database (quests, decks, users) to Cloud Firestore on boot
+      const { syncLocalToFirestore } = require('../utils/sync-firestore');
+      syncLocalToFirestore().catch(e => console.warn("⚠️ Firestore auto-sync warning:", e.message));
     } catch (err) {
       console.error("❌ [Firebase] Gagal inisialisasi SDK Firebase:", err.message);
     }
