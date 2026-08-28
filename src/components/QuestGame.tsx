@@ -614,7 +614,11 @@ export default function QuestGame({
       const completedCount = completedQuestIds.size;
       const isFirstTime = completedCount === 0;
 
-      const retainedCards = dealt ? dealtQuests.filter(q => cardStatuses[q.id] === "active" || cardStatuses[q.id] === "pending") : [];
+      // Retain all cards in hand that are NOT completed (active/pending)
+      const retainedCards = dealt ? dealtQuests.filter(q => {
+        const st = cardStatuses[q.id] || "active";
+        return st !== "Completed";
+      }) : [];
 
       // 1. Hand Limit Check (Cannot draw if already 5 active cards in hand)
       if (dealt && retainedCards.length >= 5) {
