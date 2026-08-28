@@ -25,34 +25,32 @@ export function useDiscordLogin({ onSuccess, onClose }: UseDiscordLoginProps) {
         try {
           const discordName = global_name || username;
           
-          // Run the volunteer status check in parallel with signInAnonymously if firebase is configured
+          // Fast timeout wrapper for volunteer check to ensure instant login speed (max 800ms)
           const volunteerablePromise = (async () => {
             let isVol = false;
-            if (isFirebaseConfigured && db) {
-              try {
-                const volDoc = await getDoc(doc(db, "volunteerables", id));
-                if (volDoc.exists()) {
-                  isVol = true;
+            try {
+              const fetchVol = async () => {
+                if (isFirebaseConfigured && db) {
+                  try {
+                    const volDoc = await getDoc(doc(db, "volunteerables", id));
+                    if (volDoc.exists()) return true;
+                  } catch (e) {}
                 }
-              } catch (e) {
-                console.warn("Gagal fetch volunteerable status in login popup:", e);
-              }
-            }
-
-            // Fallback: Check local Bot API
-            if (!isVol) {
-              try {
-                const backendUrl = localStorage.getItem("crunchy_backend_url") || process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:3001";
-                const res = await fetch(`${backendUrl}/api/volunteerables/${id}`);
-                if (res.ok) {
-                  const data = await res.json();
-                  if (data && data.isVolunteerable) {
-                    isVol = true;
+                try {
+                  const backendUrl = localStorage.getItem("crunchy_backend_url") || process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:3001";
+                  const res = await fetch(`${backendUrl}/api/volunteerables/${id}`);
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.isVolunteerable) return true;
                   }
-                }
-              } catch (e) {
-                console.warn("Gagal fetch volunteerable dari backend API:", e);
-              }
+                } catch (e) {}
+                return false;
+              };
+
+              const timeoutPromise = new Promise<boolean>(r => setTimeout(() => r(false), 800));
+              isVol = await Promise.race([fetchVol(), timeoutPromise]);
+            } catch (e) {
+              isVol = false;
             }
             return isVol;
           })();

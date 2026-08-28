@@ -1334,14 +1334,47 @@ function registerRoutes(app) {
       };
       db.saveLinkedAccounts(accounts);
 
-      await updateConnectionMetadata(userData.id, userData.username, tokenData.access_token);
+      // Background async update for maximum speed
+      updateConnectionMetadata(userData.id, userData.username, tokenData.access_token).catch(e => {
+        console.warn("⚠️ [OAuth Background] Connection metadata update notice:", e.message);
+      });
+
+      const profilePayload = {
+        id: userData.id,
+        username: userData.username,
+        global_name: userData.global_name || userData.username,
+        avatar: userData.avatar ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png` : null
+      };
 
       res.send(`
+        <!DOCTYPE html>
         <html>
-          <body style="font-family: sans-serif; text-align: center; padding-top: 100px; background-color: #1a1a2e; color: #fff;">
-            <h1 style="color: #43b581;">🎉 Otorisasi Berhasil!</h1>
-            <p>Stats Widget teater Anda telah berhasil ditautkan dengan akun Discord <b>@${userData.username}</b>.</p>
-            <p>Anda bisa menutup tab browser ini sekarang dan kembali ke teater Discord CrunchyVerse.</p>
+          <head>
+            <meta charset="utf-8">
+            <title>Otorisasi Discord Berhasil</title>
+          </head>
+          <body style="background:#0a0a0a; color:#fff; font-family:sans-serif; text-align:center; padding-top:60px;">
+            <div style="max-width: 420px; margin: 0 auto; background: #121212; border: 1.5px solid #d4af37; padding: 30px; border-radius: 24px; box-shadow: 0 15px 40px rgba(0,0,0,0.8);">
+              <h2 style="color:#57F287; margin-bottom: 8px; font-size: 22px;">🎉 Otorisasi Berhasil!</h2>
+              <p style="color: #ccc; font-size: 13px; margin-bottom: 15px;">Akun Discord <b>@${userData.username}</b> telah terhubung dengan Teater CrunchyVerse.</p>
+              <p style="color:#888; font-size:11px;">Menyambungkan ke Loket Teater dan menutup jendela otomatis...</p>
+            </div>
+            <script>
+              (function() {
+                var payload = {
+                  type: "DISCORD_LOGIN_SUCCESS",
+                  profile: ${JSON.stringify(profilePayload)}
+                };
+                if (window.opener) {
+                  try {
+                    window.opener.postMessage(payload, "*");
+                  } catch(e) { console.error("postMessage failed:", e); }
+                }
+                setTimeout(function() {
+                  try { window.close(); } catch(e) {}
+                }, 600);
+              })();
+            </script>
           </body>
         </html>
       `);

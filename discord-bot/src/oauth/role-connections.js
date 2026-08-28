@@ -428,21 +428,29 @@ router.get('/api/oauth/callback', async (req, res) => {
     };
     saveLinkedAccounts(accounts);
 
-    await updateConnectionMetadata(profile.id, profile.username, tokens.access_token);
+    // Run connection metadata & role sync in background for instant login speed
+    updateConnectionMetadata(profile.id, profile.username, tokens.access_token).catch(e => {
+      console.warn("⚠️ [OAuth Background] Connection metadata update notice:", e.message);
+    });
 
     if (ctx.client && ctx.isDiscordReady()) {
-      try {
-        const guild = await ctx.client.guilds.fetch(ctx.GUILD_ID);
-        const member = await guild.members.fetch(profile.id).catch(() => null);
-        if (member) {
-          await ctx.updatePlayerProgressRoles(member, `sim-discord-${profile.id}`);
+      ctx.client.guilds.fetch(ctx.GUILD_ID).then(guild => {
+        return guild.members.fetch(profile.id).catch(() => null);
+      }).then(member => {
+        if (member && ctx.updatePlayerProgressRoles) {
+          ctx.updatePlayerProgressRoles(member, `sim-discord-${profile.id}`);
         }
-      } catch (err) {
-        console.warn("⚠️ Failed to update progress roles immediately after link:", err.message);
-      }
+      }).catch(e => console.warn("⚠️ [OAuth Background] Progress role notice:", e.message));
     }
 
-    const dataToCache = { username: profile.username, timestamp: Date.now() };
+    const profilePayload = {
+      id: profile.id,
+      username: profile.username,
+      global_name: profile.global_name || profile.username,
+      avatar: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : null
+    };
+
+    const dataToCache = { username: profile.username, profile: profilePayload, timestamp: Date.now() };
     EXCHANGED_CODES.set(code, dataToCache);
     return dataToCache;
   })();
@@ -451,13 +459,36 @@ router.get('/api/oauth/callback', async (req, res) => {
 
   try {
     const result = await exchangePromise;
+    const profileJson = JSON.stringify(result.profile || {});
     res.send(`
+      <!DOCTYPE html>
       <html>
-        <body style="background:#0a0a0a; color:#fff; font-family:sans-serif; text-align:center; padding-top:50px;">
-          <h2 style="color:#57F287;">Koneksi Berhasil!</h2>
-          <p>Akun Discord @${result.username} telah terhubung dengan kasta stage teater.</p>
-          <p style="color:gray; font-size:12px;">Anda dapat menutup jendela ini dan kembali ke teater.</p>
-          <script>setTimeout(() => window.close(), 3000);</script>
+        <head>
+          <meta charset="utf-8">
+          <title>Otorisasi Discord Berhasil</title>
+        </head>
+        <body style="background:#0a0a0a; color:#fff; font-family:sans-serif; text-align:center; padding-top:60px;">
+          <div style="max-width: 420px; margin: 0 auto; background: #121212; border: 1.5px solid #d4af37; padding: 30px; border-radius: 24px; box-shadow: 0 15px 40px rgba(0,0,0,0.8);">
+            <h2 style="color:#57F287; margin-bottom: 8px; font-size: 22px;">🎉 Otorisasi Berhasil!</h2>
+            <p style="color: #ccc; font-size: 13px; margin-bottom: 15px;">Akun Discord <b>@${result.username}</b> telah terhubung dengan Teater CrunchyVerse.</p>
+            <p style="color:#888; font-size:11px;">Menyambungkan ke Loket Teater dan menutup jendela otomatis...</p>
+          </div>
+          <script>
+            (function() {
+              var payload = {
+                type: "DISCORD_LOGIN_SUCCESS",
+                profile: ${profileJson}
+              };
+              if (window.opener) {
+                try {
+                  window.opener.postMessage(payload, "*");
+                } catch(e) { console.error("postMessage failed:", e); }
+              }
+              setTimeout(function() {
+                try { window.close(); } catch(e) {}
+              }, 600);
+            })();
+          </script>
         </body>
       </html>
     `);
