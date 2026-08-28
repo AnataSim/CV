@@ -663,7 +663,7 @@ export default function QuestGame({
       setDealtQuests(finalSelected);
       const flips: Record<string, boolean> = {};
       finalSelected.forEach(q => {
-        flips[q.id] = cardFlipped[q.id] || false;
+        flips[q.id] = false; // Always start 100% hidden (face down) initially!
       });
       setCardFlipped(flips);
       if (currentUser?.uid) {
