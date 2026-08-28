@@ -50,9 +50,17 @@ export default function CardHand({
   isUploading,
   isDealing = false
 }: CardHandProps) {
-  // Visual 3D Card Deck Stack (Positioned on the Left Side of the Stage)
+  const visibleQuests = dealtQuests.filter(q => cardStatuses[q.id] !== "Completed");
+  const count = visibleQuests.length;
+  const isAnyActive = activeQuestId !== null;
+
+  // Visual 3D Card Deck Stack (Anchored at Top-Left Corner, PC Optimized)
   const renderDeck = () => (
-    <div className="absolute left-6 md:left-12 lg:left-20 top-24 md:top-36 z-30 flex flex-col items-center gap-2 transition-all">
+    <div 
+      className={`absolute left-4 md:left-6 lg:left-8 top-16 md:top-20 z-20 flex flex-col items-center gap-2 transition-all duration-300 ${
+        isAnyActive ? "opacity-20 scale-90 pointer-events-none" : "opacity-100 scale-100"
+      }`}
+    >
       <div 
         onClick={handleDealCards}
         className="relative w-28 h-36 md:w-36 md:h-48 cursor-pointer group select-none"
@@ -90,9 +98,6 @@ export default function CardHand({
       </div>
     </div>
   );
-
-  const visibleQuests = dealtQuests.filter(q => cardStatuses[q.id] !== "Completed");
-  const count = visibleQuests.length;
 
   return (
     <>
