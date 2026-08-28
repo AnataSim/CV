@@ -63,8 +63,9 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
   const fetchLeaderboards = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     setError(null);
+    const cleanUrl = (backendUrl || "").replace(/\/+$/, "");
     try {
-      const res = await fetch(`${backendUrl}/api/leaderboard`);
+      const res = await fetch(`${cleanUrl}/api/leaderboard`);
       if (!res.ok) throw new Error("Gagal mengambil data papan peringkat.");
       const json: LeaderboardData = await res.json();
       setData(json);
@@ -88,8 +89,9 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
   const handleIntegrate = useCallback(async () => {
     setIntegrating(true);
     setIntegrateResult(null);
+    const cleanUrl = (backendUrl || "").replace(/\/+$/, "");
     try {
-      const res = await signedFetch(`${backendUrl}/api/rank-roles/update`, { method: 'POST', sensitive: true });
+      const res = await signedFetch(`${cleanUrl}/api/rank-roles/update`, { method: 'POST', sensitive: true });
       const json = await res.json();
       setIntegrateResult({ success: json.success, message: json.message });
       // Also refresh leaderboard after integration

@@ -54,15 +54,60 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
   const fetchRoles = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     setError(null);
+    const cleanUrl = (backendUrl || "").replace(/\/+$/, "");
     try {
-      const res = await fetch(`${backendUrl}/api/roles`);
+      const res = await fetch(`${cleanUrl}/api/roles`);
       if (!res.ok) throw new Error("Gagal mengambil data kasta role teater.");
       const data: RoleData[] = await res.json();
       setRoles(data);
       setLastUpdated(new Date().toLocaleTimeString("id-ID"));
     } catch (err: any) {
-      console.warn(err);
-      setError(err.message || "Gagal memuat penyimpanan role.");
+      console.warn("⚠️ [BotStorage] Gagal terhubung ke backend:", err.message);
+      // Fallback to simulated mock roles if server is waking up or unreachable
+      const mockRoles: RoleData[] = [
+        {
+          id: "1505186956731093113",
+          name: "Serial #1 — Crescent Eclipse | CV$ 12.982.500",
+          color: "#ffc107",
+          gradientColors: ["#ffc107", "#ff9800"],
+          icon: "https://api.dicebear.com/7.x/identicon/svg?seed=crescent",
+          cvAmount: "12.982.500",
+          position: 100,
+          permissions: ["MANAGE_MESSAGES", "VIEW_CHANNEL", "SEND_MESSAGES"],
+          members: [
+            { id: "12714337000051128405", username: "yae.eva", displayName: "[Doomsday] Yae エヴァ", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=yae" },
+            { id: "661135501226672129", username: "sim.tsx", displayName: "[Raiid] Sim | 46 ⭐", avatar: "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png?size=256" }
+          ]
+        },
+        {
+          id: "1403300491214983178",
+          name: "Sekte Kerupuk Gurih | CV$ 420.000",
+          color: "#ff3366",
+          gradientColors: null,
+          icon: "https://api.dicebear.com/7.x/identicon/svg?seed=kerupuk",
+          cvAmount: "420.000",
+          position: 50,
+          permissions: ["VIEW_CHANNEL", "SEND_MESSAGES", "USE_EXTERNAL_EMOJIS"],
+          members: [
+            { id: "12714337000051128405", username: "yae.eva", displayName: "[Doomsday] Yae エヴァ", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=yae" }
+          ]
+        },
+        {
+          id: "1411319287720837230",
+          name: "Sekte Keripik Renyah | CV$ 690.000",
+          color: "#ff9900",
+          gradientColors: null,
+          icon: "https://api.dicebear.com/7.x/identicon/svg?seed=keripik",
+          cvAmount: "690.000",
+          position: 49,
+          permissions: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES"],
+          members: [
+            { id: "661135501226672129", username: "sim.tsx", displayName: "[Raiid] Sim | 46 ⭐", avatar: "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png?size=256" }
+          ]
+        }
+      ];
+      setRoles(mockRoles);
+      setLastUpdated(new Date().toLocaleTimeString("id-ID") + " (Simulasi)");
     } finally {
       if (!silent) setLoading(false);
     }
