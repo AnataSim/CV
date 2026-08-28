@@ -210,19 +210,26 @@ async function checkTikTokLiveStatus() {
 
   try {
     const profileUrl = `https://www.tiktok.com/@${cleanUsername}`;
-    const pResponse = await fetch(profileUrl, { headers });
+    const mobileHeaders = {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9'
+    };
+    const pResponse = await fetch(profileUrl, { headers: mobileHeaders });
 
     if (!pResponse.ok) throw new Error(`Status HTTP Fallback ${pResponse.status}`);
     const pHtml = await pResponse.text();
 
     const avatarMatch = pHtml.match(/"avatarLarger":"([^"]+)"/i)
       || pHtml.match(/"avatarMedium":"([^"]+)"/i)
-      || pHtml.match(/"avatarThumb":"([^"]+)"/i);
+      || pHtml.match(/"avatarThumb":"([^"]+)"/i)
+      || pHtml.match(/src="([^"]+(?:tiktokcdn|byteoversea|ibyteimg)[^"]+)"/i);
 
     if (avatarMatch && avatarMatch[1]) {
       const matchedUrl = avatarMatch[1];
       const avatarUrl = matchedUrl.replace(/\\u002F/g, '/').replace(/\\u0026/g, '&');
       state.tiktokState.avatarUrl = avatarUrl;
+      console.log(`📸 [AUTOCRON] Berhasil memperbarui foto profil TikTok @${cleanUsername}: ${avatarUrl.slice(0, 80)}...`);
     }
 
     const nicknameMatch = pHtml.match(/"nickname":"([^"]+)"/i);
@@ -269,7 +276,7 @@ async function checkTikTokLiveStatus() {
     console.warn(`⚠️ [AUTOCRON] Gagal melakukan scraping profile @${cleanUsername}: ${err.message}`);
   }
 
-  // Fallback 2: TikTok Official oEmbed API & Discord User Avatar fallback
+  // Fallback 2: TikTok Official oEmbed API
   try {
     const oembedUrl = `https://www.tiktok.com/oembed?url=https://www.tiktok.com/@${cleanUsername}`;
     const oResponse = await fetch(oembedUrl);
@@ -281,19 +288,9 @@ async function checkTikTokLiveStatus() {
     }
   } catch (oErr) {}
 
-  // Fallback 3: Ensure avatar is set to Kranci's profile picture if dicebear placeholder
+  // Fallback 3: Ensure avatar is set to real TikTok CDN avatar if missing or dicebear placeholder
   if (!state.tiktokState.avatarUrl || state.tiktokState.avatarUrl.includes('dicebear')) {
-    if (state.isDiscordReady && state.client) {
-      try {
-        const user = await state.client.users.fetch('661135501226672129').catch(() => null);
-        if (user) {
-          state.tiktokState.avatarUrl = user.displayAvatarURL({ extension: 'png', size: 256 });
-        }
-      } catch (e) {}
-    }
-    if (!state.tiktokState.avatarUrl || state.tiktokState.avatarUrl.includes('dicebear')) {
-      state.tiktokState.avatarUrl = 'https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png?size=256';
-    }
+    state.tiktokState.avatarUrl = "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my";
   }
 }
 
