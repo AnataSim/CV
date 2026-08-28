@@ -265,6 +265,9 @@ async function checkTikTokLiveStatus() {
       console.log(`💤 [AUTOCRON] (Fallback) @${cleanUsername} sedang offline (Intermission).`);
       await setLiveStatusAndAnnounce(false, null);
     }
+  } catch (err) {
+    console.warn(`⚠️ [AUTOCRON] Gagal melakukan scraping profile @${cleanUsername}: ${err.message}`);
+  }
 
   // Fallback 2: TikTok Official oEmbed API & Discord User Avatar fallback
   try {
@@ -292,6 +295,7 @@ async function checkTikTokLiveStatus() {
       state.tiktokState.avatarUrl = 'https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png?size=256';
     }
   }
+}
 
 module.exports = {
   updateDiscordLiveStatusChannels,
