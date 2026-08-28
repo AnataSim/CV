@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "build": "echo 'No build step required for discord-bot'",
     "dev": "nodemon src/index.js",
     "rank-update": "node src/utils/bot-rank-updater.js",
     "rank-update:dev": "nodemon src/utils/bot-rank-updater.js"
