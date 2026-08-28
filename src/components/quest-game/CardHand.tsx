@@ -48,9 +48,9 @@ export default function CardHand({
   setUploadStatus,
   isUploading
 }: CardHandProps) {
-  // Visual 3D Card Deck Stack (Uno Style, Top-Left below Clock)
+  // Visual 3D Card Deck Stack (Positioned on the Left Side of the Stage)
   const renderDeck = () => (
-    <div className="absolute top-24 left-16 md:left-24 z-20 flex flex-col items-center gap-2">
+    <div className="absolute left-6 md:left-12 lg:left-20 top-24 md:top-36 z-30 flex flex-col items-center gap-2 transition-all">
       <div 
         onClick={handleDealCards}
         className="relative w-28 h-36 md:w-36 md:h-48 cursor-pointer group select-none"
@@ -64,17 +64,22 @@ export default function CardHand({
         <div className="absolute inset-0 translate-x-[2px] translate-y-[2px] rounded-2xl border border-neutral-800 bg-neutral-900 shadow-md transition-all" />
         
         {/* Top Glowing Card */}
-        <div className="absolute inset-0 rounded-2xl border border-theater-gold/30 group-hover:border-theater-gold bg-gradient-to-br from-neutral-950 to-neutral-900 shadow-xl flex flex-col items-center justify-center p-2 md:p-3.5 transition-all duration-300 group-hover:-translate-x-1 group-hover:-translate-y-1 group-hover:shadow-theater-gold/20">
-          <div className="h-7 w-7 md:h-10 md:w-10 rounded-full border border-theater-gold/15 bg-theater-gold/5 flex items-center justify-center text-theater-gold/45 mb-1.5 md:mb-2.5 group-hover:text-theater-gold group-hover:border-theater-gold/30 transition-all">
-            <Sparkle size={12} className="animate-pulse md:scale-100 scale-90" />
+        <div className="absolute inset-0 rounded-2xl border border-theater-gold/40 group-hover:border-theater-gold bg-gradient-to-br from-neutral-950 via-[#120f05] to-neutral-900 shadow-2xl shadow-theater-gold/10 flex flex-col items-center justify-center p-2 md:p-3.5 transition-all duration-300 group-hover:-translate-x-1 group-hover:-translate-y-1 group-hover:shadow-theater-gold/30">
+          <div className="h-8 w-8 md:h-11 md:w-11 rounded-full border border-theater-gold/25 bg-theater-gold/10 flex items-center justify-center text-theater-gold/60 mb-1.5 md:mb-2.5 group-hover:text-theater-gold group-hover:border-theater-gold/50 transition-all">
+            <Sparkle size={14} className="animate-pulse md:scale-100 scale-90" />
           </div>
-          <span className="text-[7.5px] md:text-[9px] font-black text-theater-gold/80 group-hover:text-theater-gold tracking-widest uppercase text-center leading-none">
+          <span className="text-[8px] md:text-[9.5px] font-black text-theater-gold group-hover:text-amber-300 tracking-widest uppercase text-center leading-none">
             KARTU DECK
           </span>
-          <span className="text-[5.5px] md:text-[6.5px] text-neutral-500 font-bold uppercase tracking-tighter mt-1.5 group-hover:text-neutral-400">
+          <span className="text-[6px] md:text-[7px] text-neutral-400 font-bold uppercase tracking-tighter mt-1.5 group-hover:text-white">
             {dealt ? "KOCOK ULANG" : "AMBIL KARTU"}
           </span>
         </div>
+      </div>
+
+      {/* Helper text badge below deck on the left */}
+      <div className="hidden sm:flex items-center gap-1.5 bg-neutral-950/80 border border-theater-gold/30 px-2.5 py-1 rounded-lg text-[8px] font-bold text-theater-gold tracking-wider uppercase backdrop-blur-sm shadow-md animate-pulse">
+        <span>👈 Deck Kartu</span>
       </div>
     </div>
   );
