@@ -266,10 +266,32 @@ async function checkTikTokLiveStatus() {
       await setLiveStatusAndAnnounce(false, null);
     }
 
-  } catch (err) {
-    console.error(`⚠️ [AUTOCRON] Gagal melakukan pengecekan live otomatis untuk ${username}: ${err.message}`);
+  // Fallback 2: TikTok Official oEmbed API & Discord User Avatar fallback
+  try {
+    const oembedUrl = `https://www.tiktok.com/oembed?url=https://www.tiktok.com/@${cleanUsername}`;
+    const oResponse = await fetch(oembedUrl);
+    if (oResponse.ok) {
+      const oData = await oResponse.json();
+      if (oData.author_name) {
+        state.tiktokState.displayName = oData.author_name;
+      }
+    }
+  } catch (oErr) {}
+
+  // Fallback 3: Ensure avatar is set to Kranci's profile picture if dicebear placeholder
+  if (!state.tiktokState.avatarUrl || state.tiktokState.avatarUrl.includes('dicebear')) {
+    if (state.isDiscordReady && state.client) {
+      try {
+        const user = await state.client.users.fetch('661135501226672129').catch(() => null);
+        if (user) {
+          state.tiktokState.avatarUrl = user.displayAvatarURL({ extension: 'png', size: 256 });
+        }
+      } catch (e) {}
+    }
+    if (!state.tiktokState.avatarUrl || state.tiktokState.avatarUrl.includes('dicebear')) {
+      state.tiktokState.avatarUrl = 'https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png?size=256';
+    }
   }
-}
 
 module.exports = {
   updateDiscordLiveStatusChannels,

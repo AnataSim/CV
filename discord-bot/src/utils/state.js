@@ -23,10 +23,10 @@ module.exports = {
 
   // TikTok live status
   tiktokState: {
-    username: process.env.TIKTOK_USERNAME || "@crunchyverse.live",
-    displayName: process.env.TIKTOK_DISPLAY_NAME || "CrunchyVerse Show",
+    username: process.env.TIKTOK_USERNAME || "@jobetmaritoas",
+    displayName: process.env.TIKTOK_DISPLAY_NAME || "CrunchyWeeb",
     isLive: false,
-    avatarUrl: process.env.TIKTOK_AVATAR_URL || "https://api.dicebear.com/7.x/adventurer/svg?seed=crunchy-tiktok",
+    avatarUrl: process.env.TIKTOK_AVATAR_URL || "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png?size=256",
     liveTitle: null,
     manualOverride: false
   },

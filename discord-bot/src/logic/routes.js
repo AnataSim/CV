@@ -371,18 +371,24 @@ function registerRoutes(app) {
 
   // POST TikTok manual status override
   app.post('/api/tiktok/override', requireClientToken, async (req, res) => {
-    const { isLive, liveTitle } = req.body;
-    if (isLive === undefined) {
-      return res.status(400).json({ error: "isLive wajib diisi" });
+    const { isLive, liveTitle, avatarUrl, displayName, username } = req.body;
+    if (isLive === undefined && !avatarUrl && !displayName) {
+      return res.status(400).json({ error: "isLive, avatarUrl, atau displayName wajib diisi" });
     }
-    state.tiktokState.manualOverride = true;
-    state.tiktokState.isLive = isLive;
-    state.tiktokState.liveTitle = isLive ? (liveTitle || "🎪 STAGE LIVE: Nobar Konser & Chit-chat Bareng Member Anomaly! 🍿") : null;
-    console.log(`📡 [LiveStatusOverride] Status TikTok live di-override secara manual: isLive=${isLive}, title="${state.tiktokState.liveTitle}"`);
+    if (isLive !== undefined) {
+      state.tiktokState.manualOverride = true;
+      state.tiktokState.isLive = isLive;
+      state.tiktokState.liveTitle = isLive ? (liveTitle || "🎪 STAGE LIVE: Nobar Konser & Chit-chat Bareng Member Anomaly! 🍿") : null;
+    }
+    if (avatarUrl) state.tiktokState.avatarUrl = avatarUrl;
+    if (displayName) state.tiktokState.displayName = displayName;
+    if (username) state.tiktokState.username = username;
+
+    console.log(`📡 [LiveStatusOverride] Status TikTok di-override: isLive=${state.tiktokState.isLive}, avatarUrl=${state.tiktokState.avatarUrl}`);
 
     await tiktok.updateDiscordLiveStatusChannels();
     if (typeof tiktok.handleLiveAnnouncement === 'function') {
-      await tiktok.handleLiveAnnouncement(isLive, state.tiktokState.liveTitle, state.tiktokState.avatarUrl);
+      await tiktok.handleLiveAnnouncement(state.tiktokState.isLive, state.tiktokState.liveTitle, state.tiktokState.avatarUrl);
     }
     res.json({ success: true, status: state.tiktokState });
   });
