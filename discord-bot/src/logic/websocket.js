@@ -59,12 +59,12 @@ function initializeWebsocket(server) {
     });
   });
 
-  // Periodic WebSocket broadcast sync updates every 15s to active clients
+  // Periodic WebSocket broadcast sync updates every 35s to active clients (optimized for bandwidth)
   setInterval(() => {
     for (const [ws, clientState] of wsClients.entries()) {
       global.sendWsSyncPayload(ws, clientState).catch(() => {});
     }
-  }, 15000);
+  }, 35000);
 
   console.log("🔌 [WebSocket] Server WebSocket berhasil diinisialisasi.");
 }
