@@ -1,5 +1,5 @@
 import React from "react";
-import { Sparkle, HelpCircle } from "lucide-react";
+import { Sparkle, HelpCircle, Loader2 } from "lucide-react";
 import ActiveQuestCard from "./ActiveQuestCard";
 
 interface Quest {
@@ -29,6 +29,7 @@ interface CardHandProps {
   uploadStatus: string | null;
   setUploadStatus: (status: string | null) => void;
   isUploading: boolean;
+  isDealing?: boolean;
 }
 
 export default function CardHand({
@@ -46,7 +47,8 @@ export default function CardHand({
   setMediaFile,
   uploadStatus,
   setUploadStatus,
-  isUploading
+  isUploading,
+  isDealing = false
 }: CardHandProps) {
   // Visual 3D Card Deck Stack (Positioned on the Left Side of the Stage)
   const renderDeck = () => (
@@ -54,7 +56,7 @@ export default function CardHand({
       <div 
         onClick={handleDealCards}
         className="relative w-28 h-36 md:w-36 md:h-48 cursor-pointer group select-none"
-        title={dealt ? "Klik untuk kocok ulang kartu" : "Klik untuk mengambil kartu"}
+        title={isDealing ? "Memuat kartu..." : dealt ? "Klik untuk kocok ulang kartu" : "Klik untuk mengambil kartu"}
       >
         {/* 5 Layered 3D Cards Stack (Bottom to Top) */}
         <div className="absolute inset-0 translate-x-[6px] translate-y-[6px] md:translate-x-[10px] md:translate-y-[10px] rounded-2xl border border-neutral-950 bg-neutral-950/80 shadow-sm transition-all" />
@@ -66,20 +68,25 @@ export default function CardHand({
         {/* Top Glowing Card */}
         <div className="absolute inset-0 rounded-2xl border border-theater-gold/40 group-hover:border-theater-gold bg-gradient-to-br from-neutral-950 via-[#120f05] to-neutral-900 shadow-2xl shadow-theater-gold/10 flex flex-col items-center justify-center p-2 md:p-3.5 transition-all duration-300 group-hover:-translate-x-1 group-hover:-translate-y-1 group-hover:shadow-theater-gold/30">
           <div className="h-8 w-8 md:h-11 md:w-11 rounded-full border border-theater-gold/25 bg-theater-gold/10 flex items-center justify-center text-theater-gold/60 mb-1.5 md:mb-2.5 group-hover:text-theater-gold group-hover:border-theater-gold/50 transition-all">
-            <Sparkle size={14} className="animate-pulse md:scale-100 scale-90" />
+            {isDealing ? (
+              <Loader2 size={16} className="animate-spin text-theater-gold" />
+            ) : (
+              <Sparkle size={14} className="animate-pulse md:scale-100 scale-90" />
+            )}
           </div>
           <span className="text-[8px] md:text-[9.5px] font-black text-theater-gold group-hover:text-amber-300 tracking-widest uppercase text-center leading-none">
-            KARTU DECK
+            {isDealing ? "MENGOCOK..." : "KARTU DECK"}
           </span>
           <span className="text-[6px] md:text-[7px] text-neutral-400 font-bold uppercase tracking-tighter mt-1.5 group-hover:text-white">
-            {dealt ? "KOCOK ULANG" : "AMBIL KARTU"}
+            {isDealing ? "MEMUAT..." : dealt ? "KOCOK ULANG" : "AMBIL KARTU"}
           </span>
         </div>
       </div>
 
       {/* Helper text badge below deck on the left */}
       <div className="hidden sm:flex items-center gap-1.5 bg-neutral-950/80 border border-theater-gold/30 px-2.5 py-1 rounded-lg text-[8px] font-bold text-theater-gold tracking-wider uppercase backdrop-blur-sm shadow-md animate-pulse">
-        <span>👈 Deck Kartu</span>
+        {isDealing ? <Loader2 size={10} className="animate-spin" /> : <span>👈</span>}
+        <span>{isDealing ? "Memuat Database..." : "Deck Kartu"}</span>
       </div>
     </div>
   );
@@ -92,7 +99,24 @@ export default function CardHand({
       {renderDeck()}
 
       <div className="flex-1 w-full flex items-center justify-center relative">
-        {!dealt && (
+        {/* IS DEALING: Central Progress Bar & Spinner */}
+        {isDealing ? (
+          <div className="flex flex-col items-center justify-center p-7 text-center max-w-sm select-none z-30 bg-neutral-950/85 border border-theater-gold/40 rounded-3xl backdrop-blur-md shadow-2xl animate-fade-in mt-32 md:mt-0">
+            <div className="h-12 w-12 rounded-full border border-theater-gold/30 bg-theater-gold/10 flex items-center justify-center text-theater-gold mb-3 shadow-lg shadow-theater-gold/20">
+              <Loader2 size={22} className="animate-spin" />
+            </div>
+            <h3 className="text-xs font-black text-white uppercase tracking-wider mb-1 text-transparent bg-clip-text bg-gradient-to-r from-theater-gold to-amber-200">
+              Mengocok Kartu Deck...
+            </h3>
+            <p className="text-[9.5px] text-neutral-400 font-sans leading-relaxed mb-4">
+              Menyinkronkan 5 kartu tantangan teater dari Cloud Firestore...
+            </p>
+            {/* Animated Pulsing Progress Bar */}
+            <div className="w-full bg-neutral-900 border border-neutral-800 h-2 rounded-full overflow-hidden p-0.5">
+              <div className="h-full bg-gradient-to-r from-amber-600 via-theater-gold to-yellow-300 rounded-full animate-pulse w-full shadow-sm" />
+            </div>
+          </div>
+        ) : !dealt ? (
           /* DEALT IS FALSE: Draw Instructions */
           <div className="flex flex-col items-center justify-center p-6 text-center max-w-sm select-none z-10 bg-neutral-950/40 border border-neutral-900/40 rounded-3xl backdrop-blur-sm shadow-xl mt-32 md:mt-0">
             <div className="h-12 w-12 rounded-full border border-dashed border-neutral-700 flex items-center justify-center text-neutral-500 mb-4 animate-pulse">
@@ -103,7 +127,7 @@ export default function CardHand({
               Silakan klik tumpukan kartu di sebelah kiri untuk mengambil 5 kartu tantangan teater!
             </p>
           </div>
-        )}
+        ) : null}
       </div>
 
       {dealt && (() => {

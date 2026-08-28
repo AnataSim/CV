@@ -596,6 +596,10 @@ export default function QuestGame({
     if (quests.length === 0 || !currentUser?.uid || isDealing) return;
     setIsDealing(true);
     lastDealTimeRef.current = Date.now();
+    
+    // Smooth deal animation delay so spinning loading indicator and progress bar are visible
+    await new Promise(r => setTimeout(r, 650));
+
     try {
       const easyQuests = quests.filter(q => q.difficulty === "Mudah");
       const mediumQuests = quests.filter(q => q.difficulty === "Sedang");
@@ -1002,6 +1006,7 @@ export default function QuestGame({
               uploadStatus={uploadStatus}
               setUploadStatus={setUploadStatus}
               isUploading={isUploading}
+              isDealing={isDealing}
             />
 
             {/* Custom CSS */}
