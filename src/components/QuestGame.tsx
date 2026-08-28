@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Play, Shield, Sparkle, X } from "lucide-react";
+import { Play, Shield, Sparkle, X, Database, Loader2, CheckCircle2 } from "lucide-react";
 import { db, isFirebaseConfigured } from "../lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { signedFetch } from "../lib/api";
@@ -230,6 +230,32 @@ export default function QuestGame({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [isDealing, setIsDealing] = useState(false);
+  // Database Sync Loading State
+  const [isDbLoading, setIsDbLoading] = useState(false);
+  const [dbLoadingStep, setDbLoadingStep] = useState(1);
+
+  const handleStartGame = async () => {
+    setIsDbLoading(true);
+    setDbLoadingStep(1);
+
+    setTimeout(() => setDbLoadingStep(2), 400);
+
+    try {
+      await Promise.all([
+        fetchDeckFromApi().catch(() => {}),
+        fetchQuestsFromApi().catch(() => {})
+      ]);
+    } catch (e) {
+      console.warn("Db fetch notification:", e);
+    }
+
+    setTimeout(() => setDbLoadingStep(3), 900);
+
+    setTimeout(() => {
+      setIsDbLoading(false);
+      setGameState("playing");
+    }, 1400);
+  };
 
   // Check if current user has admin rights
   const isAdmin = isUserAdmin(userRole);
@@ -881,7 +907,7 @@ export default function QuestGame({
       {/* 7. GAME STAGE LAYOUT */}
       <div className="flex-1 flex flex-col justify-center items-center px-4 relative">
         {/* A. MENU STATE */}
-        {gameState === "menu" && (
+        {gameState === "menu" && !isDbLoading && (
           <div className="max-w-xl text-center z-10 flex flex-col items-center select-none animate-fade-in">
             <h2 className="font-display text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-neutral-100 to-neutral-500 tracking-widest uppercase mb-2">
               TIRAI TANTANGAN
@@ -892,15 +918,67 @@ export default function QuestGame({
             </p>
 
             <button
-              onClick={() => {
-                setGameState("playing");
-                setDealt(false);
-              }}
+              onClick={handleStartGame}
               className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-theater-gold to-theater-gold-dim hover:from-theater-gold-dim hover:to-theater-gold border-2 border-yellow-200 py-4.5 px-10 rounded-2xl text-xs font-black uppercase tracking-widest text-neutral-950 shadow-xl shadow-theater-gold/15 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
             >
               <Play size={14} className="fill-current" />
               <span>Mulai Permainan</span>
             </button>
+          </div>
+        )}
+
+        {/* B. DATABASE LOADING STATE */}
+        {isDbLoading && (
+          <div className="max-w-md w-full select-none z-30 flex flex-col items-center justify-center p-7 text-center bg-neutral-950/85 border border-theater-gold/40 rounded-3xl backdrop-blur-md shadow-2xl animate-fade-in my-auto">
+            <div className="relative mb-5">
+              <div className="h-16 w-16 rounded-full border border-theater-gold/30 bg-theater-gold/10 flex items-center justify-center text-theater-gold shadow-lg shadow-theater-gold/20">
+                <Database size={28} className="animate-pulse" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-neutral-950 border border-theater-gold/50 flex items-center justify-center text-theater-gold">
+                <Loader2 size={14} className="animate-spin" />
+              </div>
+            </div>
+
+            <h3 className="font-display text-sm md:text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-theater-gold via-amber-200 to-theater-gold tracking-widest uppercase mb-1.5">
+              MEMUAT DATABASE TEATER
+            </h3>
+            <p className="text-[10px] text-neutral-400 font-sans leading-relaxed mb-5 max-w-xs">
+              Menghubungkan ke Cloud Firestore & menyinkronkan status card deck Anda...
+            </p>
+
+            {/* Progress Bar */}
+            <div className="w-full bg-neutral-900 border border-neutral-800 h-2.5 rounded-full overflow-hidden mb-5 p-0.5">
+              <div 
+                className="h-full bg-gradient-to-r from-amber-600 via-theater-gold to-yellow-300 rounded-full transition-all duration-500 ease-out shadow-sm"
+                style={{
+                  width: dbLoadingStep === 1 ? "35%" : dbLoadingStep === 2 ? "75%" : "100%"
+                }}
+              />
+            </div>
+
+            {/* Step Checklist */}
+            <div className="w-full flex flex-col gap-2 text-left text-[9.5px]">
+              <div className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all ${
+                dbLoadingStep >= 1 ? "border-emerald-500/30 bg-emerald-950/20 text-emerald-300 font-bold" : "border-neutral-800 text-neutral-600"
+              }`}>
+                {dbLoadingStep >= 1 ? <CheckCircle2 size={13} className="text-emerald-400 shrink-0" /> : <div className="h-3.5 w-3.5 rounded-full border border-neutral-700 shrink-0" />}
+                <span>Inisialisasi Koneksi Cloud Firestore</span>
+              </div>
+
+              <div className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all ${
+                dbLoadingStep >= 2 ? "border-emerald-500/30 bg-emerald-950/20 text-emerald-300 font-bold" : "border-neutral-800 text-neutral-600"
+              }`}>
+                {dbLoadingStep >= 2 ? <CheckCircle2 size={13} className="text-emerald-400 shrink-0" /> : <div className="h-3.5 w-3.5 rounded-full border border-neutral-700 shrink-0" />}
+                <span>Mengambil Master Quest & Status Card Deck</span>
+              </div>
+
+              <div className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all ${
+                dbLoadingStep >= 3 ? "border-emerald-500/30 bg-emerald-950/20 text-emerald-300 font-bold" : "border-neutral-800 text-neutral-600"
+              }`}>
+                {dbLoadingStep >= 3 ? <CheckCircle2 size={13} className="text-emerald-400 shrink-0" /> : <div className="h-3.5 w-3.5 rounded-full border border-neutral-700 shrink-0" />}
+                <span>Mempersiapkan Panggung Teater Interaktif</span>
+              </div>
+            </div>
           </div>
         )}
 
