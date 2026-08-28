@@ -8,11 +8,19 @@ function initializeWebsocket(server) {
 
   global.wsClients = wsClients;
   
+  const clientLastData = new WeakMap();
+
   global.sendWsSyncPayload = async function(ws, clientState) {
     if (ws.readyState !== 1) return;
     try {
       const data = await gatherSyncData(clientState);
-      ws.send(JSON.stringify({ action: 'syncResponse', data }));
+      const payloadStr = JSON.stringify({ action: 'syncResponse', data });
+
+      // Deduplication: Skip sending if the payload is identical to the last sent payload for this client
+      if (clientLastData.get(ws) === payloadStr) return;
+
+      clientLastData.set(ws, payloadStr);
+      ws.send(payloadStr);
     } catch (err) {
       console.error("❌ Error sending WS sync payload:", err.message);
     }

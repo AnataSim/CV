@@ -40,8 +40,8 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-// Health Check
-app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
+// Lightweight Health Check for UptimeRobot (Minimal bandwidth & CPU)
+app.get('/health', (req, res) => res.status(200).send('OK'));
 
 // ================== INITIALIZE SUB-SYSTEMS ==================
 

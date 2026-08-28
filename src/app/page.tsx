@@ -530,6 +530,7 @@ export default function CrunchyVerseStage() {
   const [wsConnected, setWsConnected] = useState(false);
 
   const sendWsSync = () => {
+    if (typeof document !== "undefined" && document.hidden) return; // Don't send sync when tab is in background
     const socket = socketRef.current;
     if (socket && socket.readyState === WebSocket.OPEN) {
       const activeChanObj = chatChannelsList.find(c => c.id === activeChatChannel);
@@ -648,6 +649,17 @@ export default function CrunchyVerseStage() {
       clearTimeout(reconnectTimer);
     };
   }, [backendUrl, hasMounted]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && wsConnected) {
+        sendWsSync();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [wsConnected]);
 
   // Sync state through WebSocket on local changes
   useEffect(() => {
