@@ -62,11 +62,19 @@ async function connectToVoiceChannel(guildId, channelId) {
     } catch (error) {
       state.connectionState.isConnectedToVoice = false;
       state.connectionState.status = 'ready';
-      addVoiceAfkLog(`Bot terputus dari voice channel. Watchdog akan mencoba reconnect otomatis dalam 3 menit...`, 'warning');
+      addVoiceAfkLog(`Bot terputus dari voice channel. Mencoba reconnect otomatis dalam 5 detik...`, 'warning');
       db.saveVoiceAfkConfig({ guildId, channelId, isConnected: true });
       try {
         voiceConnection.destroy();
       } catch (e) { }
+      setTimeout(() => {
+        const savedCfg = db.loadVoiceAfkConfig();
+        if (savedCfg && savedCfg.isConnected) {
+          connectToVoiceChannel(savedCfg.guildId || guildId, savedCfg.channelId || channelId).catch(err => {
+            addVoiceAfkLog(`Gagal auto-reconnect voice: ${err.message}`, 'error');
+          });
+        }
+      }, 5000);
     }
   });
 

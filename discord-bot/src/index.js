@@ -26,7 +26,7 @@ const app = express();
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-cv-client-token', 'x-cv-encoded', 'x-cv-timestamp', 'x-cv-client']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-cv-client-token', 'x-cv-encoded', 'x-cv-timestamp', 'x-cv-client', 'bypass-tunnel-reminder']
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -83,4 +83,31 @@ process.on('unhandledRejection', (reason, promise) => {
 
 process.on('uncaughtException', (err, origin) => {
   console.error('[Anti-Crash] Uncaught Exception:', err, 'origin:', origin);
+});
+
+// Graceful shutdown handling for Uptime Status Reporting
+let isShuttingDown = false;
+async function handleShutdown(signal) {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  console.log(`\n🛑 [Shutdown] Sinyal ${signal} diterima. Mengubah status channel ke Status: Lost...`);
+  try {
+    await discordUtil.updateUptimeStatusChannel(false);
+  } catch (err) {
+    console.error('❌ [Shutdown] Gagal mengupdate status channel saat mati:', err.message);
+  }
+  process.exit(0);
+}
+
+process.on('SIGINT', () => handleShutdown('SIGINT'));
+process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+process.once('SIGUSR2', async () => {
+  if (!isShuttingDown) {
+    isShuttingDown = true;
+    console.log(`\n🔄 [Nodemon] Restarting. Mengubah status channel ke Status: Lost...`);
+    try {
+      await discordUtil.updateUptimeStatusChannel(false);
+    } catch (e) {}
+  }
+  process.kill(process.pid, 'SIGUSR2');
 });

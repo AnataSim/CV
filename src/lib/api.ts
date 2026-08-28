@@ -95,6 +95,7 @@ export async function signedFetch(
     "X-CV-Client-Token": token,
     "X-CV-Timestamp": timestamp,
     "X-CV-Client": "crunchyverse-web",
+    "bypass-tunnel-reminder": "true",
   };
 
   // Kalau sensitive & ada body JSON, enkripsi payload dengan AES-GCM

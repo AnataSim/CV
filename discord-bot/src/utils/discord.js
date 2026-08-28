@@ -17,12 +17,41 @@ const voice = require('./voice');
 const selfbot = require('./selfbot');
 const tiktok = require('./tiktok');
 const rank = require('./rank');
+const questBot = require('./quest-bot');
 
 const HONEYPOT_CHANNEL_ID = process.env.HONEYPOT_CHANNEL_ID || '1523714312940552252';
 const BAN_LOG_CHANNEL_ID = process.env.BAN_LOG_CHANNEL_ID || '1523839216004632686';
 const GUILD_ID = process.env.GUILD_ID;
 const SIM_DISCORD_ID = process.env.SIM_DISCORD_ID || '661135501226672129';
 const GHOST_USER_TOKEN = process.env.GHOST_USER_TOKEN || null;
+
+let lastUptimeChannelName = '';
+
+async function updateUptimeStatusChannel(isOnline) {
+  const UPTIME_CHANNEL_ID = '1530765880320069780';
+  const targetName = isOnline ? 'Status: Uptimed' : 'Status: Lost';
+
+  if (!state.client || !state.client.isReady()) return;
+  if (lastUptimeChannelName === targetName) return;
+
+  try {
+    const channel = await state.client.channels.fetch(UPTIME_CHANNEL_ID).catch(() => null);
+    if (channel) {
+      if (channel.name !== targetName) {
+        console.log(`📡 [UptimeStatus] Mengubah nama channel voice ${channel.id} dari "${channel.name}" menjadi "${targetName}"`);
+        lastUptimeChannelName = targetName;
+        await channel.setName(targetName).catch(err => {
+          console.error(`❌ [UptimeStatus] Gagal mengubah nama channel status:`, err.message);
+          lastUptimeChannelName = '';
+        });
+      } else {
+        lastUptimeChannelName = targetName;
+      }
+    }
+  } catch (err) {
+    console.error(`❌ [UptimeStatus] Error updating channel status:`, err.message);
+  }
+}
 
 async function updatePlayerProgressRoles(member, userId) {
   try {
@@ -144,6 +173,7 @@ function initializeBot(token) {
       });
 
       tiktok.updateDiscordLiveStatusChannels();
+      updateUptimeStatusChannel(true);
 
       if (GUILD_ID) {
         state.client.guilds.fetch(GUILD_ID)
@@ -166,7 +196,7 @@ function initializeBot(token) {
           });
       }
 
-      const VOICE_WATCHDOG_INTERVAL_MS = 3 * 60 * 1000;
+      const VOICE_WATCHDOG_INTERVAL_MS = 30 * 1000;
       setInterval(async () => {
         const savedCfg = db.loadVoiceAfkConfig();
         if (savedCfg && savedCfg.isConnected && savedCfg.guildId && savedCfg.channelId) {
@@ -176,7 +206,7 @@ function initializeBot(token) {
               await voice.connectToVoiceChannel(savedCfg.guildId, savedCfg.channelId);
               voice.addVoiceAfkLog(`[Watchdog] ✅ Berhasil reconnect main bot ke voice channel ${savedCfg.channelId}!`, 'success');
             } catch (err) {
-              voice.addVoiceAfkLog(`[Watchdog] ❌ Gagal reconnect main bot: ${err.message}. Mencoba lagi dalam 3 menit.`, 'error');
+              voice.addVoiceAfkLog(`[Watchdog] ❌ Gagal reconnect main bot: ${err.message}. Mencoba lagi dalam 30 detik.`, 'error');
             }
           }
         }
@@ -223,7 +253,7 @@ function initializeBot(token) {
           }
         }
       }, VOICE_WATCHDOG_INTERVAL_MS);
-      console.log('⏰ [VoiceWatchdog] Auto-reconnect watchdog aktif (interval: 3 menit).');
+      console.log('⏰ [VoiceWatchdog] Auto-reconnect watchdog aktif (interval: 30 detik).');
 
       (async () => {
         try {
@@ -312,6 +342,24 @@ function initializeBot(token) {
       console.error(`❌ Error pada klien Discord: ${err.message}`);
     });
 
+    state.client.on('voiceStateUpdate', (oldState, newState) => {
+      if (oldState.id === state.client.user?.id) {
+        if (oldState.channelId && !newState.channelId) {
+          state.connectionState.isConnectedToVoice = false;
+          state.connectionState.status = 'ready';
+          const savedCfg = db.loadVoiceAfkConfig();
+          if (savedCfg && savedCfg.isConnected && savedCfg.guildId && savedCfg.channelId) {
+            voice.addVoiceAfkLog(`[VoiceState] Bot terdeteksi keluar dari voice channel. Reconnect instan dalam 3 detik...`, 'warning');
+            setTimeout(() => {
+              voice.connectToVoiceChannel(savedCfg.guildId, savedCfg.channelId).catch(err => {
+                voice.addVoiceAfkLog(`[VoiceState] Gagal instant reconnect: ${err.message}`, 'error');
+              });
+            }, 3000);
+          }
+        }
+      }
+    });
+
     // ===== SECURITY HONEYPOT SYSTEM =====
     state.client.on('messageCreate', async (message) => {
       if (message.author.bot) return;
@@ -388,6 +436,36 @@ function initializeBot(token) {
         } catch (err) {
           console.error("❌ [Honeypot] Fatal error during honeypot execution:", err.message);
         }
+      }
+    });
+
+    // ===== TIRAI TANTANGAN (QUEST CARD SYSTEM) DISCORD COMMANDS =====
+    state.client.on('messageCreate', async (message) => {
+      if (message.author.bot) return;
+      const content = message.content.trim();
+      if (!content.startsWith('!')) return;
+
+      const args = content.slice(1).split(/\s+/);
+      const commandName = args.shift().toLowerCase();
+
+      const questCmds = ['deck', 'quest', 'cards', 'tantangan', 'redraw', 'pocok', 'claim', 'submit', 'myquests', 'progress', 'addquest'];
+      if (questCmds.includes(commandName)) {
+        try {
+          await questBot.handleQuestCommand(message, commandName, args);
+        } catch (err) {
+          console.error(`❌ [QuestBot] Error handling command !${commandName}:`, err.message);
+          message.reply(`❌ Terjadi kesalahan saat memproses perintah \`!${commandName}\`: ${err.message}`).catch(() => {});
+        }
+      }
+    });
+
+    state.client.on('interactionCreate', async (interaction) => {
+      try {
+        if (interaction.isButton()) {
+          await questBot.handleQuestInteraction(interaction);
+        }
+      } catch (err) {
+        console.error('❌ [QuestBot] Error handling interaction:', err.message);
       }
     });
 
@@ -1190,5 +1268,6 @@ function initializeBot(token) {
 
 module.exports = {
   updatePlayerProgressRoles,
+  updateUptimeStatusChannel,
   initializeBot
 };

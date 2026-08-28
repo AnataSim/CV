@@ -444,7 +444,8 @@ export default function CrunchyVerseStage() {
       const targetVoiceChannelId = isVoice ? activeChatChannel : "1435053596742914160";
       const isAdminUser = isUserAdmin(userRole);
 
-      const res = await signedFetch(`${backendUrl}/api/sync`, {
+      const cleanBackendUrl = backendUrl.trim().replace(/\/+$/, "");
+      const res = await signedFetch(`${cleanBackendUrl}/api/sync`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -555,7 +556,10 @@ export default function CrunchyVerseStage() {
     let reconnectTimer: NodeJS.Timeout;
 
     const connectWs = () => {
-      const wsUrl = backendUrl.replace(/^http/, "ws") + "/sync";
+      const clean = backendUrl.trim().replace(/\/+$/, "");
+      const wsProtocol = clean.startsWith("https") ? "wss" : "ws";
+      const wsHost = clean.replace(/^https?:\/\//, "");
+      const wsUrl = `${wsProtocol}://${wsHost}/sync`;
       console.log("🔌 Connecting to WebSocket:", wsUrl);
       socket = new WebSocket(wsUrl);
       socketRef.current = socket;
