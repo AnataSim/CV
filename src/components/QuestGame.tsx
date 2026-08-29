@@ -540,13 +540,21 @@ export default function QuestGame({
       reader.onload = async () => {
         const base64Data = reader.result as string;
         
+        const extractedDiscordId = currentUser?.discordId || (currentUser?.uid && currentUser.uid.match(/\d{17,20}/) ? currentUser.uid.match(/\d{17,20}/)![0] : null);
+        
         const payload = {
           questId: quest.id,
+          originalQuestId: quest.originalQuestId || quest.id,
+          questName: quest.title || (quest as any).name || "Quest Teater",
+          points: Number(quest.points) || 0,
+          roleId: quest.roleId || null,
+          discordId: extractedDiscordId,
           userId: currentUser?.uid || `sim-user-${Date.now()}`,
           username: displayName || currentUser?.displayName || currentUser?.name || currentUser?.email || "Pemain Teater",
           userEmail: currentUser?.email || "",
           fileName: mediaFile.name,
-          mediaData: base64Data
+          mediaData: base64Data,
+          screenshotUrl: base64Data
         };
 
         try {
@@ -794,12 +802,20 @@ export default function QuestGame({
 
   const completedQuestIds = React.useMemo(() => {
     if (!currentUser?.uid) return new Set<string>();
-    return new Set<string>(
-      allSubmissions
-        .filter((s: any) => s.userId === currentUser.uid && s.status === "approved")
-        .map((s: any) => s.questId)
-    );
-  }, [allSubmissions, currentUser]);
+    const ids = new Set<string>();
+    allSubmissions
+      .filter((s: any) => s.userId === currentUser.uid && s.status === "approved")
+      .forEach((s: any) => {
+        if (s.questId) ids.add(s.questId);
+        if (s.originalQuestId) ids.add(s.originalQuestId);
+        quests.forEach(q => {
+          if (q.id === s.questId || q.id === s.originalQuestId || (s.questId && s.questId.includes(q.id)) || q.title === s.questName) {
+            ids.add(q.id);
+          }
+        });
+      });
+    return ids;
+  }, [allSubmissions, currentUser, quests]);
 
   if (!hasMounted) return null;
 

@@ -330,7 +330,7 @@ export default function AdminQuestPanel({
 
     const playersWithCompletionTime = Object.values(groups).map((player: any) => {
       const activeApproved = player.submissions
-        .filter((s: any) => s.status === "approved" && quests.some(q => q.id === s.questId))
+        .filter((s: any) => s.status === "approved" && (quests.length === 0 || quests.some(q => q.id === s.questId || q.id === s.originalQuestId || (s.questId && s.questId.includes(q.id)) || q.title === s.questName) || !!s.questId))
         .sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
       
       const completionTime = activeApproved.length >= 5 ? new Date(activeApproved[4].createdAt).getTime() : Infinity;
@@ -739,7 +739,7 @@ export default function AdminQuestPanel({
                       
                       <div className="grid grid-cols-1 gap-2.5">
                         {quests.map((quest) => {
-                          const questSubmissions = player.submissions.filter((s: any) => s.questId === quest.id);
+                          const questSubmissions = player.submissions.filter((s: any) => s.questId === quest.id || s.originalQuestId === quest.id || (s.questId && s.questId.includes(quest.id)) || s.questName === quest.title);
                           const approvedSub = questSubmissions.find((s: any) => s.status === "approved");
                           const pendingSub = questSubmissions.find((s: any) => s.status === "pending");
                           

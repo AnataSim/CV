@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { ChannelType, EmbedBuilder } = require('discord.js');
+const { ChannelType, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const { collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where } = require('firebase/firestore');
 
 const state = require('../utils/state');
@@ -1540,19 +1540,40 @@ function registerRoutes(app) {
   });
 
   app.post('/api/submissions/submit', requireClientToken, async (req, res) => {
-    const { id, userId, username, userEmail, discordId, questId, questName, roleId, points, screenshotUrl } = req.body;
+    const { id, userId, username, userEmail, discordId, questId, originalQuestId, questName, roleId, points, screenshotUrl, mediaData } = req.body;
+
+    // Fallback: If questName or points is missing, look up from local quests
+    let finalQuestName = questName;
+    let finalPoints = Number(points) || 0;
+    let finalRoleId = roleId;
+
+    const allQuests = db.loadLocalQuests();
+    const matchedQuest = allQuests.find(q => q.id === questId || q.id === originalQuestId || (questId && questId.includes(q.id)));
+    if (matchedQuest) {
+      if (!finalQuestName) finalQuestName = matchedQuest.title || matchedQuest.name;
+      if (!finalPoints) finalPoints = Number(matchedQuest.points) || Number(matchedQuest.roleCv) || 0;
+      if (!finalRoleId) finalRoleId = matchedQuest.roleId || null;
+    }
+    if (!finalQuestName) finalQuestName = "Tantangan Teater";
+
+    let extractedDiscordId = discordId;
+    if (!extractedDiscordId && userId) {
+      const match = userId.match(/\d{17,20}/);
+      if (match) extractedDiscordId = match[0];
+    }
 
     const newSub = {
       id: id || "sub-" + Date.now(),
       userId,
-      username,
+      username: username || "Pemain Teater",
       userEmail: userEmail || "",
-      discordId,
+      discordId: extractedDiscordId || null,
       questId,
-      questName,
-      roleId,
-      points: Number(points) || 0,
-      screenshotUrl,
+      originalQuestId: originalQuestId || questId,
+      questName: finalQuestName,
+      roleId: finalRoleId || null,
+      points: finalPoints,
+      screenshotUrl: screenshotUrl || null,
       status: 'pending',
       createdAt: new Date().toISOString(),
       discordMessageId: null
@@ -1594,29 +1615,58 @@ function registerRoutes(app) {
         if (reviewChan && reviewChan.isTextBased()) {
           const embed = new EmbedBuilder()
             .setTitle(`📝 Submission Quest CrunchyVerse`)
-            .setDescription(`Pemain **${username}** baru saja mengirimkan bukti penyelesaian quest.`)
+            .setDescription(`Pemain **${newSub.username}** baru saja mengirimkan bukti penyelesaian quest.`)
             .addFields(
-              { name: "👤 Nama Pemain", value: `${username} (${userEmail})`, inline: true },
-              { name: "🆔 Discord ID / Mention", value: discordId ? `<@${discordId}> (\`${discordId}\`)` : 'Tidak terhubung', inline: true },
-              { name: "🪐 Quest", value: `${questName} (\`${questId}\`)`, inline: true },
-              { name: "💰 Nilai Poin (CV$)", value: `+${points} CV$`, inline: true },
-              { name: "🎭 Target Role", value: roleId ? `<@&${roleId}>` : 'Tidak ada role', inline: true },
+              { name: "👤 Nama Pemain", value: `${newSub.username} (${newSub.userEmail || 'Tamu Teater'})`, inline: true },
+              { name: "🆔 Discord ID / Mention", value: newSub.discordId ? `<@${newSub.discordId}> (\`${newSub.discordId}\`)` : 'Tidak terhubung', inline: true },
+              { name: "🪐 Quest", value: `${newSub.questName} (\`${newSub.questId}\`)`, inline: true },
+              { name: "💰 Nilai Poin (CV$)", value: `+${newSub.points} CV$`, inline: true },
+              { name: "🎭 Target Role", value: newSub.roleId ? `<@&${newSub.roleId}>` : 'Tidak ada role', inline: true },
               { name: "🕒 Waktu Kirim", value: new Date(newSub.createdAt).toLocaleString('id-ID'), inline: true }
             )
             .setColor('#3498DB')
             .setTimestamp();
 
-          if (screenshotUrl) {
+          const files = [];
+          const mediaSource = mediaData || screenshotUrl;
+
+          if (mediaSource && mediaSource.startsWith('data:')) {
+            try {
+              const matches = mediaSource.match(/^data:(.+);base64,(.+)$/);
+              if (matches) {
+                const mimeType = matches[1];
+                const base64DataStr = matches[2];
+                const ext = mimeType.includes('png') ? 'png' : mimeType.includes('gif') ? 'gif' : 'jpg';
+                const filename = `proof.${ext}`;
+                const buffer = Buffer.from(base64DataStr, 'base64');
+                
+                const attachment = new AttachmentBuilder(buffer, { name: filename });
+                files.push(attachment);
+                embed.setImage(`attachment://${filename}`);
+              }
+            } catch (imgErr) {
+              console.error("❌ Gagal membuat AttachmentBuilder dari mediaData:", imgErr.message);
+            }
+          } else if (screenshotUrl && screenshotUrl.startsWith('http')) {
             embed.setImage(screenshotUrl);
           }
 
-          const sentMessage = await reviewChan.send({ embeds: [embed] });
+          const sentMessage = await reviewChan.send({ embeds: [embed], files });
           newSub.discordMessageId = sentMessage.id;
+          
+          if (sentMessage.attachments.size > 0) {
+            const uploadedCdnUrl = sentMessage.attachments.first().url;
+            newSub.screenshotUrl = uploadedCdnUrl;
+          }
+
           db.saveLocalSubmissions(localSubs);
 
           if (state.db) {
             try {
-              await updateDoc(doc(state.db, "submissions", newSub.id), { discordMessageId: sentMessage.id });
+              await updateDoc(doc(state.db, "submissions", newSub.id), { 
+                discordMessageId: sentMessage.id,
+                screenshotUrl: newSub.screenshotUrl
+              });
             } catch (e) {}
           }
 
@@ -1911,6 +1961,116 @@ function registerRoutes(app) {
 
     status.action = 'no_config';
     return res.json({ ...status, message: 'Tidak ada konfigurasi voice tersimpan.' });
+  });
+
+  // VOLUNTEERABLES CRUD ENDPOINTS
+  app.get('/api/volunteerables', async (req, res) => {
+    let list = db.loadLocalVolunteerables();
+    if (state.db) {
+      try {
+        const snap = await getDocs(collection(state.db, "volunteerables"));
+        const dbList = [];
+        snap.forEach(docSnap => {
+          dbList.push({ discordId: docSnap.id, ...docSnap.data() });
+        });
+        if (dbList.length > 0) {
+          list = dbList;
+          db.saveLocalVolunteerables(list);
+        }
+      } catch (e) {}
+    }
+    res.json(list);
+  });
+
+  app.post('/api/volunteerables', requireClientToken, async (req, res) => {
+    const { discordId, addedBy } = req.body;
+    if (!discordId) return res.status(400).json({ error: "discordId wajib diisi" });
+
+    const cleanId = String(discordId).trim();
+    const list = db.loadLocalVolunteerables();
+
+    const existingIdx = list.findIndex(v => v.discordId === cleanId);
+    const item = {
+      discordId: cleanId,
+      addedAt: new Date().toISOString(),
+      addedBy: addedBy || "Admin"
+    };
+
+    if (existingIdx !== -1) {
+      list[existingIdx] = { ...list[existingIdx], ...item };
+    } else {
+      list.push(item);
+    }
+    db.saveLocalVolunteerables(list);
+
+    // Sync user role
+    const localUsers = db.loadLocalUsers();
+    let targetUserKey = Object.keys(localUsers).find(k => k === cleanId || k === `sim-discord-${cleanId}` || localUsers[k].discordId === cleanId);
+    if (!targetUserKey) {
+      targetUserKey = `sim-discord-${cleanId}`;
+      localUsers[targetUserKey] = {
+        uid: targetUserKey,
+        name: `Volunteer (${cleanId})`,
+        role: "Volunteer Theater",
+        discordId: cleanId,
+        cv: 0,
+        points: 0
+      };
+    } else {
+      localUsers[targetUserKey].role = "Volunteer Theater";
+    }
+    db.saveLocalUsers(localUsers);
+
+    if (state.db) {
+      try {
+        await setDoc(doc(state.db, "volunteerables", cleanId), item);
+        const userRef = doc(state.db, "users", targetUserKey);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          await updateDoc(userRef, { role: "Volunteer Theater" });
+        } else {
+          await setDoc(userRef, {
+            uid: targetUserKey,
+            name: `Volunteer (${cleanId})`,
+            role: "Volunteer Theater",
+            discordId: cleanId,
+            cv: 0,
+            points: 0
+          });
+        }
+      } catch (e) {}
+    }
+
+    global.broadcastWsUpdate('global');
+    res.json({ success: true, volunteerables: list });
+  });
+
+  app.delete('/api/volunteerables/:id', requireClientToken, async (req, res) => {
+    const { id } = req.params;
+    const cleanId = String(id).trim();
+
+    let list = db.loadLocalVolunteerables();
+    list = list.filter(v => v.discordId !== cleanId);
+    db.saveLocalVolunteerables(list);
+
+    const localUsers = db.loadLocalUsers();
+    const targetUserKey = Object.keys(localUsers).find(k => k === cleanId || k === `sim-discord-${cleanId}` || localUsers[k].discordId === cleanId);
+    if (targetUserKey && cleanId !== "661135501226672129" && cleanId !== "1410583272173600819") {
+      localUsers[targetUserKey].role = "Penonton Teater";
+      db.saveLocalUsers(localUsers);
+    }
+
+    if (state.db) {
+      try {
+        await deleteDoc(doc(state.db, "volunteerables", cleanId));
+        if (targetUserKey && cleanId !== "661135501226672129" && cleanId !== "1410583272173600819") {
+          await updateDoc(doc(state.db, "users", targetUserKey), { role: "Penonton Teater" });
+        }
+      } catch (e) {}
+    }
+
+    global.broadcastWsUpdate('global');
+    res.json({ success: true, volunteerables: list });
   });
 
   // Setup cron cycles

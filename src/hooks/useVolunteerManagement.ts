@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { db, isFirebaseConfigured } from "../lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { signedFetch } from "../lib/api";
 
 interface Volunteer {
@@ -53,10 +53,10 @@ export function useVolunteerManagement({
     if (!fetchedFromBackend && isFirebaseConfigured && db) {
       try {
         const querySnapshot = await withTimeout(getDocs(collection(db, "volunteerables")));
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach((docSnap) => {
           list.push({
-            discordId: doc.id,
-            ...doc.data()
+            discordId: docSnap.id,
+            ...docSnap.data()
           });
         });
       } catch (err) {
@@ -67,7 +67,9 @@ export function useVolunteerManagement({
     if (list.length === 0 && !fetchedFromBackend && (!isFirebaseConfigured || !db)) {
       const saved = localStorage.getItem("crunchy_volunteerables");
       if (saved) {
-        list = JSON.parse(saved);
+        try {
+          list = JSON.parse(saved);
+        } catch (e) {}
       }
     }
 
@@ -85,7 +87,7 @@ export function useVolunteerManagement({
     setErrorMessage(null);
     try {
       const addedAt = new Date().toISOString();
-      const addedBy = currentUser.email || "Sim";
+      const addedBy = currentUser?.email || "Sim";
 
       // 1. Post to bot server backend
       let savedToBackend = false;
@@ -102,18 +104,43 @@ export function useVolunteerManagement({
         console.warn("Gagal terhubung ke API backend bot untuk tambah volunteer:", err);
       }
 
-      // 3. Fallback/simulation write to localStorage if not saved to backend
-      if (!savedToBackend && (!isFirebaseConfigured || !db)) {
-        const saved = localStorage.getItem("crunchy_volunteerables");
-        const list = saved ? JSON.parse(saved) : [];
-        if (!list.some((v: any) => v.discordId === cleanId)) {
-          list.push({ discordId: cleanId, addedAt, addedBy });
-          localStorage.setItem("crunchy_volunteerables", JSON.stringify(list));
-        }
+      // 2. Direct write to Firestore
+      if (isFirebaseConfigured && db) {
+        try {
+          const item = { discordId: cleanId, addedAt, addedBy };
+          await withTimeout(setDoc(doc(db, "volunteerables", cleanId), item));
 
-        // Sim sync user roles in local simulation
-        const usersSaved = localStorage.getItem("crunchy_users");
-        if (usersSaved) {
+          const targetUserKey = `sim-discord-${cleanId}`;
+          const userRef = doc(db, "users", targetUserKey);
+          const userSnap = await withTimeout(getDoc(userRef)).catch(() => null);
+          if (userSnap && userSnap.exists()) {
+            await withTimeout(updateDoc(userRef, { role: "Volunteer Theater" }));
+          } else {
+            await withTimeout(setDoc(userRef, {
+              uid: targetUserKey,
+              name: `Volunteer (${cleanId})`,
+              role: "Volunteer Theater",
+              discordId: cleanId,
+              cv: 0,
+              points: 0
+            }));
+          }
+        } catch (dbErr: any) {
+          console.warn("⚠️ Firestore write volunteerable notice:", dbErr.message);
+        }
+      }
+
+      // 3. LocalStorage fallback
+      const saved = localStorage.getItem("crunchy_volunteerables");
+      const list = saved ? JSON.parse(saved) : [];
+      if (!list.some((v: any) => v.discordId === cleanId)) {
+        list.push({ discordId: cleanId, addedAt, addedBy });
+        localStorage.setItem("crunchy_volunteerables", JSON.stringify(list));
+      }
+
+      const usersSaved = localStorage.getItem("crunchy_users");
+      if (usersSaved) {
+        try {
           const users = JSON.parse(usersSaved);
           let updated = false;
           users.forEach((u: any) => {
@@ -125,7 +152,7 @@ export function useVolunteerManagement({
           if (updated) {
             localStorage.setItem("crunchy_users", JSON.stringify(users));
           }
-        }
+        } catch (e) {}
       }
 
       setNewVolunteerId("");
@@ -156,18 +183,37 @@ export function useVolunteerManagement({
         console.warn("Gagal terhubung ke API backend bot untuk hapus volunteer:", err);
       }
 
-      // 3. Fallback/simulation write to localStorage if not saved to backend
-      if (!deletedFromBackend && (!isFirebaseConfigured || !db)) {
-        const saved = localStorage.getItem("crunchy_volunteerables");
-        if (saved) {
+      // 2. Direct delete from Firestore
+      if (isFirebaseConfigured && db) {
+        try {
+          await withTimeout(deleteDoc(doc(db, "volunteerables", cleanId)));
+          if (cleanId !== "661135501226672129" && cleanId !== "1410583272173600819") {
+            const targetUserKey = `sim-discord-${cleanId}`;
+            const userRef = doc(db, "users", targetUserKey);
+            const userSnap = await withTimeout(getDoc(userRef)).catch(() => null);
+            if (userSnap && userSnap.exists()) {
+              await withTimeout(updateDoc(userRef, { role: "Penonton Teater" }));
+            }
+          }
+        } catch (dbErr: any) {
+          console.warn("⚠️ Firestore delete volunteerable notice:", dbErr.message);
+        }
+      }
+
+      // 3. LocalStorage fallback
+      const saved = localStorage.getItem("crunchy_volunteerables");
+      if (saved) {
+        try {
           let list = JSON.parse(saved);
           list = list.filter((v: any) => v.discordId !== cleanId);
           localStorage.setItem("crunchy_volunteerables", JSON.stringify(list));
-        }
+        } catch (e) {}
+      }
 
-        if (cleanId !== "661135501226672129" && cleanId !== "1410583272173600819") {
-          const usersSaved = localStorage.getItem("crunchy_users");
-          if (usersSaved) {
+      if (cleanId !== "661135501226672129" && cleanId !== "1410583272173600819") {
+        const usersSaved = localStorage.getItem("crunchy_users");
+        if (usersSaved) {
+          try {
             const users = JSON.parse(usersSaved);
             let updated = false;
             users.forEach((u: any) => {
@@ -179,7 +225,7 @@ export function useVolunteerManagement({
             if (updated) {
               localStorage.setItem("crunchy_users", JSON.stringify(users));
             }
-          }
+          } catch (e) {}
         }
       }
 
