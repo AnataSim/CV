@@ -299,14 +299,32 @@ async function rotateDynamicRoleColors() {
     const colorInt2 = parseInt(hex2.replace('#', ''), 16);
 
     const token = state.client.token || process.env.DISCORD_TOKEN;
-    const rest = new REST({ version: '10' }).setToken(token);
+    const url = `https://discord.com/api/v10/guilds/${GUILD_ID}/roles/${role.id}`;
 
-    // Send array of 2 colors for Gradient style
-    await rest.patch(Routes.guildRole(GUILD_ID, role.id), {
-      body: {
-        colors: [colorInt1, colorInt2]
-      }
+    const patchPayload = {
+      colors: [colorInt1, colorInt2],
+      theme_style: 1,
+      role_style: 1,
+      style: 1,
+      colors_theme: 1
+    };
+
+    const resApi = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bot ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(patchPayload)
     });
+
+    if (!resApi.ok) {
+      const errText = await resApi.text();
+      console.warn(`⚠️ [DynamicRoleColor] Discord API PATCH status ${resApi.status}: ${errText}`);
+    } else {
+      const resJson = await resApi.json();
+      console.log(`🎨 [DynamicRoleColor] Discord API Response:`, JSON.stringify(resJson));
+    }
 
     console.log(`🎨 [DynamicRoleColor] Role "${role.name}" (${role.id}) berhasil diperbarui ke Gradien Warna Laut: ${hex1} & ${hex2}`);
     return { name: role.name, hex1, hex2 };
