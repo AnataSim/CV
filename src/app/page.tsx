@@ -1324,7 +1324,7 @@ export default function CrunchyVerseStage() {
       badge: "BAGIAN 01 · PENGANTAR",
       icon: <Sparkles className="h-5 w-5 text-sky-400 animate-pulse" />,
       points: [
-        "Materi interaktif bertema Honkai: Star Rail 4.3.",
+        "Materi interaktif bertema Honkai: Star Rail 4.5.",
         "Visualisasi kasta teater & persamaan algebra secara real-time.",
         "Presentasi visual performa tinggi dengan transisi velvet."
       ]
@@ -2384,7 +2384,7 @@ export default function CrunchyVerseStage() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-neutral-400 hover:text-white px-4 py-3.5 font-bold text-xs tracking-wider uppercase border border-neutral-800 hover:border-neutral-600 rounded-xl bg-theater-black/40 hover:bg-neutral-900/40 transition-all"
             >
-              <span>Honkai: Star Rail 4.3</span>
+              <span>Honkai: Star Rail 4.5</span>
               <img 
                 src="/march7th.png" 
                 alt="March 7th" 
@@ -3312,7 +3312,7 @@ export default function CrunchyVerseStage() {
                 PROYEK <span className="text-sky-400">DIVERGENT UNIVERSE</span>
               </h2>
               <p className="text-xs text-neutral-500 mt-1.5 font-medium max-w-lg">
-                Blueprint &amp; draf materi presentasi teater — visual interaktif Divergent Universe (Honkai: Star Rail 4.3). Menunggu berkas gambar dari Volunteer.
+                Blueprint &amp; draf materi presentasi teater — visual interaktif Divergent Universe (Honkai: Star Rail 4.5). Menunggu berkas gambar dari Volunteer.
               </p>
             </div>
 
