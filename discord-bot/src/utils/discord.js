@@ -258,16 +258,16 @@ const DYNAMIC_ROLE_ID = '1538853148213641236';
 
 function generateOceanThemeHexPair() {
   const oceanPairs = [
-    { hex1: '#00C9FF', hex2: '#92FE9D' }, // Aqua & Seafoam Green
-    { hex1: '#0083B0', hex2: '#00B4DB' }, // Deep Ocean Blue & Sky Cyan
-    { hex1: '#1CB5E0', hex2: '#000851' }, // Electric Cyan & Deep Navy
-    { hex1: '#1A2980', hex2: '#26D0CE' }, // Marine Blue & Turquoise
-    { hex1: '#00d2ff', hex2: '#3a7bd5' }, // Ocean Wave Blue
-    { hex1: '#005C97', hex2: '#363795' }, // Sapphire Ocean
-    { hex1: '#0575E6', hex2: '#00F260' }, // Deep Trench Emerald Teal
-    { hex1: '#4B6CB7', hex2: '#182848' }, // Dark Abyssal Sea
-    { hex1: '#2193b0', hex2: '#6dd5ed' }, // Soft Aqua Breeze
-    { hex1: '#11998e', hex2: '#38ef7d' }  // Coral Reef Teal
+    { hex1: '#00C9FF', hex2: '#005C97' }, // Electric Cyan & Deep Ocean Blue
+    { hex1: '#0083B0', hex2: '#00B4DB' }, // Deep Sea & Sky Cyan
+    { hex1: '#1CB5E0', hex2: '#000851' }, // Electric Cyan & Midnight Navy
+    { hex1: '#1A2980', hex2: '#26D0CE' }, // Sapphire Royal & Bright Turquoise
+    { hex1: '#00d2ff', hex2: '#3a7bd5' }, // Ocean Wave Blue & Cobalt
+    { hex1: '#005C97', hex2: '#363795' }, // Sapphire Ocean & Ultramarine
+    { hex1: '#0284c7', hex2: '#06b6d4' }, // Deep Blue & Ocean Cyan
+    { hex1: '#4B6CB7', hex2: '#182848' }, // Dark Abyssal Sapphire
+    { hex1: '#2193b0', hex2: '#6dd5ed' }, // Soft Aqua Breeze & Ice Blue
+    { hex1: '#0284c7', hex2: '#38bdf8' }  // Sky Aqua & Marine Blue
   ];
   return oceanPairs[Math.floor(Math.random() * oceanPairs.length)];
 }
