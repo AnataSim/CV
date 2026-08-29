@@ -1788,8 +1788,8 @@ export default function CrunchyVerseStage() {
         <div className="fixed inset-0 z-[100] overflow-hidden pointer-events-auto">
           {/* Theatrical Curtain Left */}
           <div 
-            className={`absolute top-0 left-0 bottom-0 w-1/2 curtain-fabric transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] z-[101] origin-left border-r-4 border-theater-gold/50 ${
-              curtainsOpened ? "-translate-x-[90%] scale-x-95 rotate-y-12" : "translate-x-0"
+            className={`absolute top-0 left-0 bottom-0 w-1/2 curtain-fabric transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] z-[101] origin-left ${
+              curtainsOpened ? "-translate-x-full opacity-0 pointer-events-none" : "translate-x-0 border-r-4 border-theater-gold/50"
             }`}
           >
             <div className="absolute inset-0 curtain-shadow-right" />
@@ -1797,8 +1797,8 @@ export default function CrunchyVerseStage() {
 
           {/* Theatrical Curtain Right */}
           <div 
-            className={`absolute top-0 right-0 bottom-0 w-1/2 curtain-fabric transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] z-[101] origin-right border-l-4 border-theater-gold/50 ${
-              curtainsOpened ? "translate-x-[90%] scale-x-95 rotate-y-12" : "translate-x-0"
+            className={`absolute top-0 right-0 bottom-0 w-1/2 curtain-fabric transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] z-[101] origin-right ${
+              curtainsOpened ? "translate-x-full opacity-0 pointer-events-none" : "translate-x-0 border-l-4 border-theater-gold/50"
             }`}
           >
             <div className="absolute inset-0 curtain-shadow-left" />
@@ -2130,9 +2130,6 @@ export default function CrunchyVerseStage() {
         
         {/* 4. Stage Grid Overlay Pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
-
-        {/* Theatrical Curtain Header Trim */}
-        <div className="w-full h-4 bg-gradient-to-r from-theater-red-dark via-theater-red-light to-theater-red-dark border-b border-theater-gold/50 shadow-md flex items-center justify-center relative z-10" />
 
         {/* Dashboard Content Container */}
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 md:py-10 flex-1 flex flex-col gap-6 md:gap-8 justify-center relative z-10">
@@ -2710,9 +2707,6 @@ export default function CrunchyVerseStage() {
         
         <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
 
-        {/* Theatrical Top Trim */}
-        <div className="w-full h-4 bg-gradient-to-r from-theater-gold-dim via-theater-gold to-theater-gold-dim border-b border-theater-gold/60 shadow-md relative z-10" />
-
         {/* Content Area */}
         <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
 
@@ -2833,9 +2827,6 @@ export default function CrunchyVerseStage() {
         
         <div className="absolute inset-0 bg-[radial-gradient(#e51a2d_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
 
-        {/* Theatrical Top Trim */}
-        <div className="w-full h-4 bg-gradient-to-r from-theater-red-dark via-theater-red to-theater-red-dark border-b border-theater-red-light/30 shadow-md relative z-10" />
-
         {/* Content Area */}
         <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
 
@@ -2948,9 +2939,6 @@ export default function CrunchyVerseStage() {
         </div>
         
         <div className="absolute inset-0 bg-[radial-gradient(#0ea5e9_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
-
-        {/* Theatrical Top Trim */}
-        <div className="w-full h-4 bg-gradient-to-r from-sky-900 via-sky-500 to-sky-900 border-b border-sky-400/40 shadow-md shadow-sky-950/20 relative z-10" />
 
         {/* Content Area - Enlarge frame container to max-w-7xl */}
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
@@ -3367,9 +3355,6 @@ export default function CrunchyVerseStage() {
         </div>
         
         <div className="absolute inset-0 bg-[radial-gradient(#0ea5e9_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
-
-        {/* Theatrical Top Trim */}
-        <div className="w-full h-4 bg-gradient-to-r from-sky-950 via-sky-500 to-sky-950 border-b border-sky-400/40 shadow-md shadow-sky-950/20 relative z-10" />
 
         {/* Content Area */}
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
@@ -4216,7 +4201,7 @@ export default function CrunchyVerseStage() {
       <section
         id="stage-game"
         ref={frame7Ref}
-        className="scroll-frame bg-theater-black relative z-20 flex flex-col"
+        className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col flex-1"
         style={{
           background: 'radial-gradient(circle at top right, #110002 0%, #060102 100%)'
         }}
