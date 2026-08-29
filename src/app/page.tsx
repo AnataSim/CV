@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import { 
@@ -164,20 +164,20 @@ const isUserAdmin = (role: string | null) => {
 };
 
 const MOCK_VOICE_MEMBERS = [
-  { name: "[HokBen] SALZ", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=salz", isLive: true, badgeText: "165 ðŸŒŸ" },
-  { name: "[???] \"Ð¸@tw|| f@â•¦w|| K\"", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=natw", badgeText: "192 ..." },
-  { name: "[AFK] T0ddei", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=toddei", badgeText: "HKS", roleValueSymbol: "1 ðŸŒŸ" },
-  { name: "[AFK] ÊžNI7B", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=blink", roleValueSymbol: "1 ðŸŒŸ" },
-  { name: "[Doomsday] Yae ã‚¨ãƒ´ã‚¡", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=yae", isMuted: true, roleValueSymbol: "1..." },
+  { name: "[HokBen] SALZ", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=salz", isLive: true, badgeText: "165 ⭐" },
+  { name: '[???] natw', avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=natw", badgeText: "192 ..." },
+  { name: "[AFK] T0ddei", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=toddei", badgeText: "HKS", roleValueSymbol: "1 ⭐" },
+  { name: "[AFK] BLINK", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=blink", roleValueSymbol: "1 ⭐" },
+  { name: "[Doomsday] Yae エヴァ", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=yae", isMuted: true, roleValueSymbol: "1..." },
   { name: "[Milk] CrunchyWeeb", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=crunchyweeb", isMuted: true },
-  { name: "[Sim] Raiid", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=silver", isMuted: true, badgeText: "KRPC", roleValueSymbol: "3 ðŸŒŸ" },
-  { name: "Dari Kontak Anda", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=kontak", roleValueSymbol: "190 ðŸŒŸ" },
+  { name: "[Sim] Raiid", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=silver", isMuted: true, badgeText: "KRPC", roleValueSymbol: "3 ⭐" },
+  { name: "Dari Kontak Anda", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=kontak", roleValueSymbol: "190 ⭐" },
   { name: "Fuzu's Friend", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=friend", isSpeaking: true },
-  { name: "J.R.R. Tolkienii", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=tolkien", isMuted: true, roleValueSymbol: "29 ðŸŒŸ" },
+  { name: "J.R.R. Tolkienii", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=tolkien", isMuted: true, roleValueSymbol: "29 ⭐" },
   { name: "Jing Liu", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=jingliu", isDeafened: true },
   { name: "Lofi Girl", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=lofi", isMuted: true, isDeafened: true },
-  { name: "Sparxie | âˆž âœ¨", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie", isMuted: true, roleValueSymbol: "âˆž âœ¨" },
-  { name: "âœ¨ Alice", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=alice", isMuted: true, isDeafened: true, roleValueSymbol: "1 ðŸŒŸ" }
+  { name: "Sparxie | ∞ ✨¨", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=sparxie", isMuted: true, roleValueSymbol: "∞ ✨¨" },
+  { name: "✨¨ Alice", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=alice", isMuted: true, isDeafened: true, roleValueSymbol: "1 ⭐" }
 ];
 
 export default function CrunchyVerseStage() {
@@ -207,18 +207,18 @@ export default function CrunchyVerseStage() {
 
   // Sparxie Live Chat States
   const [chatChannelsList, setChatChannelsList] = useState<Array<{ id: string; name: string; type: string; desc: string }>>([
-    { id: "portal", name: "âœ¨ â”‡ portal", type: "text", desc: "Portal informasi utama Anomaly CrunchyVerse ðŸŽª" },
-    { id: "command", name: "ðŸ’¬ â”‡ command", type: "text", desc: "Kanal command bot Sparxie ðŸ¤–" },
-    { id: "share-meme", name: "ðŸŒ  â”‡ share-meme", type: "text", desc: "Tempat berbagi meme lucu & gokil ðŸ¿" },
-    { id: "talking", name: "ðŸ’¬ â”‡ talking", type: "text", desc: "Kanal ngobrol santai sesama Anomaly ðŸ—£ï¸" },
-    { id: "share-leak", name: "ðŸ”’ â”‡ share-leak", type: "text", desc: "Bocoran rahasia & konten eksklusif teater ðŸ¤«" },
-    { id: "share-info", name: "ðŸ‘ï¸ â”‡ share-info", type: "text", desc: "Informasi dan update terhangat ðŸ‘ï¸" },
-    { id: "share-garem", name: "ðŸ¥› â”‡ share-garem", type: "text", desc: "Kanal berbagi garam / gacha pulls ðŸ§‚" },
-    { id: "stream", name: "â€¼ï¸ â”‡ stream", type: "text", desc: "Notifikasi siaran langsung & live teater ðŸ”´" },
-    { id: "voice-afk", name: "ðŸ“‡ : AFK", type: "voice", desc: "Saluran AFK Anomaly ðŸ’¤" },
-    { id: "voice-jtc", name: "âž• â”‡ JOIN TO CREATE", type: "voice", desc: "Bergabung untuk membuat saluran suara baru âž•" },
-    { id: "voice-studyroom", name: "ðŸ“‡ : STUDY ROOM", type: "voice", desc: "Kanal belajar & diskusi serius ðŸ“š" },
-    { id: "voice-existence", name: "ðŸ“Š â”‡ Existence: 346", type: "voice", desc: "Saluran statistik keanggotaan real-time ðŸ“Š" }
+    { id: "portal", name: "✨ ╎ portal", type: "text", desc: "Portal informasi utama Anomaly CrunchyVerse 🎪" },
+    { id: "command", name: "💬 ╎ command", type: "text", desc: "Kanal command bot Sparxie 🤖" },
+    { id: "share-meme", name: "🌟 ╎ share-meme", type: "text", desc: "Tempat berbagi meme lucu & gokil 🍿" },
+    { id: "talking", name: "💬 ╎ talking", type: "text", desc: "Kanal ngobrol santai sesama Anomaly 🗣️" },
+    { id: "share-leak", name: "🔒 ╎ share-leak", type: "text", desc: "Bocoran rahasia & konten eksklusif teater 🤫" },
+    { id: "share-info", name: "👁️ ╎ share-info", type: "text", desc: "Informasi dan update terhangat 👁️" },
+    { id: "share-garem", name: "🧂 ╎ share-garem", type: "text", desc: "Kanal berbagi garam / gacha pulls 🧂" },
+    { id: "stream", name: "‼️ ╎ stream", type: "text", desc: "Notifikasi siaran langsung & live teater 🔴" },
+    { id: "voice-afk", name: "📻 : AFK", type: "voice", desc: "Saluran AFK Anomaly 💤" },
+    { id: "voice-jtc", name: "➕ ╎ JOIN TO CREATE", type: "voice", desc: "Bergabung untuk membuat saluran suara baru ➕" },
+    { id: "voice-studyroom", name: "📻 : STUDY ROOM", type: "voice", desc: "Kanal belajar & diskusi serius 📚" },
+    { id: "voice-existence", name: "📊 ╎ Existence: 346", type: "voice", desc: "Saluran statistik keanggotaan real-time 📊" }
   ]);
   const [activeChatChannel, setActiveChatChannel] = useState<string>("portal");
   const [pinnedChannels, setPinnedChannels] = useState<string[]>([]);
@@ -298,7 +298,7 @@ export default function CrunchyVerseStage() {
   // Volunteer Control Booth manual overrides
   const [manualOverride, setManualOverride] = useState(false);
   const [isLiveOverride, setIsLiveOverride] = useState(true);
-  const [liveTitleOverride, setLiveTitleOverride] = useState("LIVESTREAM OVERRIDE: Nobar Seru & Ngobrol Anomaly! ðŸŽªðŸ¿");
+  const [liveTitleOverride, setLiveTitleOverride] = useState("LIVESTREAM OVERRIDE: Nobar Seru & Ngobrol Anomaly! 🎪🍿");
 
   // Live Data States
   const [stats, setStats] = useState<DiscordStats>({
@@ -343,13 +343,13 @@ export default function CrunchyVerseStage() {
 
   const [voiceTotalCount, setVoiceTotalCount] = useState(0);
   const [voiceChannelName, setVoiceChannelName] = useState("acheron otw t0");
-  const [voiceChannelStatus, setVoiceChannelStatus] = useState<string | null>("[04:00] â€¢ Silhouette - Pastel Ghost");
+  const [voiceChannelStatus, setVoiceChannelStatus] = useState<string | null>("[04:00] • Silhouette - Pastel Ghost");
 
   const parseVoiceStatus = (statusStr: string | null) => {
     if (!statusStr) return { duration: null, track: null, seed: "Silence" };
     
-    // Check if it matches [MM:SS] â€¢ Track Info
-    const match = statusStr.match(/^\[([\d:]+)\]\s*â€¢?\s*(.*)$/);
+    // Check if it matches [MM:SS] • Track Info
+    const match = statusStr.match(/^\[([\d:]+)\]\s*•?\s*(.*)$/);
     if (match) {
       return {
         duration: match[1],
@@ -369,7 +369,7 @@ export default function CrunchyVerseStage() {
   const [broadcasts, setBroadcasts] = useState<BroadcastMessage[]>([
     {
       id: "b1",
-      content: "ðŸŽª **PERTUNJUKAN AKBAR RESMI DIMULAI!** \n\nHalo para Anomaly sekalian! Malam ini tirai CrunchyVerse resmi dibuka lebar. Persiapkan tempat duduk Anda di barisan terdepan! Kami menghadirkan panggung interaktif baru ini khusus untuk Anda semua. \n\nBagikan keseruan ini ke teman-teman dan dapatkan role eksklusif malam ini!",
+      content: "🎪 **PERTUNJUKAN AKBAR RESMI DIMULAI!** \n\nHalo para Anomaly sekalian! Malam ini tirai CrunchyVerse resmi dibuka lebar. Persiapkan tempat duduk Anda di barisan terdepan! Kami menghadirkan panggung interaktif baru ini khusus untuk Anda semua. \n\nBagikan keseruan ini ke teman-teman dan dapatkan role eksklusif malam ini!",
       author: "Pimpinan Produksi",
       authorAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=stage-manager",
       timestamp: "Hari Ini pukul 08:30",
@@ -377,7 +377,7 @@ export default function CrunchyVerseStage() {
     },
     {
       id: "b2",
-      content: "ðŸ¿ **DIVISI KERUPUK & KERIPIK BERTEMPUR!** \n\nPertarungan sengit antara sekte Kerupuk gurih melawan sekte Keripik renyah akan dimulai di panggung koloseum suara malam ini pukul 20.00 WIB. Siapakah yang akan membawa pulang mahkota garing termegah? Pilih kubu Anda sekarang di channel #roles!",
+      content: "🍿 **DIVISI KERUPUK & KERIPIK BERTEMPUR!** \n\nPertarungan sengit antara sekte Kerupuk gurih melawan sekte Keripik renyah akan dimulai di panggung koloseum suara malam ini pukul 20.00 WIB. Siapakah yang akan membawa pulang mahkota garing termegah? Pilih kubu Anda sekarang di channel #roles!",
       author: "Sutradara Event",
       authorAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=director",
       timestamp: "Kemarin pukul 18:15",
@@ -559,12 +559,12 @@ export default function CrunchyVerseStage() {
       const wsProtocol = clean.startsWith("https") ? "wss" : "ws";
       const wsHost = clean.replace(/^https?:\/\//, "");
       const wsUrl = `${wsProtocol}://${wsHost}/sync`;
-      console.log("ðŸ”Œ Connecting to WebSocket:", wsUrl);
+      console.log("🔌 Connecting to WebSocket:", wsUrl);
       socket = new WebSocket(wsUrl);
       socketRef.current = socket;
 
       socket.onopen = () => {
-        console.log("âœ… WebSocket Connected");
+        console.log("✅ WebSocket Connected");
         setWsConnected(true);
       };
  
@@ -624,18 +624,18 @@ export default function CrunchyVerseStage() {
             setSyncGameData(updatedGameData);
           }
         } catch (err) {
-          console.error("âŒ Error parsing WS message:", err);
+          console.error("❌ Error parsing WS message:", err);
         }
       };
  
       socket.onclose = () => {
-        console.log("ðŸ”Œ WebSocket Disconnected, reconnecting in 3s...");
+        console.log("🔌 WebSocket Disconnected, reconnecting in 3s...");
         setWsConnected(false);
         reconnectTimer = setTimeout(connectWs, 3000);
       };
  
       socket.onerror = (err) => {
-        console.error("âŒ WebSocket Error:", err);
+        console.error("❌ WebSocket Error:", err);
         socket.close();
       };
     };
@@ -681,7 +681,7 @@ export default function CrunchyVerseStage() {
               dealt: storedDeck.dealt || false,
               cardStatuses: storedDeck.statuses || {}
             }));
-            console.log("âš¡ Instant deck load from localStorage cache for:", currentUser.uid);
+            console.log("⚡ Instant deck load from localStorage cache for:", currentUser.uid);
           }
         } catch (e) {
           console.error("Gagal parse cached deck:", e);
@@ -736,7 +736,7 @@ export default function CrunchyVerseStage() {
 
           // If cached profile exists, instantly set UI states to avoid loading screen or latency
           if (cachedProfile) {
-            console.log("âš¡ Instant profile load from localStorage cache:", cachedProfile.name);
+            console.log("⚡ Instant profile load from localStorage cache:", cachedProfile.name);
             setCurrentUser(firebaseUser);
             setDisplayName(cachedProfile.name);
             setUserRole(cachedProfile.role);
@@ -777,10 +777,10 @@ export default function CrunchyVerseStage() {
               const userDoc = await Promise.race([userDocPromise, timeoutPromise]) as any;
               if (userDoc && userDoc.exists()) {
                 firestoreData = userDoc.data();
-                console.log("ðŸ”¥ Successfully pre-fetched user profile from Firestore:", firestoreData);
+                console.log("🔥¥ Successfully pre-fetched user profile from Firestore:", firestoreData);
               }
             } catch (err) {
-              console.warn("âš ï¸ Firestore fetch timed out or failed on profile pre-fetch:", err);
+              console.warn("⚠️ï¸ Firestore fetch timed out or failed on profile pre-fetch:", err);
             }
 
             let resolvedRole = "Penonton Teater";
@@ -829,7 +829,7 @@ export default function CrunchyVerseStage() {
               if (isFirebaseConfigured && db && firestoreData && firestoreData.role !== resolvedRole) {
                 try {
                   await setDoc(doc(db, "users", firebaseUser.uid), { role: resolvedRole }, { merge: true });
-                  console.log(`ðŸ”¥ Auto-synced user role in Firestore to: ${resolvedRole}`);
+                  console.log(`🔥¥ Auto-synced user role in Firestore to: ${resolvedRole}`);
                 } catch (e) {
                   console.warn("Gagal sync user role di Firestore:", e);
                 }
@@ -837,21 +837,21 @@ export default function CrunchyVerseStage() {
 
               // Fetch live Discord username and avatar from bot server
               try {
-                console.log(`ðŸ¤– Fetching live name/avatar from Bot API for Discord ID: "${discordId}"...`);
+                console.log(`🤖 Fetching live name/avatar from Bot API for Discord ID: "${discordId}"...`);
                 const botRes = await fetch(`${backendUrl}/api/discord-user/${discordId}`);
                 if (botRes.ok) {
                   const botData = await botRes.json();
                   if (botData && botData.displayName && botData.displayName !== "Discord Penonton") {
                     resolvedName = botData.displayName;
-                    console.log(`ðŸŽ¯ Successfully resolved live name: "${resolvedName}"`);
+                    console.log(`🎯 Successfully resolved live name: "${resolvedName}"`);
                   }
                   if (botData && botData.avatar) {
                     resolvedAvatar = botData.avatar;
-                    console.log(`ðŸ–¼ï¸ Successfully resolved live avatar URL: "${resolvedAvatar}"`);
+                    console.log(`🖼️ï¸ Successfully resolved live avatar URL: "${resolvedAvatar}"`);
                   }
                 }
               } catch (botErr) {
-                console.warn("âš ï¸ Bot API unreachable for Discord user fetch:", botErr);
+                console.warn("⚠️ï¸ Bot API unreachable for Discord user fetch:", botErr);
               }
 
               // Fallback to Firebase's default display name or email if bot returned fallback
@@ -878,7 +878,7 @@ export default function CrunchyVerseStage() {
             let loadedChannels: any[] | null = null;
             if (firestoreData && firestoreData.customChannels) {
               loadedChannels = firestoreData.customChannels;
-              console.log("ðŸ”¥ Successfully loaded custom channels from Firestore:", loadedChannels);
+              console.log("🔥¥ Successfully loaded custom channels from Firestore:", loadedChannels);
             }
 
             if (!loadedChannels && typeof window !== "undefined") {
@@ -886,7 +886,7 @@ export default function CrunchyVerseStage() {
               if (savedForUser) {
                 try {
                   loadedChannels = JSON.parse(savedForUser);
-                  console.log("ðŸ’¾ Loaded custom channels from localStorage (user specific):", loadedChannels);
+                  console.log("💾 Loaded custom channels from localStorage (user specific):", loadedChannels);
                 } catch (e) {
                   console.error("Gagal parse user specific channels:", e);
                 }
@@ -900,7 +900,7 @@ export default function CrunchyVerseStage() {
               cachedProfile.role !== resolvedRole ||
               cachedProfile.avatar !== resolvedAvatar
             ) {
-              console.log("ðŸ”„ Background verification complete, updating user profile states & cache.");
+              console.log("🔥„ Background verification complete, updating user profile states & cache.");
               setDisplayName(resolvedName);
               setUserRole(resolvedRole);
               setUserAvatar(resolvedAvatar);
@@ -923,7 +923,7 @@ export default function CrunchyVerseStage() {
 
           // Kick off background updates without awaiting (non-blocking)
           resolveProfileBackground().catch(err => {
-            console.error("âš ï¸ Error in background profile resolver:", err);
+            console.error("⚠️ï¸ Error in background profile resolver:", err);
           });
 
         } else {
@@ -1000,7 +1000,7 @@ export default function CrunchyVerseStage() {
           if (savedForUser) {
             try {
               setChatChannelsList(JSON.parse(savedForUser));
-              console.log(`ðŸ’¾ [Simulation Mode] Loaded custom channels for ${sessionUser.name}:`, JSON.parse(savedForUser));
+              console.log(`💾 [Simulation Mode] Loaded custom channels for ${sessionUser.name}:`, JSON.parse(savedForUser));
             } catch (e) {
               console.error("Failed to parse simulated user specific channels:", e);
             }
@@ -1093,8 +1093,8 @@ export default function CrunchyVerseStage() {
 
   // Forward boundary wheel events from ALL scroll-frame-inner sections
   // to the snap container so normal snap navigation is preserved.
-  // - Scroll UP at top    â†’ snap to previous frame
-  // - Scroll DOWN at bottom â†’ snap to next frame
+  // - Scroll UP at top    → snap to previous frame
+  // - Scroll DOWN at bottom → snap to next frame
   useEffect(() => {
     const snapContainer = containerRef.current;
     if (!snapContainer) return;
@@ -1134,7 +1134,7 @@ export default function CrunchyVerseStage() {
       }, 500); // Allow transition animation to finish before re-enabling snapping
     };
 
-    // Attach to every snap frame (scroll-frame = Frame 1, scroll-frame-inner = Frames 2â€“6)
+    // Attach to every snap frame (scroll-frame = Frame 1, scroll-frame-inner = Frames 2–6)
     const innerFrames = snapContainer.querySelectorAll<HTMLElement>(".scroll-frame, .scroll-frame-inner");
     innerFrames.forEach(el => el.addEventListener("wheel", handleInnerFrameWheel, { passive: false }));
 
@@ -1244,7 +1244,7 @@ export default function CrunchyVerseStage() {
       title: "Divergent Universe: Pengantar Anomaly",
       subtitle: "Konsep Dasar & Struktur Presentasi Teater",
       desc: "Divergent Universe merupakan pilar utama materi presentasi teater CrunchyVerse. Panggung ini didesain untuk mendemonstrasikan mekanika kalkulasi persamaan teater secara visual, interaktif, dan premium.",
-      badge: "BAGIAN 01 Â· PENGANTAR",
+      badge: "BAGIAN 01 · PENGANTAR",
       icon: <Sparkles className="h-5 w-5 text-sky-400 animate-pulse" />,
       points: [
         "Materi interaktif bertema Honkai: Star Rail 4.3.",
@@ -1256,7 +1256,7 @@ export default function CrunchyVerseStage() {
       title: "Sistem Kalkulasi Persamaan Teater",
       subtitle: "Formula & Algoritma Value Role (CV)",
       desc: "Kalkulasi kasta Anomaly CrunchyVerse didasarkan pada perolehan role Discord yang memiliki bobot nominal terhitung. Sistem secara otomatis memetakan member dengan kontribusi nilai poin tertinggi.",
-      badge: "BAGIAN 02 Â· MEKANIKA",
+      badge: "BAGIAN 02 · MEKANIKA",
       icon: <Award className="h-5 w-5 text-amber-400 animate-pulse" />,
       points: [
         "Bobot nilai otomatis diuraikan dari nama role Discord.",
@@ -1268,7 +1268,7 @@ export default function CrunchyVerseStage() {
       title: "Weighted Curios & Buffs Panggung",
       subtitle: "Interaksi Pengguna & Fitur Hiburan",
       desc: "Teater CrunchyVerse menyediakan berbagai Weighted Curios dan Buff panggung seperti status live otomatis untuk TikTok, sinkronisasi bot Cakey, serta broadcast pengumuman server.",
-      badge: "BAGIAN 03 Â· INTEGRASI",
+      badge: "BAGIAN 03 · INTEGRASI",
       icon: <Radio className="h-5 w-5 text-rose-400 animate-pulse" />,
       points: [
         "Status live TikTok Volunteer dengan deteksi cron 3 menit.",
@@ -1280,7 +1280,7 @@ export default function CrunchyVerseStage() {
       title: "Persamaan Aljabar: Ekstrapolasi Numerik",
       subtitle: "Meningkatkan Akurasi Perhitungan Panggung",
       desc: "Modul ekstrapolasi numerik memproyeksikan pertumbuhan Value Role (CV) setiap Anomaly berdasarkan tren keaktifan bulanan dan keikutsertaan event panggung CrunchyVerse.",
-      badge: "BAGIAN 04 Â· PERSAMAAN",
+      badge: "BAGIAN 04 · PERSAMAAN",
       icon: <Activity className="h-5 w-5 text-sky-400 animate-pulse" />,
       points: [
         "Prediksi tren pertumbuhan keaktifan berkala.",
@@ -1292,7 +1292,7 @@ export default function CrunchyVerseStage() {
       title: "Weighted Curios: Mekanisme Berkah Sakti",
       subtitle: "Item Koleksi Khusus & Pengubah Stat Panggung",
       desc: "Curios memberikan bonus multipler stat kepada Anomaly di leaderboard. Beberapa Curios legendaris dapat melipatgandakan perolehan poin dari aktivitas streaming dan partisipasi event teater.",
-      badge: "BAGIAN 05 Â· CURIOS",
+      badge: "BAGIAN 05 · CURIOS",
       icon: <Sparkles className="h-5 w-5 text-amber-400 animate-pulse" />,
       points: [
         "Multiplier bonus hingga 2.5x untuk panggung utama.",
@@ -1304,7 +1304,7 @@ export default function CrunchyVerseStage() {
       title: "Proses Ekstraksi & Pemetaan Memori",
       subtitle: "Penyimpanan Berkas Latar Belakang & Log Teater",
       desc: "Sistem penyimpanan modular teater merekam log transaksi bot secara efisien. Memastikan seluruh data riwayat kenaikan level dan pencapaian Anomaly terarsip dengan aman.",
-      badge: "BAGIAN 06 Â· EKSTRAKSI",
+      badge: "BAGIAN 06 · EKSTRAKSI",
       icon: <Save className="h-5 w-5 text-rose-400 animate-pulse" />,
       points: [
         "Log transaksi real-time dengan skema fail-safe.",
@@ -1316,7 +1316,7 @@ export default function CrunchyVerseStage() {
       title: "Event Berkah (Buffs) Panggung Utama",
       subtitle: "Event Musiman & Pengganda Poin Terjadwal",
       desc: "Buff panggung diaktifkan selama pertunjukan langsung atau perayaan khusus CrunchyVerse. Meningkatkan interaksi penonton dan memberikan penghargaan instan bagi partisipan aktif.",
-      badge: "BAGIAN 07 Â· BUFFS",
+      badge: "BAGIAN 07 · BUFFS",
       icon: <Radio className="h-5 w-5 text-sky-400 animate-pulse" />,
       points: [
         "Event drop rate tinggi setiap akhir pekan teater.",
@@ -1328,7 +1328,7 @@ export default function CrunchyVerseStage() {
       title: "Tantangan Anomaly: Ujian Bos & Musuh",
       subtitle: "Statistik Pertempuran & Strategi Kemenangan",
       desc: "Papan klasemen tantangan mencatat kecepatan penyelesaian rintangan Divergent Universe. Hanya Anomaly dengan strategi Weighted Curios terbaik yang mampu menembus rekor tercepat.",
-      badge: "BAGIAN 08 Â· TANTANGAN",
+      badge: "BAGIAN 08 · TANTANGAN",
       icon: <Award className="h-5 w-5 text-amber-400 animate-pulse" />,
       points: [
         "Leaderboard khusus kecepatan klir (Clear Time).",
@@ -1340,7 +1340,7 @@ export default function CrunchyVerseStage() {
       title: "Sinkronisasi Discord & API Web Teater",
       subtitle: "Komunikasi Dua Arah Berkecepatan Tinggi",
       desc: "Memastikan sinkronisasi data instan antara bot Discord dan web front-end CrunchyVerse. Setiap pembaruan kasta, status live, atau log aktivitas langsung tecermin dalam hitungan milidetik.",
-      badge: "BAGIAN 09 Â· INTEGRASI",
+      badge: "BAGIAN 09 · INTEGRASI",
       icon: <Tv className="h-5 w-5 text-rose-400 animate-pulse" />,
       points: [
         "Websockets untuk pembaruan instan tanpa refresh halaman.",
@@ -1352,7 +1352,7 @@ export default function CrunchyVerseStage() {
       title: "Menunggu Gambar Presentasi Penuh",
       subtitle: "Draf Slide Blueprint Akhir CrunchyVerse",
       desc: "Blueprint presentasi modular ini telah siap sepenuhnya secara fungsional. Kirimkan berkas gambar presentasi akhir Anda (.png/.jpg) untuk menggantikan blueprint draf teater ini secara instan!",
-      badge: "BAGIAN 10 Â· KESIMPULAN",
+      badge: "BAGIAN 10 · KESIMPULAN",
       icon: <Tv className="h-5 w-5 text-emerald-400 animate-pulse" />,
       points: [
         "Tata letak modular slide responsif (desktop & mobile).",
@@ -1459,7 +1459,7 @@ export default function CrunchyVerseStage() {
         sensitive: true
       });
     } catch (err) {
-      console.warn("âš ï¸ Gagal menyimpan saluran ke bot backend:", err);
+      console.warn("⚠️ï¸ Gagal menyimpan saluran ke bot backend:", err);
     }
 
     if (isFirebaseConfigured && db && currentUser) {
@@ -1467,9 +1467,9 @@ export default function CrunchyVerseStage() {
         await withTimeout(setDoc(doc(db, "users", currentUser.uid), {
           customChannels: updatedList
         }, { merge: true }));
-        console.log("ðŸ’¾ Berhasil menyimpan daftar saluran ke Firebase Firestore.");
+        console.log("💾 Berhasil menyimpan daftar saluran ke Firebase Firestore.");
       } catch (err) {
-        console.error("âš ï¸ Gagal menyimpan saluran ke Firebase Firestore:", err);
+        console.error("⚠️ï¸ Gagal menyimpan saluran ke Firebase Firestore:", err);
       }
     }
   };
@@ -1514,14 +1514,14 @@ export default function CrunchyVerseStage() {
 
     // Fallback: Simulation quick-add
     const name = customChannelType === "text" 
-      ? `âœ¨ â”‡ custom-${id.slice(-4)}` 
-      : `ðŸ“‡ : CUSTOM-${id.slice(-4)}`;
+      ? `✨¨ ╎ custom-${id.slice(-4)}` 
+      : `📻 : CUSTOM-${id.slice(-4)}`;
     
     const newChan = {
       id,
       name,
       type: customChannelType,
-      desc: `Saluran simulasi kustom terintegrasi (ID: ${id}) ðŸŽ­`
+      desc: `Saluran simulasi kustom terintegrasi (ID: ${id}) 🎭`
     };
 
     const updated = [...chatChannelsList, newChan];
@@ -1591,9 +1591,9 @@ export default function CrunchyVerseStage() {
           if (!chatChannelsList.some(c => c.id === activeChatChannel)) {
             const newChan = {
               id: activeChatChannel,
-              name: `âœ¨ â”‡ custom-${activeChatChannel.slice(-4)}`,
+              name: `✨¨ ╎ custom-${activeChatChannel.slice(-4)}`,
               type: "text",
-              desc: `Saluran terintegrasi (ID: ${activeChatChannel}) ðŸŽ­`
+              desc: `Saluran terintegrasi (ID: ${activeChatChannel}) 🎭`
             };
             const updated = [...chatChannelsList, newChan];
             saveChannelsToDb(updated);
@@ -1710,7 +1710,7 @@ export default function CrunchyVerseStage() {
       ...prev,
       isLive: nextLiveState,
       liveTitle: nextLiveState 
-        ? "ðŸŽª STAGE LIVE: Nobar Konser & Chit-chat Bareng Member Anomaly! ðŸ¿"
+        ? "🎪 STAGE LIVE: Nobar Konser & Chit-chat Bareng Member Anomaly! 🍿"
         : null
     }));
     
@@ -2096,9 +2096,9 @@ export default function CrunchyVerseStage() {
                   <span className={`hidden sm:inline text-[9px] font-black tracking-widest uppercase mt-0.5 leading-none ${
                     isUserAdmin(userRole) ? "text-theater-gold" : "text-neutral-400"
                   }`}>
-                    {userRole === "Volunteer Theater" ? "ðŸŽ­ VOLUNTEER" : 
-                     userRole === "Ketua Kerupuk" ? "ðŸ‘‘ KETUA KERUPUK" : 
-                     userRole === "Ketua Keripik" ? "ðŸ‘‘ KETUA KERIPIK" : "ðŸ¿ PENONTON"}
+                    {userRole === "Volunteer Theater" ? "🎭 VOLUNTEER" : 
+                     userRole === "Ketua Kerupuk" ? "👑 KETUA KERUPUK" : 
+                     userRole === "Ketua Keripik" ? "👑 KETUA KERIPIK" : "🍿 PENONTON"}
                   </span>
                 </div>
 
@@ -2350,7 +2350,7 @@ export default function CrunchyVerseStage() {
                             : 'border-neutral-800 bg-neutral-900/60 text-neutral-400'
                         }`}>
                           <span className={`h-1.5 w-1.5 rounded-full ${tiktok.isLive ? 'bg-theater-red-light animate-ping' : 'bg-neutral-600'}`} />
-                          {tiktok.isLive ? 'ðŸ”´ AIRING (LIVESTREAM)' : 'âš« INTERMISSION / SHOW OVER'}
+                          {tiktok.isLive ? '🔴 AIRING (LIVESTREAM)' : '⚫ INTERMISSION / SHOW OVER'}
                         </span>
                       </div>
                     </div>
@@ -2415,7 +2415,7 @@ export default function CrunchyVerseStage() {
                         <div className="flex items-start gap-2.5 min-w-0">
                           <Radio size={16} className="text-theater-red-light shrink-0 mt-0.5 animate-pulse" />
                           <span className="font-sans font-semibold tracking-wide text-neutral-100 truncate sm:whitespace-normal">
-                            {tiktok.liveTitle || "ðŸŽª STAGE LIVE: Panggung Pertunjukan CrunchyVerse! ðŸ¿"}
+                            {tiktok.liveTitle || "🎪 STAGE LIVE: Panggung Pertunjukan CrunchyVerse! 🍿"}
                           </span>
                         </div>
                         {isUserAdmin(userRole) && (
@@ -2467,7 +2467,7 @@ export default function CrunchyVerseStage() {
                               {msg.authorAvatar ? (
                                 <img src={msg.authorAvatar} alt="Sender Avatar" className="h-full w-full" />
                               ) : (
-                                <span className="text-xs">ðŸ¤–</span>
+                                <span className="text-xs">🤖</span>
                               )}
                             </div>
                             <div>
@@ -2547,7 +2547,7 @@ export default function CrunchyVerseStage() {
                               <div className="h-3.5 w-3.5 shrink-0" />
                             )}
                             {statusDuration && <span className="text-emerald-400 font-mono">[{statusDuration}]</span>}
-                            <span className="truncate">{statusDuration ? `â€¢ ${statusTrack}` : statusTrack}</span>
+                            <span className="truncate">{statusDuration ? `• ${statusTrack}` : statusTrack}</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1.5 mt-1 text-[10px] text-neutral-400 font-medium">
@@ -2776,13 +2776,13 @@ export default function CrunchyVerseStage() {
             <p className="flex items-center justify-center gap-1">
               <span>Made with premium velvet styling for CrunchyVerse Show</span>
               <Heart size={10} className="text-theater-red-light fill-theater-red-light animate-pulse" />
-              <span>Â© 2026. All rights reserved.</span>
+              <span>© 2026. All rights reserved.</span>
             </p>
           </div>
         </footer>
       </section>
 
-      {/* FRAME 3: ARSIP KASTA â€” ROLE & SEKTE STORAGE */}
+      {/* FRAME 3: ARSIP KASTA — ROLE & SEKTE STORAGE */}
       <section
         id="stage-roles"
         className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col overflow-hidden"
@@ -2830,13 +2830,13 @@ export default function CrunchyVerseStage() {
             <div>
               <div className="flex items-center gap-2 text-theater-gold text-xs font-bold uppercase tracking-widest mb-1.5">
                 <Shield size={13} />
-                <span>Arsip Kasta Teater Â· Frame III</span>
+                <span>Arsip Kasta Teater · Frame III</span>
               </div>
               <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-wide uppercase select-none">
                 PENYIMPANAN <span className="text-theater-gold">ROLE &amp; SEKTE</span>
               </h2>
               <p className="text-xs text-neutral-500 mt-1.5 font-medium max-w-lg">
-                Buku besar kasta panggung â€” nama, warna, kekuasaan, pemegang role, dan besaran Value Role dari tiap hierarki CrunchyVerse.
+                Buku besar kasta panggung — nama, warna, kekuasaan, pemegang role, dan besaran Value Role dari tiap hierarki CrunchyVerse.
               </p>
             </div>
 
@@ -2856,7 +2856,7 @@ export default function CrunchyVerseStage() {
                 onClick={scrollToStage}
                 className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
               >
-                â†‘ <span>Kembali ke Lobi</span>
+                ↑ <span>Kembali ke Lobi</span>
               </button>
             </div>
           </div>
@@ -2884,7 +2884,7 @@ export default function CrunchyVerseStage() {
             className="bg-gradient-to-r from-theater-red to-theater-red-dark hover:from-theater-red-light hover:to-theater-red text-white font-black text-[10px] tracking-widest uppercase py-2.5 px-6 rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer border border-theater-red-light/20"
           >
             <Award size={13} />
-            <span>Buka Papan Jawara â†“</span>
+            <span>Buka Papan Jawara ↓</span>
           </button>
         </div>
 
@@ -2893,7 +2893,7 @@ export default function CrunchyVerseStage() {
           <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-theater-gold/50" />
-              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE Â· ARSIP KASTA</span>
+              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE · ARSIP KASTA</span>
             </div>
             <p className="flex items-center justify-center gap-1">
               <span>Data role diambil langsung dari Discord Bot CrunchyVerse</span>
@@ -2903,7 +2903,7 @@ export default function CrunchyVerseStage() {
         </footer>
       </section>
 
-      {/* FRAME 4: PAPAN PERINGKAT JAWARA & VALUE ROLE â€” LEADERBOARD ANOMALY */}
+      {/* FRAME 4: PAPAN PERINGKAT JAWARA & VALUE ROLE — LEADERBOARD ANOMALY */}
       <section
         id="stage-leaderboard"
         className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col overflow-hidden"
@@ -2951,13 +2951,13 @@ export default function CrunchyVerseStage() {
             <div>
               <div className="flex items-center gap-2 text-theater-red-light text-xs font-bold uppercase tracking-widest mb-1.5">
                 <Award size={13} />
-                <span>Panggung Jawara Â· Frame IV</span>
+                <span>Panggung Jawara · Frame IV</span>
               </div>
               <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-wide uppercase select-none">
                 PAPAN PERINGKAT <span className="text-theater-red-light">JAWARA &amp; VALUE ROLE</span>
               </h2>
               <p className="text-xs text-neutral-500 mt-1.5 font-medium max-w-lg">
-                Klasemen keaktifan Anomaly â€” Leveling, Streak, dan Voice Hours dari Cakey Bot, serta 10 Anomaly dengan Value Role (CV) tertinggi.
+                Klasemen keaktifan Anomaly — Leveling, Streak, dan Voice Hours dari Cakey Bot, serta 10 Anomaly dengan Value Role (CV) tertinggi.
               </p>
             </div>
 
@@ -2966,13 +2966,13 @@ export default function CrunchyVerseStage() {
                 onClick={scrollToRoles}
                 className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
               >
-                â†‘ <span>Kembali ke Kasta</span>
+                ↑ <span>Kembali ke Kasta</span>
               </button>
               <button
                 onClick={scrollToStage}
                 className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
               >
-                â†‘ <span>Lobi Utama</span>
+                ↑ <span>Lobi Utama</span>
               </button>
             </div>
           </div>
@@ -3007,7 +3007,7 @@ export default function CrunchyVerseStage() {
           <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-theater-red-light/50" />
-              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE Â· PAPAN JAWARA</span>
+              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE · PAPAN JAWARA</span>
             </div>
             <p className="flex items-center justify-center gap-1">
               <span>Data peringkat diintegrasikan langsung dengan Cakey Bot API &amp; Discord Bot</span>
@@ -3017,7 +3017,7 @@ export default function CrunchyVerseStage() {
         </footer>
       </section>
 
-      {/* FRAME 5: MATERI DIVERGENT UNIVERSE â€” THEATER PRESENTATION BLUEPRINT */}
+      {/* FRAME 5: MATERI DIVERGENT UNIVERSE — THEATER PRESENTATION BLUEPRINT */}
       <section
         id="stage-divergent"
         className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col min-h-screen overflow-hidden"
@@ -3065,13 +3065,13 @@ export default function CrunchyVerseStage() {
             <div>
               <div className="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-widest mb-1.5 animate-pulse">
                 <Tv size={13} />
-                <span>Materi Presentasi Â· Frame V</span>
+                <span>Materi Presentasi · Frame V</span>
               </div>
               <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-wide uppercase select-none">
                 PROYEK <span className="text-sky-400">DIVERGENT UNIVERSE</span>
               </h2>
               <p className="text-xs text-neutral-500 mt-1.5 font-medium max-w-lg">
-                Blueprint &amp; draf materi presentasi teater â€” visual interaktif Divergent Universe (Honkai: Star Rail 4.3). Menunggu berkas gambar dari Volunteer.
+                Blueprint &amp; draf materi presentasi teater — visual interaktif Divergent Universe (Honkai: Star Rail 4.3). Menunggu berkas gambar dari Volunteer.
               </p>
             </div>
 
@@ -3080,13 +3080,13 @@ export default function CrunchyVerseStage() {
                 onClick={scrollToLeaderboard}
                 className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
               >
-                â†‘ <span>Papan Jawara</span>
+                ↑ <span>Papan Jawara</span>
               </button>
               <button
                 onClick={scrollToStage}
                 className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
               >
-                â†‘ <span>Lobi Utama</span>
+                ↑ <span>Lobi Utama</span>
               </button>
             </div>
           </div>
@@ -3411,7 +3411,7 @@ export default function CrunchyVerseStage() {
               className="bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-500 text-white font-black text-[10px] tracking-widest uppercase py-2.5 px-6 rounded-xl shadow-lg shadow-sky-950/20 hover:scale-105 transition-all flex items-center gap-2 cursor-pointer border border-sky-400/20"
             >
               <MessageSquare size={13} />
-              <span>Konsol Obrolan Sparxie â†“</span>
+              <span>Konsol Obrolan Sparxie ↓</span>
             </button>
           )}
         </div>
@@ -3421,7 +3421,7 @@ export default function CrunchyVerseStage() {
           <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-sky-500/50 shadow-md shadow-sky-500/50" />
-              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE Â· PRESENTASI TEATER</span>
+              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE · PRESENTASI TEATER</span>
             </div>
             <p className="flex items-center justify-center gap-1">
               <span>Blueprint materi panggung presentasi modular CrunchyVerse</span>
@@ -3431,7 +3431,7 @@ export default function CrunchyVerseStage() {
         </footer>
       </section>
 
-      {/* FRAME 6: KONSOL OBROLAN SPARXIE â€” INTERAKTIF & LIVE BOT CHAT ROOM */}
+      {/* FRAME 6: KONSOL OBROLAN SPARXIE — INTERAKTIF & LIVE BOT CHAT ROOM */}
       <section
         id="stage-chat"
         ref={frame6Ref}
@@ -3482,13 +3482,13 @@ export default function CrunchyVerseStage() {
             <div>
               <div className="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-widest mb-1.5 animate-pulse">
                 <Bot size={13} />
-                <span>Konsol Obrolan Â· Frame VI</span>
+                <span>Konsol Obrolan · Frame VI</span>
               </div>
               <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-wide uppercase select-none">
                 OBROLAN ANOMALI <span className="text-sky-400">&amp; SPARXIE BOT</span>
               </h2>
               <p className="text-xs text-neutral-500 mt-1.5 font-medium max-w-lg">
-                Terminal komunikasi real-time terintegrasi â€” ngobrol seru dengan asisten cerdas Sparxie atau kirim broadcast langsung to kanal teater Discord CrunchyVerse.
+                Terminal komunikasi real-time terintegrasi — ngobrol seru dengan asisten cerdas Sparxie atau kirim broadcast langsung to kanal teater Discord CrunchyVerse.
               </p>
             </div>
 
@@ -3497,13 +3497,13 @@ export default function CrunchyVerseStage() {
                 onClick={scrollToDivergent}
                 className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
               >
-                â†‘ <span>Materi Divergent</span>
+                ↑ <span>Materi Divergent</span>
               </button>
               <button
                 onClick={scrollToStage}
                 className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
               >
-                â†‘ <span>Lobi Utama</span>
+                ↑ <span>Lobi Utama</span>
               </button>
             </div>
           </div>
@@ -3697,7 +3697,7 @@ export default function CrunchyVerseStage() {
                       className="bg-neutral-950 border border-neutral-900 text-neutral-400 hover:text-white rounded-lg py-1 px-1.5 text-[9px] focus:outline-none shrink-0 font-sans font-semibold cursor-pointer"
                     >
                       <option value="text"># Text</option>
-                      <option value="voice">ðŸŽ™ï¸ Voice</option>
+                      <option value="voice">🎙️ï¸ Voice</option>
                     </select>
                     <button
                       onClick={handleAddCustomChannel}
@@ -3821,18 +3821,18 @@ export default function CrunchyVerseStage() {
                       <button
                         onClick={() => {
                           const defaultList = [
-                            { id: "portal", name: "âœ¨ â”‡ portal", type: "text", desc: "Portal informasi utama Anomaly CrunchyVerse ðŸŽª" },
-                            { id: "command", name: "ðŸ’¬ â”‡ command", type: "text", desc: "Kanal command bot Sparxie ðŸ¤–" },
-                            { id: "share-meme", name: "ðŸŒ  â”‡ share-meme", type: "text", desc: "Tempat berbagi meme lucu & gokil ðŸ¿" },
-                            { id: "talking", name: "ðŸ’¬ â”‡ talking", type: "text", desc: "Kanal ngobrol santai sesama Anomaly ðŸ—£ï¸" },
-                            { id: "share-leak", name: "ðŸ”’ â”‡ share-leak", type: "text", desc: "Bocoran rahasia & konten eksklusif teater ðŸ¤«" },
-                            { id: "share-info", name: "ðŸ‘ï¸ â”‡ share-info", type: "text", desc: "Informasi dan update terhangat ðŸ‘ï¸" },
-                            { id: "share-garem", name: "ðŸ¥› â”‡ share-garem", type: "text", desc: "Kanal berbagi garam / gacha pulls ðŸ§‚" },
-                            { id: "stream", name: "â€¼ï¸ â”‡ stream", type: "text", desc: "Notifikasi siaran langsung & live teater ðŸ”´" },
-                            { id: "voice-afk", name: "ðŸ“‡ : AFK", type: "voice", desc: "Saluran AFK Anomaly ðŸ’¤" },
-                            { id: "voice-jtc", name: "âž• â”‡ JOIN TO CREATE", type: "voice", desc: "Bergabung untuk membuat saluran suara baru âž•" },
-                            { id: "voice-studyroom", name: "ðŸ“‡ : STUDY ROOM", type: "voice", desc: "Kanal belajar & diskusi serius ðŸ“š" },
-                            { id: "voice-existence", name: "ðŸ“Š â”‡ Existence: 346", type: "voice", desc: "Saluran statistik keanggotaan real-time ðŸ“Š" }
+                            { id: "portal", name: "✨ ╎ portal", type: "text", desc: "Portal informasi utama Anomaly CrunchyVerse 🎪" },
+                            { id: "command", name: "💬 ╎ command", type: "text", desc: "Kanal command bot Sparxie 🤖" },
+                            { id: "share-meme", name: "🌟 ╎ share-meme", type: "text", desc: "Tempat berbagi meme lucu & gokil 🍿" },
+                            { id: "talking", name: "💬 ╎ talking", type: "text", desc: "Kanal ngobrol santai sesama Anomaly 🗣️" },
+                            { id: "share-leak", name: "🔒 ╎ share-leak", type: "text", desc: "Bocoran rahasia & konten eksklusif teater 🤫" },
+                            { id: "share-info", name: "👁️ ╎ share-info", type: "text", desc: "Informasi dan update terhangat 👁️" },
+                            { id: "share-garem", name: "🧂 ╎ share-garem", type: "text", desc: "Kanal berbagi garam / gacha pulls 🧂" },
+                            { id: "stream", name: "‼️ ╎ stream", type: "text", desc: "Notifikasi siaran langsung & live teater 🔴" },
+                            { id: "voice-afk", name: "📻 : AFK", type: "voice", desc: "Saluran AFK Anomaly 💤" },
+                            { id: "voice-jtc", name: "➕ ╎ JOIN TO CREATE", type: "voice", desc: "Bergabung untuk membuat saluran suara baru ➕" },
+                            { id: "voice-studyroom", name: "📻 : STUDY ROOM", type: "voice", desc: "Kanal belajar & diskusi serius 📚" },
+                            { id: "voice-existence", name: "📊 ╎ Existence: 346", type: "voice", desc: "Saluran statistik keanggotaan real-time 📊" }
                           ];
                           setChatChannelsList(defaultList);
                           if (typeof window !== "undefined") {
@@ -4061,7 +4061,7 @@ export default function CrunchyVerseStage() {
                         {/* Curated HSR Emoji Tray */}
                         {showEmojiTray && (
                           <div className="absolute bottom-11 right-0 bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 flex gap-1.5 flex-wrap w-[180px] shadow-2xl z-50 animate-fade-in select-none">
-                            {["ðŸŽª", "ðŸ¿", "ðŸ¤–", "âœ¨", "ðŸª", "ðŸ†", "ðŸ¤«", "ðŸ§‹", "ðŸ”´", "ðŸŽ‰", "ðŸŒŸ", "ðŸ’–"].map(emoji => (
+                            {["🎪", "🍿", "🤖", "✨", "🪞", "🏆", "🤫", "🧼", "🔴", "🎉", "⭐", "💖"].map(emoji => (
                               <button
                                 key={emoji}
                                 onClick={() => {
@@ -4305,7 +4305,7 @@ export default function CrunchyVerseStage() {
           <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-sky-500/50 shadow-md shadow-sky-500/50" />
-              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE Â· SPARXIE CHATROOM</span>
+              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE · SPARXIE CHATROOM</span>
             </div>
             <p className="flex items-center justify-center gap-1">
               <span>Konsol terminal komunikasi anomali real-time terintegrasi</span>
