@@ -378,7 +378,7 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
             return (
               <div
                 key={role.id}
-                className="rounded-2xl border overflow-hidden transition-all duration-300"
+                className="relative rounded-2xl border overflow-hidden transition-all duration-300"
                 style={{
                   borderColor: isExpanded ? `${roleColor}50` : "#1a1a1a",
                   boxShadow: isExpanded ? `0 0 30px -4px ${roleColor}20` : "none",
