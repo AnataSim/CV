@@ -273,8 +273,8 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
       try {
         const channel = await state.client.channels.fetch(vChanId).catch(() => null);
         if (channel && channel.type === ChannelType.GuildVoice) {
-          let detectedStatus = null;
-          if (state.jockieMusicStatus) {
+          let detectedStatus = (typeof channel.status === 'string' && channel.status.trim().length > 0) ? channel.status : null;
+          if (!detectedStatus && state.jockieMusicStatus) {
             const timeDiff = Date.now() - state.lastJockieTrackTime;
             if (timeDiff < 1800000) {
               const elapsedTotalSec = Math.floor(timeDiff / 1000);

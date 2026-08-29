@@ -168,8 +168,14 @@ function startRotatingPresence() {
       const jamVoiceStr = `${hrs}:${mins}:${secs}`;
 
       // Helper 3: Music Listener Track Info
-      let trackInfoStr = '[0:00] - CrunchyVerse Stage';
-      if (state.jockieMusicStatus) {
+      let trackInfoStr = '';
+      const vChan = state.client ? state.client.channels.cache.get(vChanId) : null;
+
+      if (vChan && typeof vChan.status === 'string' && vChan.status.trim().length > 0) {
+        trackInfoStr = vChan.status.replace(/\]\s*•\s*/, '] - ');
+      }
+
+      if (!trackInfoStr && state.jockieMusicStatus) {
         const timeDiff = Date.now() - state.lastJockieTrackTime;
         if (timeDiff < 1800000) {
           const elapsedTotalSec = Math.floor(timeDiff / 1000);
@@ -179,27 +185,28 @@ function startRotatingPresence() {
           const trackInfo = statusParts[1] || statusParts[0];
           trackInfoStr = `[${elapsedMin}:${elapsedSec}] - ${trackInfo}`;
         }
-      } else if (state.client) {
-        const channel = state.client.channels.cache.get(vChanId);
-        if (channel && channel.members) {
-          for (const [, m] of channel.members) {
-            const presence = m.presence;
-            if (presence && presence.activities) {
-              const spotify = presence.activities.find(act => act.name === 'Spotify');
-              if (spotify) {
-                let progressStr = '[0:00]';
-                if (spotify.timestamps && spotify.timestamps.start) {
-                  const elapsedMs = Date.now() - spotify.timestamps.start.getTime();
-                  const elapsedMin = Math.floor(elapsedMs / 60000);
-                  const elapsedSec = Math.floor((elapsedMs % 60000) / 1000).toString().padStart(2, '0');
-                  progressStr = `[${elapsedMin}:${elapsedSec}]`;
-                }
-                trackInfoStr = `${progressStr} - ${spotify.details || 'Unknown Track'} - ${spotify.state || 'Unknown Artist'}`;
-                break;
+      } else if (!trackInfoStr && vChan && vChan.members) {
+        for (const [, m] of vChan.members) {
+          const presence = m.presence;
+          if (presence && presence.activities) {
+            const spotify = presence.activities.find(act => act.name === 'Spotify');
+            if (spotify) {
+              let progressStr = '[0:00]';
+              if (spotify.timestamps && spotify.timestamps.start) {
+                const elapsedMs = Date.now() - spotify.timestamps.start.getTime();
+                const elapsedMin = Math.floor(elapsedMs / 60000);
+                const elapsedSec = Math.floor((elapsedMs % 60000) / 1000).toString().padStart(2, '0');
+                progressStr = `[${elapsedMin}:${elapsedSec}]`;
               }
+              trackInfoStr = `${progressStr} - ${spotify.details || 'Unknown Track'} - ${spotify.state || 'Unknown Artist'}`;
+              break;
             }
           }
         }
+      }
+
+      if (!trackInfoStr) {
+        trackInfoStr = '[0:00] - CrunchyVerse Stage';
       }
 
       const presences = [
