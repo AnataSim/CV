@@ -255,8 +255,11 @@ function startRotatingPresence() {
 
 async function registerSlashCommands() {
   if (!state.client || !state.client.user) return;
-  const token = process.env.DISCORD_BOT_TOKEN;
-  if (!token) return;
+  const token = state.client.token || process.env.DISCORD_TOKEN || process.env.DISCORD_BOT_TOKEN;
+  if (!token) {
+    console.error('❌ [SlashCommands] Bot token tidak ditemukan.');
+    return;
+  }
 
   try {
     const commands = [
