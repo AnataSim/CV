@@ -233,24 +233,48 @@ export default function CardHand({
                         </div>
 
                         {/* Front Face (Revealed Card) */}
-                        <div className="card-face card-front border border-theater-gold bg-gradient-to-br from-neutral-950 via-[#100103] to-neutral-950 p-3.5 rounded-2xl flex flex-col justify-between items-center text-center">
-                          <div className="flex flex-col items-center">
-                            <span className={`text-[5.5px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded border ${
-                              quest.difficulty === "Mudah" ? "border-emerald-500/20 bg-emerald-950/40 text-emerald-400" :
-                              quest.difficulty === "Sedang" ? "border-amber-500/20 bg-amber-950/40 text-amber-400" :
-                              quest.difficulty === "Sulit" ? "border-rose-500/20 bg-rose-950/40 text-rose-400" :
-                              "border-fuchsia-500/20 bg-fuchsia-950/40 text-fuchsia-400"
+                        {(() => {
+                          const status = cardStatuses[quest.id] || "active";
+                          const isPendingStatus = status === "pending" || status === "Review";
+                          const isDeniedStatus = status === "Denied";
+
+                          return (
+                            <div className={`card-face card-front border p-3.5 rounded-2xl flex flex-col justify-between items-center text-center transition-all ${
+                              isPendingStatus ? "border-amber-400/80 bg-gradient-to-br from-neutral-950 via-[#1c1203] to-neutral-950 shadow-md shadow-amber-500/20" :
+                              isDeniedStatus ? "border-rose-500/80 bg-gradient-to-br from-neutral-950 via-[#1c0306] to-neutral-950" :
+                              "border-theater-gold bg-gradient-to-br from-neutral-950 via-[#100103] to-neutral-950"
                             }`}>
-                              {quest.difficulty}
-                            </span>
-                            <div className="text-[8.5px] font-extrabold text-white mt-3 truncate w-26 text-center text-ellipsis overflow-hidden whitespace-nowrap">
-                              {quest.title}
+                              <div className="flex flex-col items-center w-full">
+                                <div className="flex items-center gap-1 flex-wrap justify-center">
+                                  <span className={`text-[5.5px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded border ${
+                                    quest.difficulty === "Mudah" ? "border-emerald-500/20 bg-emerald-950/40 text-emerald-400" :
+                                    quest.difficulty === "Sedang" ? "border-amber-500/20 bg-amber-950/40 text-amber-400" :
+                                    quest.difficulty === "Sulit" ? "border-rose-500/20 bg-rose-950/40 text-rose-400" :
+                                    "border-fuchsia-500/20 bg-fuchsia-950/40 text-fuchsia-400"
+                                  }`}>
+                                    {quest.difficulty}
+                                  </span>
+                                  {isPendingStatus && (
+                                    <span className="text-[5.5px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded border border-amber-400/40 bg-amber-950/80 text-amber-300 animate-pulse">
+                                      ⏳ SUBMITTED
+                                    </span>
+                                  )}
+                                  {isDeniedStatus && (
+                                    <span className="text-[5.5px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded border border-rose-500/40 bg-rose-950/80 text-rose-300">
+                                      ❌ DENIED
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[8.5px] font-extrabold text-white mt-2.5 truncate w-26 text-center text-ellipsis overflow-hidden whitespace-nowrap">
+                                  {quest.title}
+                                </div>
+                              </div>
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-[8.5px] text-theater-gold font-mono font-bold">+{quest.points} Poin</span>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="text-[8.5px] text-theater-gold font-mono font-bold">+{quest.points} Poin</span>
-                          </div>
-                        </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   );

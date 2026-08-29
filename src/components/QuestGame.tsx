@@ -573,6 +573,34 @@ export default function QuestGame({
           setIsUploading(false);
           setMediaFile(null);
           
+          setCardStatuses(prev => {
+            const next: Record<string, "active" | "pending" | "Completed" | "Denied"> = { ...prev, [quest.id]: "pending" };
+            if (currentUser?.uid) {
+              const key = `crunchyverse_user_deck_${currentUser.uid}`;
+              const stored = localStorage.getItem(key);
+              if (stored) {
+                try {
+                  const parsed = JSON.parse(stored);
+                  parsed.statuses = next;
+                  localStorage.setItem(key, JSON.stringify(parsed));
+                } catch (e) {}
+              }
+            }
+            return next;
+          });
+
+          if (currentUser?.uid) {
+            signedFetch(`${BACKEND_URL}/api/decks/update-status`, {
+              method: "POST",
+              body: JSON.stringify({
+                uid: currentUser.uid,
+                cardId: quest.id,
+                status: "pending"
+              }),
+              sensitive: true
+            }).catch(() => {});
+          }
+
           if (onTriggerSync) onTriggerSync();
           else fetchDeckFromApi();
           

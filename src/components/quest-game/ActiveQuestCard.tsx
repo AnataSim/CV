@@ -91,60 +91,68 @@ export default function ActiveQuestCard({
           <span className="text-[8px] text-theater-gold font-mono font-bold">+{quest.points} Poin</span>
         </div>
 
-        {questStatus === "pending" && (
-          <div className="p-1.5 border border-yellow-500/20 bg-yellow-950/20 text-yellow-400 rounded-lg text-[8px] font-bold text-center animate-pulse flex items-center justify-center gap-1.5">
-            <span className="h-1 w-1 rounded-full bg-yellow-400 animate-ping" />
-            <span>⏳ Menunggu Persetujuan Admin</span>
-          </div>
-        )}
+        {(() => {
+          const isPendingStatus = questStatus === "pending" || questStatus === "Review";
 
-        {questStatus === "Denied" && (
-          <div className="p-1.5 border border-rose-500/20 bg-rose-950/20 text-rose-300 rounded-lg text-[8px] font-bold text-center flex items-center justify-center gap-1.5 animate-bounce">
-            <span className="h-1 w-1 rounded-full bg-rose-500" />
-            <span>❌ Bukti Ditolak - Unggah Ulang Bukti</span>
-          </div>
-        )}
-
-        {questStatus === "Completed" && (
-          <div className="p-1.5 border border-emerald-500/25 bg-emerald-950/30 text-emerald-400 rounded-lg text-[8px] font-bold text-center flex items-center justify-center gap-1.5">
-            <span className="h-1 w-1 rounded-full bg-emerald-500" />
-            <span>🎉 Selesai / Completed</span>
-          </div>
-        )}
-
-        {questStatus === "pending" ? (
-          <div className="bg-neutral-950/90 border border-neutral-900 rounded-lg p-2.5 text-center text-[9px] text-neutral-500 font-sans italic">
-            Bukti pengerjaan telah dikirim dan sedang diverifikasi oleh Volunteer Teater.
-          </div>
-        ) : questStatus === "Completed" ? (
-          <div className="bg-neutral-950/90 border border-neutral-900 rounded-lg p-2.5 text-center text-[9px] text-emerald-400/90 font-sans italic">
-            Tantangan ini disetujui! Hadiah role dan poin telah diberikan.
-          </div>
-        ) : (
-          <>
-            {/* Clickable compact dropzone */}
-            <div className="relative border border-dashed border-neutral-800 hover:border-theater-gold/30 bg-neutral-950/90 rounded-lg p-2 flex flex-col items-center justify-center text-center cursor-pointer transition-all">
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={handleFileChange}
-                className="absolute inset-0 opacity-0 cursor-pointer z-10"
-              />
-              {mediaFile ? (
-                <div className="flex items-center gap-1 min-w-0">
-                  <Camera size={10} className="text-theater-gold shrink-0 animate-pulse" />
-                  <span className="text-[8px] text-white font-bold truncate max-w-[150px]">{mediaFile.name}</span>
-                  <span className="text-[6px] text-neutral-500 font-mono shrink-0">({(mediaFile.size / (1024 * 1024)).toFixed(1)}M)</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <UploadCloud size={10} className="text-neutral-500" />
-                  <span className="text-[8px] text-neutral-400 font-bold">Pilih foto/video bukti</span>
+          return (
+            <>
+              {isPendingStatus && (
+                <div className="p-1.5 border border-yellow-500/20 bg-yellow-950/20 text-yellow-400 rounded-lg text-[8px] font-bold text-center animate-pulse flex items-center justify-center gap-1.5">
+                  <span className="h-1 w-1 rounded-full bg-yellow-400 animate-ping" />
+                  <span>⏳ Menunggu Persetujuan Admin (Submitted)</span>
                 </div>
               )}
-            </div>
-          </>
-        )}
+
+              {questStatus === "Denied" && (
+                <div className="p-1.5 border border-rose-500/20 bg-rose-950/20 text-rose-300 rounded-lg text-[8px] font-bold text-center flex items-center justify-center gap-1.5 animate-bounce">
+                  <span className="h-1 w-1 rounded-full bg-rose-500" />
+                  <span>❌ Bukti Ditolak - Unggah Ulang Bukti</span>
+                </div>
+              )}
+
+              {questStatus === "Completed" && (
+                <div className="p-1.5 border border-emerald-500/25 bg-emerald-950/30 text-emerald-400 rounded-lg text-[8px] font-bold text-center flex items-center justify-center gap-1.5">
+                  <span className="h-1 w-1 rounded-full bg-emerald-500" />
+                  <span>🎉 Selesai / Completed</span>
+                </div>
+              )}
+
+              {isPendingStatus ? (
+                <div className="bg-neutral-950/90 border border-neutral-900 rounded-lg p-2.5 text-center text-[9px] text-amber-300/90 font-sans italic">
+                  Bukti pengerjaan telah dikirim dan sedang diverifikasi oleh Volunteer Teater.
+                </div>
+              ) : questStatus === "Completed" ? (
+                <div className="bg-neutral-950/90 border border-neutral-900 rounded-lg p-2.5 text-center text-[9px] text-emerald-400/90 font-sans italic">
+                  Tantangan ini disetujui! Hadiah role dan poin telah diberikan.
+                </div>
+              ) : (
+                <>
+                  {/* Clickable compact dropzone */}
+                  <div className="relative border border-dashed border-neutral-800 hover:border-theater-gold/30 bg-neutral-950/90 rounded-lg p-2 flex flex-col items-center justify-center text-center cursor-pointer transition-all">
+                    <input
+                      type="file"
+                      accept="image/*,video/*"
+                      onChange={handleFileChange}
+                      className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                    />
+                    {mediaFile ? (
+                      <div className="flex items-center gap-1 min-w-0">
+                        <Camera size={10} className="text-theater-gold shrink-0 animate-pulse" />
+                        <span className="text-[8px] text-white font-bold truncate max-w-[150px]">{mediaFile.name}</span>
+                        <span className="text-[6px] text-neutral-500 font-mono shrink-0">({(mediaFile.size / (1024 * 1024)).toFixed(1)}M)</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <UploadCloud size={10} className="text-neutral-500" />
+                        <span className="text-[8px] text-neutral-400 font-bold">Pilih foto/video bukti</span>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </>
+          );
+        })()}
 
         {/* Upload Status Feed */}
         {uploadStatus && (
@@ -170,7 +178,7 @@ export default function ActiveQuestCard({
           >
             {questStatus === "Completed" ? "Tutup" : "Batal"}
           </button>
-          {questStatus !== "pending" && questStatus !== "Completed" && (
+          {questStatus !== "pending" && questStatus !== "Review" && questStatus !== "Completed" && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
