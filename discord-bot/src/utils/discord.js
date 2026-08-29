@@ -289,15 +289,33 @@ async function rotateDynamicRoleColors() {
     const colorInt1 = parseInt(hex1.replace('#', ''), 16);
     const colorInt2 = parseInt(hex2.replace('#', ''), 16);
 
-    const token = state.client.token || process.env.DISCORD_TOKEN;
-    const rest = new REST({ version: '10' }).setToken(token);
+    const me = await guild.members.fetchMe().catch(() => null);
+    if (me && role.position >= me.roles.highest.position) {
+      console.warn(`⚠️ [DynamicRoleColor] Role Sparxie (${me.roles.highest.name}, pos: ${me.roles.highest.position}) berposisi di bawah Role ${role.name} (pos: ${role.position})!`);
+      return { error: `Posisi role Sparxie (\`${me.roles.highest.name}\`) harus berada di ATAS role \`${role.name}\` di Server Settings ➔ Roles.` };
+    }
 
-    // Send array of 2 colors to trigger Discord's Gradient Role Style
-    await rest.patch(Routes.guildRole(GUILD_ID, DYNAMIC_ROLE_ID), {
-      body: {
-        colors: [colorInt1, colorInt2]
-      }
-    });
+    let updated = false;
+    try {
+      const token = state.client.token || process.env.DISCORD_TOKEN;
+      const rest = new REST({ version: '10' }).setToken(token);
+
+      // Send array of 2 colors for Gradient style
+      await rest.patch(Routes.guildRole(GUILD_ID, DYNAMIC_ROLE_ID), {
+        body: {
+          colors: [colorInt1, colorInt2]
+        }
+      });
+      updated = true;
+    } catch (apiErr) {
+      console.warn(`⚠️ [DynamicRoleColor] Raw REST patch error (${apiErr.message}), mencoba fallback setColor...`);
+    }
+
+    if (!updated) {
+      await role.setColor(colorInt1).catch(err => {
+        console.error(`❌ [DynamicRoleColor] Fallback setColor error:`, err.message);
+      });
+    }
 
     console.log(`🎨 [DynamicRoleColor] Role "${role.name}" (${DYNAMIC_ROLE_ID}) berhasil diperbarui ke 2 Hex Random: ${hex1} & ${hex2}`);
     return { name: role.name, hex1, hex2 };
@@ -996,7 +1014,9 @@ function initializeBot(token) {
 
       if (lowerContent === "'rotaterole" || lowerContent === "'randomcolor") {
         const res = await rotateDynamicRoleColors();
-        if (res) {
+        if (res && res.error) {
+          return message.reply(`⚠️ **Gagal merotasi warna role:** ${res.error}`);
+        } else if (res) {
           return message.reply(`🎨 **Warna Role "${res.name}" (ID: 1538853148213641236) berhasil diperbarui ke 2 Hex Random:** \`${res.hex1}\` & \`${res.hex2}\` ✨`);
         } else {
           return message.reply('⚠️ **Gagal merotasi warna role.** Pastikan bot memiliki izin Manage Roles & Role ID `1538853148213641236` tersedia.');
