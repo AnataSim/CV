@@ -167,17 +167,13 @@ function startRotatingPresence() {
       const secs = (totalVoiceSec % 60).toString().padStart(2, '0');
       const jamVoiceStr = `${hrs}:${mins}:${secs}`;
 
-      // Helper 3: Music Listener Track Info
+      // Helper 3: Music Listener Track Info (From Bot Listener - Elaina, Jockie, Spotify, etc.)
       let trackInfoStr = '';
-      const vChan = state.client ? state.client.channels.cache.get(vChanId) : null;
 
-      if (vChan && typeof vChan.status === 'string' && vChan.status.trim().length > 0) {
-        trackInfoStr = vChan.status.replace(/\]\s*•\s*/, '] - ');
-      }
-
-      if (!trackInfoStr && state.jockieMusicStatus) {
+      // Priority 1: Bot Music Listener (Elaina, Jockie, etc. with ✅ reaction)
+      if (state.jockieMusicStatus && state.lastJockieTrackTime) {
         const timeDiff = Date.now() - state.lastJockieTrackTime;
-        if (timeDiff < 1800000) {
+        if (timeDiff < 1800000) { // Valid for 30 minutes
           const elapsedTotalSec = Math.floor(timeDiff / 1000);
           const elapsedMin = Math.floor(elapsedTotalSec / 60);
           const elapsedSec = (elapsedTotalSec % 60).toString().padStart(2, '0');
@@ -185,7 +181,11 @@ function startRotatingPresence() {
           const trackInfo = statusParts[1] || statusParts[0];
           trackInfoStr = `[${elapsedMin}:${elapsedSec}] - ${trackInfo}`;
         }
-      } else if (!trackInfoStr && vChan && vChan.members) {
+      }
+
+      // Priority 2: Spotify / Listening presence from active voice channel members
+      const vChan = state.client ? state.client.channels.cache.get(vChanId) : null;
+      if (!trackInfoStr && vChan && vChan.members) {
         for (const [, m] of vChan.members) {
           const presence = m.presence;
           if (presence && presence.activities) {
@@ -205,6 +205,12 @@ function startRotatingPresence() {
         }
       }
 
+      // Priority 3: Native Voice Channel status property
+      if (!trackInfoStr && vChan && typeof vChan.status === 'string' && vChan.status.trim().length > 0) {
+        trackInfoStr = vChan.status.replace(/\]\s*•\s*/, '] - ');
+      }
+
+      // Priority 4: Fallback
       if (!trackInfoStr) {
         trackInfoStr = '[0:00] - CrunchyVerse Stage';
       }
