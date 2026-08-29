@@ -673,8 +673,17 @@ export default function AdminQuestPanel({
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-neutral-500 mt-1 truncate">
-                          {player.userEmail || "Tamu Teater"} • ID: {player.userId}
+                        <span className="text-[10px] text-neutral-500 mt-1 truncate font-mono">
+                          {(() => {
+                            if (player.userObject?.discordUsername) return `@${player.userObject.discordUsername}`;
+                            if (player.userObject?.username) return `@${player.userObject.username}`;
+                            if (player.userEmail && player.userEmail.includes('@crunchyverse.com')) {
+                              const raw = player.userEmail.split('@')[0].replace(/^discord-/, '');
+                              return `@${raw}`;
+                            }
+                            const clean = (player.username || player.userObject?.name || "Pemain").trim();
+                            return clean.startsWith('@') ? clean : `@${clean}`;
+                          })()}
                         </span>
                       </div>
                     </div>
