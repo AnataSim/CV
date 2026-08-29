@@ -302,11 +302,8 @@ async function rotateDynamicRoleColors() {
     const url = `https://discord.com/api/v10/guilds/${GUILD_ID}/roles/${role.id}`;
 
     const patchPayload = {
-      colors: [colorInt1, colorInt2],
-      theme_style: 1,
-      role_style: 1,
-      style: 1,
-      colors_theme: 1
+      color: colorInt1,
+      colors: [colorInt1, colorInt2]
     };
 
     const resApi = await fetch(url, {
