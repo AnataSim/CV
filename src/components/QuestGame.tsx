@@ -348,13 +348,35 @@ export default function QuestGame({
       const res = await signedFetch(`${BACKEND_URL}/api/decks/${currentUser.uid}`);
       if (res.ok) {
         const data = await res.json();
-        setDealtQuests(data.cards || []);
-        setDealt(data.dealt || false);
         const statuses = data.statuses || {};
-        setCardStatuses(statuses);
 
-        const key = `crunchyverse_user_deck_${currentUser.uid}`;
-        localStorage.setItem(key, JSON.stringify(data));
+        if (data.cards && data.cards.length > 0) {
+          setDealtQuests(data.cards);
+          setDealt(true);
+          setCardStatuses(prev => ({ ...prev, ...statuses }));
+
+          const key = `crunchyverse_user_deck_${currentUser.uid}`;
+          localStorage.setItem(key, JSON.stringify({
+            uid: currentUser.uid,
+            dealt: true,
+            cards: data.cards,
+            statuses
+          }));
+        } else {
+          // Fallback to local storage if API returns empty cards but local storage has cards
+          const key = `crunchyverse_user_deck_${currentUser.uid}`;
+          const stored = localStorage.getItem(key);
+          if (stored) {
+            try {
+              const parsed = JSON.parse(stored);
+              if (parsed.cards && parsed.cards.length > 0) {
+                setDealtQuests(parsed.cards);
+                setDealt(true);
+                setCardStatuses(prev => ({ ...prev, ...(parsed.statuses || {}), ...statuses }));
+              }
+            } catch (e) {}
+          }
+        }
         
         const localFlipsKey = `crunchyverse_card_flips_${currentUser.uid}`;
         const localFlipsRaw = localStorage.getItem(localFlipsKey);
@@ -367,7 +389,7 @@ export default function QuestGame({
 
         setCardFlipped(prev => {
           const nextFlips = { ...localFlips, ...prev };
-          (data.cards || []).forEach((q: Quest) => {
+          (data.cards || dealtQuests || []).forEach((q: Quest) => {
             if (statuses[q.id] && statuses[q.id] !== "active") {
               nextFlips[q.id] = true;
             }
@@ -381,9 +403,11 @@ export default function QuestGame({
       if (stored) {
         try {
           const data = JSON.parse(stored);
-          setDealtQuests(data.cards || []);
-          setDealt(data.dealt || false);
-          setCardStatuses(data.statuses || {});
+          if (data.cards && data.cards.length > 0) {
+            setDealtQuests(data.cards);
+            setDealt(true);
+            setCardStatuses(data.statuses || {});
+          }
         } catch (e) {}
       }
     }
@@ -582,9 +606,21 @@ export default function QuestGame({
                 try {
                   const parsed = JSON.parse(stored);
                   parsed.statuses = next;
+                  parsed.dealt = true;
                   localStorage.setItem(key, JSON.stringify(parsed));
                 } catch (e) {}
               }
+            }
+            return next;
+          });
+
+          setCardFlipped(prev => {
+            const next = { ...prev, [quest.id]: true };
+            if (currentUser?.uid) {
+              const localFlipsKey = `crunchyverse_card_flips_${currentUser.uid}`;
+              try {
+                localStorage.setItem(localFlipsKey, JSON.stringify(next));
+              } catch (e) {}
             }
             return next;
           });
@@ -600,9 +636,6 @@ export default function QuestGame({
               sensitive: true
             }).catch(() => {});
           }
-
-          if (onTriggerSync) onTriggerSync();
-          else fetchDeckFromApi();
           
           setTimeout(() => {
             setActiveQuestId(null);

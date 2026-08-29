@@ -1853,8 +1853,18 @@ function registerRoutes(app) {
     }
 
     const decks = db.loadLocalDecks();
+    if (!decks[uid] && state.db) {
+      try {
+        const deckRef = doc(state.db, "user_decks", uid);
+        const deckDoc = await getDoc(deckRef);
+        if (deckDoc.exists()) {
+          decks[uid] = deckDoc.data();
+        }
+      } catch (e) {}
+    }
+
     if (!decks[uid]) {
-      decks[uid] = { uid, dealt: false, cards: [], statuses: {} };
+      decks[uid] = { uid, dealt: true, cards: [], statuses: {} };
     }
     decks[uid].statuses = decks[uid].statuses || {};
     decks[uid].statuses[cardId] = status;
@@ -1865,9 +1875,12 @@ function registerRoutes(app) {
         const deckRef = doc(state.db, "user_decks", uid);
         const deckDoc = await getDoc(deckRef);
         if (deckDoc.exists()) {
-          const statuses = deckDoc.data().statuses || {};
+          const deckData = deckDoc.data();
+          const statuses = deckData.statuses || {};
           statuses[cardId] = status;
           await updateDoc(deckRef, { statuses });
+        } else {
+          await setDoc(deckRef, decks[uid]);
         }
       } catch (e) {}
     }
