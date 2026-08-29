@@ -286,7 +286,10 @@ async function registerSlashCommands() {
         .setDescription('Tampilkan tombol setup Discord Board Profile Widget 🎪'),
       new SlashCommandBuilder()
         .setName('tiktok')
-        .setDescription('Cek status streaming & statistik TikTok @jobetmaritoas 📱')
+        .setDescription('Cek status streaming & statistik TikTok @jobetmaritoas 📱'),
+      new SlashCommandBuilder()
+        .setName('help')
+        .setDescription('Menampilkan daftar menu bantuan perintah bot Sparxie 🎪')
     ].map(cmd => cmd.toJSON());
 
     const rest = new REST({ version: '10' }).setToken(token);
@@ -859,13 +862,58 @@ function initializeBot(token) {
         }
       }
 
+      if (!content.startsWith("'")) return;
+
       const lowerContent = content.toLowerCase();
 
-      if (['\'ping', '!ping', '.ping'].includes(lowerContent)) {
+      if (lowerContent === "'help" || lowerContent === "'h" || lowerContent === "'menu") {
+        const embed = new EmbedBuilder()
+          .setColor('#ffc107')
+          .setTitle('🎪 CrunchyVerse Bot Sparxie — Daftar Perintah (\' )')
+          .setDescription('Gunakan prefix single quote (`\'`) di awal pesan untuk menjalankan perintah Sparxie:\n')
+          .addFields(
+            {
+              name: '🎨 \'clearcolors',
+              value: 'Menghapus warna (*reset to default*) dari semua role yang posisinya berada di bawah hirarki role Sparxie.',
+              inline: false
+            },
+            {
+              name: '🎙️ \'stt on / \'stt off',
+              value: 'Mengaktifkan atau mematikan fitur transkrip suara otomatis (Speech-to-Text) di voice channel.',
+              inline: false
+            },
+            {
+              name: '📱 \'tiktok',
+              value: 'Mengecek status live streaming dan statistik real-time TikTok Volunteer `@jobetmaritoas`.',
+              inline: false
+            },
+            {
+              name: '🎪 \'widget',
+              value: 'Menampilkan tombol & panduan pasang Discord Board Profile Widget v2 di profil Anda.',
+              inline: false
+            },
+            {
+              name: '🏓 \'ping',
+              value: 'Mengecek latensi respon WebSocket & status koneksi bot Sparxie.',
+              inline: false
+            },
+            {
+              name: '❓ \'help',
+              value: 'Menampilkan daftar menu bantuan perintah ini.',
+              inline: false
+            }
+          )
+          .setFooter({ text: 'CrunchyVerse Stage • Asisten Teater Sparxie 🤖', iconURL: state.client.user.displayAvatarURL() })
+          .setTimestamp();
+
+        return message.reply({ embeds: [embed] });
+      }
+
+      if (lowerContent === "'ping") {
         return message.reply(`🏓 **Pong!** Latensi WebSocket Sparxie: \`${state.client.ws.ping}ms\``);
       }
 
-      if (['\'tiktok', '!tiktok', '.tiktok'].includes(lowerContent)) {
+      if (lowerContent === "'tiktok") {
         const tt = state.tiktokState;
         return message.reply(
           `📱 **Status TikTok @${tt.username.replace('@','')}:**\n` +
@@ -878,7 +926,7 @@ function initializeBot(token) {
       }
 
       if (
-        ['\'clearcolors', '!clearcolors', '.clearcolors', '\'clearrolecolors', '!clearrolecolors', '.clearrolecolors', '\'resetcolors', '!resetcolors', '.resetcolors', '\'resetrolecolors', '!resetrolecolors', '.resetrolecolors'].includes(lowerContent)
+        ['\'clearcolors', '\'clearrolecolors', '\'resetcolors', '\'resetrolecolors'].includes(lowerContent)
       ) {
         const guild = message.guild;
         if (!guild) return message.reply('⚠️ Command ini hanya dapat digunakan di dalam server Discord.');
@@ -1340,7 +1388,26 @@ function initializeBot(token) {
         }
 
         if (commandName === 'widget') {
-          return interaction.reply({ content: '🎪 Gunakan pesan `!widget` di channel teks untuk mendapatkan panel setup widget profil!', ephemeral: true });
+          return interaction.reply({ content: '🎪 Gunakan pesan `\'widget` di channel teks untuk mendapatkan panel setup widget profil!', ephemeral: true });
+        }
+
+        if (commandName === 'help') {
+          const embed = new EmbedBuilder()
+            .setColor('#ffc107')
+            .setTitle('🎪 CrunchyVerse Bot Sparxie — Daftar Perintah')
+            .setDescription('Gunakan prefix single quote (`\'`) atau slash commands (`/`) untuk menjalankan perintah Sparxie:\n')
+            .addFields(
+              { name: '🎨 \'clearcolors', value: 'Menghapus warna dari semua role di bawah posisi Sparxie.', inline: false },
+              { name: '🎙️ \'stt on / \'stt off', value: 'Mengaktifkan/mematikan Speech-to-Text di voice channel.', inline: false },
+              { name: '📱 \'tiktok', value: 'Cek status streaming & statistik TikTok @jobetmaritoas.', inline: false },
+              { name: '🎪 \'widget', value: 'Tampilkan panduan pasang Discord Board Profile Widget.', inline: false },
+              { name: '🏓 \'ping', value: 'Cek latensi WebSocket & status bot.', inline: false },
+              { name: '❓ \'help', value: 'Menampilkan daftar menu bantuan perintah ini.', inline: false }
+            )
+            .setFooter({ text: 'CrunchyVerse Stage • Asisten Teater Sparxie 🤖', iconURL: state.client.user.displayAvatarURL() })
+            .setTimestamp();
+
+          return interaction.reply({ embeds: [embed], ephemeral: true });
         }
       }
 
