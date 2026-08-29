@@ -2164,10 +2164,9 @@ export default function CrunchyVerseStage() {
           backgroundAttachment: 'fixed'
         }}
       >
-        {/* Animated Background Environment Layers */}
-        {/* 1. Sweeping Dual Spotlight Beams */}
-        <div className="absolute -top-40 left-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-gold/25 via-theater-red-light/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep opacity-70" />
-        <div className="absolute -top-40 right-1/4 w-[320px] h-[900px] bg-gradient-to-b from-amber-400/20 via-theater-red/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep [animation-delay:-8s] opacity-70" />
+        {/* 1. Ambient Glowing Spotlights */}
+        <div className="absolute top-[-100px] left-1/4 w-[600px] h-[600px] bg-theater-gold/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift opacity-70" />
+        <div className="absolute top-[-100px] right-1/4 w-[600px] h-[600px] bg-theater-red-light/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift [animation-delay:-8s] opacity-70" />
 
         {/* 2. Top & Bottom Glowing Aura Orbs */}
         <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-theater-gold/20 via-theater-red-light/15 to-transparent blur-[110px] pointer-events-none z-0 animate-pulse-glow" />
@@ -2745,8 +2744,8 @@ export default function CrunchyVerseStage() {
         }}
       >
         {/* Animated Background Environment Layers */}
-        <div className="absolute -top-40 left-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-gold/25 via-amber-500/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep opacity-70" />
-        <div className="absolute -top-40 right-1/4 w-[320px] h-[900px] bg-gradient-to-b from-amber-400/20 via-theater-gold-dim/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep [animation-delay:-8s] opacity-70" />
+        <div className="absolute top-[-100px] left-1/4 w-[600px] h-[600px] bg-theater-gold/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift opacity-70" />
+        <div className="absolute top-[-100px] right-1/4 w-[600px] h-[600px] bg-amber-500/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift [animation-delay:-8s] opacity-70" />
 
         <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-theater-gold/20 via-amber-500/15 to-transparent blur-[110px] pointer-events-none z-0 animate-pulse-glow" />
         <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] bg-amber-600/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift" />
@@ -2865,8 +2864,8 @@ export default function CrunchyVerseStage() {
         }}
       >
         {/* Animated Background Environment Layers */}
-        <div className="absolute -top-40 left-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-red-light/25 via-theater-red/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep opacity-70" />
-        <div className="absolute -top-40 right-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-gold/20 via-theater-red-dark/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep [animation-delay:-8s] opacity-70" />
+        <div className="absolute top-[-100px] left-1/4 w-[600px] h-[600px] bg-theater-red-light/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift opacity-70" />
+        <div className="absolute top-[-100px] right-1/4 w-[600px] h-[600px] bg-theater-gold/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift [animation-delay:-8s] opacity-70" />
 
         <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-theater-red-light/20 via-theater-red/15 to-transparent blur-[110px] pointer-events-none z-0 animate-pulse-glow" />
         <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] bg-theater-red/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift" />
@@ -2978,8 +2977,8 @@ export default function CrunchyVerseStage() {
         }}
       >
         {/* Animated Background Environment Layers */}
-        <div className="absolute -top-40 left-1/4 w-[320px] h-[900px] bg-gradient-to-b from-sky-400/25 via-cyan-500/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep opacity-70" />
-        <div className="absolute -top-40 right-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-gold/20 via-sky-900/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep [animation-delay:-8s] opacity-70" />
+        <div className="absolute top-[-100px] left-1/4 w-[600px] h-[600px] bg-sky-400/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift opacity-70" />
+        <div className="absolute top-[-100px] right-1/4 w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift [animation-delay:-8s] opacity-70" />
 
         <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-sky-500/20 via-cyan-400/15 to-transparent blur-[110px] pointer-events-none z-0 animate-pulse-glow" />
         <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] bg-sky-600/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift" />
@@ -3394,8 +3393,8 @@ export default function CrunchyVerseStage() {
         }}
       >
         {/* Animated Background Environment Layers */}
-        <div className="absolute -top-40 left-1/4 w-[320px] h-[900px] bg-gradient-to-b from-sky-500/25 via-cyan-500/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep opacity-70" />
-        <div className="absolute -top-40 right-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-gold/20 via-sky-950/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep [animation-delay:-8s] opacity-70" />
+        <div className="absolute top-[-100px] left-1/4 w-[600px] h-[600px] bg-sky-500/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift opacity-70" />
+        <div className="absolute top-[-100px] right-1/4 w-[600px] h-[600px] bg-theater-gold/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift [animation-delay:-8s] opacity-70" />
 
         <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-sky-400/20 via-sky-500/15 to-transparent blur-[110px] pointer-events-none z-0 animate-pulse-glow" />
         <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] bg-sky-700/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift" />
