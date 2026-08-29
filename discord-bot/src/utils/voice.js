@@ -20,9 +20,30 @@ async function connectToVoiceChannel(guildId, channelId) {
   state.connectionState.status = 'connecting_voice';
   addVoiceAfkLog(`Menghubungkan ke Voice Channel 24/7: Server ${guildId}, Channel ${channelId}...`, 'info');
 
-  const guild = state.client.guilds.cache.get(guildId);
+  let guild = state.client.guilds.cache.get(guildId);
+  if (!guild && guildId) {
+    try {
+      guild = await state.client.guilds.fetch(guildId);
+    } catch (fetchErr) {
+      console.warn(`⚠️ [Voice] Gagal fetch guild ${guildId}:`, fetchErr.message);
+    }
+  }
+
+  // Fallback: Fetch channel directly if guild is still missing
+  if (!guild && channelId) {
+    try {
+      const channel = await state.client.channels.fetch(channelId);
+      if (channel && channel.guild) {
+        guild = channel.guild;
+        guildId = channel.guild.id;
+      }
+    } catch (chanErr) {
+      console.warn(`⚠️ [Voice] Gagal fetch channel ${channelId}:`, chanErr.message);
+    }
+  }
+
   if (!guild) {
-    throw new Error(`Guild ${guildId} tidak ditemukan.`);
+    throw new Error(`Guild ${guildId || 'unknown'} atau Voice Channel ${channelId} tidak ditemukan.`);
   }
 
   // Force destroy any old dead connection handle first to prevent WebRTC stale socket issues
