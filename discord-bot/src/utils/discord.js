@@ -296,9 +296,13 @@ async function rotateDynamicRoleColors() {
       await rest.patch(Routes.guildRole(GUILD_ID, DYNAMIC_ROLE_ID), {
         body: {
           color: colorInt1,
-          colors: [colorInt1, colorInt2]
+          colors: [colorInt1, colorInt2],
+          role_style: 1,
+          style: 1
         }
-      }).catch(() => {});
+      }).catch(err => {
+        console.warn(`⚠️ [DynamicRoleColor] Direct REST patch error:`, err.message);
+      });
     } catch (e) {}
 
     console.log(`🎨 [DynamicRoleColor] Role "${role.name}" (${DYNAMIC_ROLE_ID}) berhasil diperbarui ke 2 Hex Random: ${hex1} & ${hex2}`);
