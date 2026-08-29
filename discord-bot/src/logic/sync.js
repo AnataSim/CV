@@ -274,7 +274,7 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
         const channel = await state.client.channels.fetch(vChanId).catch(() => null);
         if (channel && channel.type === ChannelType.GuildVoice) {
           let detectedStatus = null;
-          if (vChanId === '1435053596742914160' && state.jockieMusicStatus) {
+          if (state.jockieMusicStatus) {
             const timeDiff = Date.now() - state.lastJockieTrackTime;
             if (timeDiff < 1800000) {
               const elapsedTotalSec = Math.floor(timeDiff / 1000);
@@ -283,10 +283,6 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
               const statusParts = state.jockieMusicStatus.split('] • ');
               const trackInfo = statusParts[1] || statusParts[0];
               detectedStatus = `[${elapsedMin}:${elapsedSec}] • ${trackInfo}`;
-              if (state.lastJockieMessage) {
-                state.lastJockieMessage.react('✅').catch(() => {});
-                state.lastJockieMessage = null;
-              }
             }
           }
 

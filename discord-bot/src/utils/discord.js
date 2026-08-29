@@ -677,41 +677,57 @@ function initializeBot(token) {
       }
     });
 
-    // Listen to Jockie Music (Jing Liu) messages to capture playing track
-    state.client.on('messageCreate', (message) => {
-      if (message.author.id === '411916947773587456') {
-        let trackText = null;
+    // ===== MUSIC BOT TRACK DETECTOR & AUTO-REACT (Elaina, Jockie, etc.) =====
+    state.client.on('messageCreate', async (message) => {
+      let trackText = null;
 
-        if (message.embeds && message.embeds.length > 0) {
-          const embed = message.embeds[0];
-          const text = embed.description || embed.title || '';
-          if (text.includes('Started playing') || text.includes('playing')) {
+      // 1. Check Embeds (Elaina, Jockie Music, FredBoat, etc.)
+      if (message.embeds && message.embeds.length > 0) {
+        for (const embed of message.embeds) {
+          const text = [embed.title, embed.description, embed.footer?.text].filter(Boolean).join(' ');
+          if (/(Started playing|Now playing|Playing|Up next|Playing next|Started)/i.test(text)) {
             trackText = text;
+            break;
           }
         }
+      }
 
-        if (!trackText && message.content && (message.content.includes('Started playing') || message.content.includes('playing'))) {
+      // 2. Check Plain Message Content (e.g. "Started playing anything 4 u by LANY")
+      if (!trackText && message.content) {
+        if (/(Started playing|Now playing|Playing|Up next|Playing next)/i.test(message.content)) {
           trackText = message.content;
         }
+      }
 
-        if (trackText) {
-          let cleanText = trackText.replace(/\*\*/g, '');
-          cleanText = cleanText.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
-          cleanText = cleanText.replace(/Started playing\s+/i, '').replace(/playing\s+/i, '').trim();
-          cleanText = cleanText.replace(/<:spotify:\d+>/g, '').replace(/🟢|💚/g, '').trim();
+      if (trackText) {
+        // Clean markdown bold (**), custom emojis, links, markdown links [Title](URL), etc.
+        let cleanText = trackText.replace(/\*\*/g, '');
+        cleanText = cleanText.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+        cleanText = cleanText.replace(/(Started playing|Now playing|Playing next|Up next|Playing)\s+/gi, '').trim();
+        cleanText = cleanText.replace(/<a?:[\w_]+:\d+>/g, '').replace(/🟢|💚|🎵|🎶|🎧|📻|📊/g, '').trim();
 
-          const byIndex = cleanText.lastIndexOf(' by ');
-          let formattedTrack = cleanText;
-          if (byIndex !== -1) {
-            const trackName = cleanText.substring(0, byIndex).trim();
-            const artistName = cleanText.substring(byIndex + 4).trim();
-            formattedTrack = `${trackName} - ${artistName}`;
-          }
+        const byIndex = cleanText.lastIndexOf(' by ');
+        let formattedTrack = cleanText;
+        if (byIndex !== -1) {
+          const trackName = cleanText.substring(0, byIndex).trim();
+          const artistName = cleanText.substring(byIndex + 4).trim();
+          formattedTrack = `${trackName} - ${artistName}`;
+        }
 
+        if (formattedTrack && formattedTrack.length > 1) {
           state.jockieMusicStatus = `[00:00] • ${formattedTrack}`;
           state.lastJockieTrackTime = Date.now();
           state.lastJockieMessage = message;
-          console.log(`🎵 [JockieMusic] Track terdeteksi dari pesan bot (tanpa **): "${state.jockieMusicStatus}"`);
+
+          console.log(`🎵 [Sparxie Music Detector] Track terdeteksi dari pesan (${message.author?.tag || 'App'}): "${formattedTrack}"`);
+
+          // React with checkmark ✅ to acknowledge detection!
+          try {
+            await message.react('✅');
+            console.log(`✅ [Sparxie Music Detector] Berhasil memberikan reaksi centang (✅) pada pesan music!`);
+          } catch (reactErr) {
+            console.warn(`⚠️ [Sparxie Music Detector] Track terdeteksi tapi react ✅ gagal: ${reactErr.message}`);
+          }
         }
       }
     });

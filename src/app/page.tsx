@@ -2302,9 +2302,12 @@ export default function CrunchyVerseStage() {
                 <h4 className="font-bold text-white text-xs truncate group-hover:text-theater-gold transition-colors">
                   {voiceChannelName}
                 </h4>
-                <p className="text-[10px] text-neutral-400 mt-1 line-clamp-1">
-                  {voiceChannelStatus || "Saluran Suara Panggung Aktif"}
-                </p>
+                <div className="flex items-center gap-1.5 text-[10px] text-neutral-300 mt-1 truncate bg-neutral-900/80 px-2 py-0.5 rounded-md border border-neutral-800">
+                  <Activity size={12} className="text-emerald-400 shrink-0 animate-pulse" />
+                  <span className="font-mono text-emerald-400/90 truncate font-bold">
+                    {voiceChannelStatus || "Panggung Suara Online"}
+                  </span>
+                </div>
               </div>
               <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-neutral-900 text-[10px] text-theater-gold font-bold">
                 <span>{voiceMembers.length > 0 ? voiceMembers.length : 14} Member Join</span>
