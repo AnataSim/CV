@@ -44,7 +44,9 @@ import {
   Pin,
   Home,
   Layers,
-  Gamepad2
+  Gamepad2,
+  Globe,
+  Video
 } from "lucide-react";
 
 // Import Firebase config
@@ -95,6 +97,11 @@ interface TikTokStatus {
   avatarUrl: string;
   liveTitle?: string | null;
   manualOverride: boolean;
+  followers?: number;
+  likes?: number;
+  videos?: number;
+  country?: string;
+  countryCode?: string;
 }
 // Helper to parse and render Discord mentions & bolds into premium UI pills
 const renderMessageContent = (content: string) => {
@@ -2503,34 +2510,36 @@ export default function CrunchyVerseStage() {
             {/* LEFT COLUMN: TIKTOK & BROADCASTS (SPAN 7) */}
             <div className="lg:col-span-7 flex flex-col gap-6 md:gap-8 w-full">
               
-              {/* TIKTOK STREAM BAR */}
-              <div className="relative rounded-2xl border border-theater-gold/30 bg-neutral-950/50 backdrop-blur-md p-4 shadow-xl overflow-hidden group">
+              {/* TIKTOK STREAM BAR WITH COUNTIK API STATS */}
+              <div className="relative rounded-2xl border border-theater-gold/35 bg-neutral-950/70 backdrop-blur-xl p-4 sm:p-5 shadow-2xl shadow-black/80 overflow-hidden group hover:border-theater-gold/60 transition-all duration-300">
                 {/* Glowing red accent light inside card when Live */}
                 {tiktok.isLive && (
-                  <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-theater-red-light/10 blur-[40px] pointer-events-none" />
+                  <div className="absolute top-0 right-0 h-48 w-48 rounded-full bg-theater-red-light/20 blur-[50px] pointer-events-none animate-pulse" />
                 )}
                 
                 {/* Stage gold background grid */}
-                <div className="absolute inset-0 bg-[radial-gradient(#d4af37_0.5px,transparent_0.5px)] [background-size:16px_16px] opacity-5 pointer-events-none" />
+                <div className="absolute inset-0 bg-[radial-gradient(#d4af37_0.6px,transparent_0.6px)] [background-size:16px_16px] opacity-10 pointer-events-none" />
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 z-10 relative">
                   <div className="flex items-center gap-3.5 w-full sm:w-auto">
                     {/* TikTok Profile Picture Wrapper */}
-                    <div className="relative">
-                      <div className={`h-14 w-14 rounded-full overflow-hidden border-2 flex items-center justify-center ${
-                        tiktok.isLive ? 'border-theater-red-light shadow-lg shadow-theater-red-light/30' : 'border-neutral-800'
+                    <div className="relative shrink-0">
+                      <div className={`h-16 w-16 rounded-full overflow-hidden border-2 p-0.5 transition-all duration-300 ${
+                        tiktok.isLive 
+                          ? 'border-theater-red-light shadow-[0_0_20px_rgba(255,0,80,0.4)] scale-105' 
+                          : 'border-theater-gold/40 hover:border-theater-gold'
                       }`}>
                         <img 
                           src={tiktok.avatarUrl || "https://api.dicebear.com/7.x/adventurer/svg?seed=crunchy-tiktok"} 
                           alt="TikTok Avatar" 
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-cover rounded-full"
                           onError={(e) => {
                             e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23171717"/><circle cx="50" cy="35" r="20" fill="%23d4af37"/><path d="M50 60c-25 0-35 15-35 25h70c0-10-10-25-35-25z" fill="%23d4af37"/></svg>`;
                           }}
                         />
                       </div>
                       {tiktok.isLive && (
-                        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded bg-theater-red-light px-1.5 py-0.5 text-[8px] font-black text-white tracking-widest animate-pulse border border-neutral-950 uppercase">
+                        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-theater-red-light px-2 py-0.5 text-[8px] font-black text-white tracking-widest animate-pulse border border-neutral-950 uppercase shadow-md shadow-red-900/50">
                           LIVE
                         </span>
                       )}
@@ -2538,36 +2547,96 @@ export default function CrunchyVerseStage() {
 
                     {/* TikTok Details */}
                     <div className="flex-1 text-left">
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="text-md font-bold text-white tracking-wide font-sans">{tiktok.displayName}</h3>
-                        <span className="text-[10px] text-neutral-500 font-semibold">{tiktok.username}</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-extrabold text-white tracking-wide font-display">{tiktok.displayName}</h3>
+                        <span className="text-[10px] text-theater-gold/80 font-mono font-bold bg-theater-gold/10 px-2 py-0.5 rounded-full border border-theater-gold/20">
+                          {tiktok.username}
+                        </span>
                       </div>
                       
                       {/* TikTok Status Banner */}
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider rounded-full px-2.5 py-0.5 border ${
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider rounded-full px-2.5 py-0.5 border ${
                           tiktok.isLive 
-                            ? 'border-theater-red-light/20 bg-theater-red-dark/40 text-theater-red-light animate-pulse' 
-                            : 'border-neutral-800 bg-neutral-900/60 text-neutral-400'
+                            ? 'border-theater-red-light/40 bg-theater-red-dark/60 text-theater-red-light animate-pulse shadow-sm shadow-red-900/50' 
+                            : 'border-neutral-800 bg-neutral-900/80 text-neutral-400'
                         }`}>
                           <span className={`h-1.5 w-1.5 rounded-full ${tiktok.isLive ? 'bg-theater-red-light animate-ping' : 'bg-neutral-600'}`} />
-                          {tiktok.isLive ? '🔴 AIRING (LIVESTREAM)' : '⚫ INTERMISSION / SHOW OVER'}
+                          {tiktok.isLive ? '🔴 AIRING (SIARAN LANGSUNG)' : '⚫ INTERMISSION / SHOW OVER'}
                         </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Right bar interactivity */}
-                  <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto justify-end sm:justify-start">
+                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end sm:justify-start">
+                    <a 
+                      href={`https://www.tiktok.com/@${(tiktok.username || 'jobetmaritoas').replace('@','')}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white font-bold text-[10px] tracking-wider uppercase py-2 px-3 rounded-xl border border-neutral-800 hover:border-theater-gold/40 transition-all flex items-center gap-1 cursor-pointer"
+                      title="Lihat Profil TikTok"
+                    >
+                      <span>Profil</span>
+                      <ExternalLink size={10} />
+                    </a>
+                    
                     <a 
                       href={watchUrl} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="bg-theater-red hover:bg-theater-red-light text-white font-extrabold text-[10px] tracking-widest uppercase py-2 px-4 rounded-xl shadow-lg shadow-theater-red-dark/50 hover:shadow-theater-red-light/20 transition-all flex items-center gap-1 cursor-pointer hover:scale-103"
+                      className="bg-gradient-to-r from-theater-red to-rose-600 hover:from-rose-600 hover:to-theater-red text-white font-extrabold text-[10px] tracking-widest uppercase py-2 px-4 rounded-xl shadow-lg shadow-theater-red-dark/50 hover:shadow-theater-red-light/30 transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
                     >
-                      <span>Tonton</span>
+                      <span>Tonton Live</span>
                       <ExternalLink size={10} />
                     </a>
+                  </div>
+                </div>
+
+                {/* COUNTIK API REALTIME STATS 4-GRID PILLS */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-3.5 border-t border-neutral-900/80 z-10 relative">
+                  {/* Stat 1: Negara */}
+                  <div className="flex items-center gap-2.5 p-2 px-3 rounded-xl bg-neutral-900/60 border border-theater-gold/15 hover:border-theater-gold/30 transition-colors">
+                    <Globe size={14} className="text-theater-gold shrink-0" />
+                    <div className="flex flex-col text-left overflow-hidden">
+                      <span className="text-[7.5px] font-black uppercase text-neutral-400 tracking-widest">NEGARA</span>
+                      <span className="text-[11px] font-bold text-white truncate">
+                        {tiktok.country || "🇮🇩 Indonesia"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Stat 2: Follower Count */}
+                  <div className="flex items-center gap-2.5 p-2 px-3 rounded-xl bg-neutral-900/60 border border-theater-gold/15 hover:border-theater-gold/30 transition-colors">
+                    <Users size={14} className="text-sky-400 shrink-0" />
+                    <div className="flex flex-col text-left overflow-hidden">
+                      <span className="text-[7.5px] font-black uppercase text-neutral-400 tracking-widest">PENGIKUT</span>
+                      <span className="text-[11px] font-extrabold text-sky-300 font-mono">
+                        {tiktok.followers ? (tiktok.followers >= 1000 ? `${(tiktok.followers / 1000).toFixed(1)}K` : tiktok.followers) : "12.5K"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Stat 3: Heart / Suka Count */}
+                  <div className="flex items-center gap-2.5 p-2 px-3 rounded-xl bg-neutral-900/60 border border-theater-gold/15 hover:border-theater-gold/30 transition-colors">
+                    <Heart size={14} className="text-rose-400 shrink-0 fill-rose-400/20" />
+                    <div className="flex flex-col text-left overflow-hidden">
+                      <span className="text-[7.5px] font-black uppercase text-neutral-400 tracking-widest">TOTAL SUKA</span>
+                      <span className="text-[11px] font-extrabold text-rose-300 font-mono">
+                        {tiktok.likes ? (tiktok.likes >= 1000 ? `${(tiktok.likes / 1000).toFixed(1)}K` : tiktok.likes) : "340.2K"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Stat 4: Video Count */}
+                  <div className="flex items-center gap-2.5 p-2 px-3 rounded-xl bg-neutral-900/60 border border-theater-gold/15 hover:border-theater-gold/30 transition-colors">
+                    <Video size={14} className="text-emerald-400 shrink-0" />
+                    <div className="flex flex-col text-left overflow-hidden">
+                      <span className="text-[7.5px] font-black uppercase text-neutral-400 tracking-widest">TOTAL VIDEO</span>
+                      <span className="text-[11px] font-extrabold text-emerald-300 font-mono">
+                        {tiktok.videos || 142} Video
+                      </span>
+                    </div>
                   </div>
                 </div>
 

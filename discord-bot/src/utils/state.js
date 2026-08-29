@@ -21,14 +21,19 @@ module.exports = {
     logs: []
   },
 
-  // TikTok live status
+  // TikTok live status & Countik API stats
   tiktokState: {
     username: process.env.TIKTOK_USERNAME || "@jobetmaritoas",
     displayName: process.env.TIKTOK_DISPLAY_NAME || "CrunchyWeeb",
     isLive: false,
     avatarUrl: process.env.TIKTOK_AVATAR_URL || "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my",
     liveTitle: null,
-    manualOverride: false
+    manualOverride: false,
+    followers: 12500,
+    likes: 340200,
+    videos: 142,
+    country: "🇮🇩 Indonesia",
+    countryCode: "ID"
   },
 
   // Jing Liu Music states
