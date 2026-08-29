@@ -859,7 +859,27 @@ function initializeBot(token) {
         }
       }
 
-      if (['\'clearcolors', '\'clearrolecolors', '\'resetcolors', '\'resetrolecolors'].includes(content.toLowerCase())) {
+      const lowerContent = content.toLowerCase();
+
+      if (['\'ping', '!ping', '.ping'].includes(lowerContent)) {
+        return message.reply(`🏓 **Pong!** Latensi WebSocket Sparxie: \`${state.client.ws.ping}ms\``);
+      }
+
+      if (['\'tiktok', '!tiktok', '.tiktok'].includes(lowerContent)) {
+        const tt = state.tiktokState;
+        return message.reply(
+          `📱 **Status TikTok @${tt.username.replace('@','')}:**\n` +
+          `• **Status:** ${tt.isLive ? '🔴 Airing (Sedang Live!)' : '⚫ Intermission / Offline'}\n` +
+          `• **Pengikut:** ${tt.followers}\n` +
+          `• **Total Suka:** ${tt.likes}\n` +
+          `• **Total Video:** ${tt.videos}\n` +
+          `• **Negara:** ${tt.country}`
+        );
+      }
+
+      if (
+        ['\'clearcolors', '!clearcolors', '.clearcolors', '\'clearrolecolors', '!clearrolecolors', '.clearrolecolors', '\'resetcolors', '!resetcolors', '.resetcolors', '\'resetrolecolors', '!resetrolecolors', '.resetrolecolors'].includes(lowerContent)
+      ) {
         const guild = message.guild;
         if (!guild) return message.reply('⚠️ Command ini hanya dapat digunakan di dalam server Discord.');
 
