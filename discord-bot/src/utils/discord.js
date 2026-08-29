@@ -132,6 +132,53 @@ async function updatePlayerProgressRoles(member, userId) {
   } catch (err) {
     console.error("❌ Error di updatePlayerProgressRoles:", err.message);
   }
+// Rotating Custom Rich Presence (RPC) for Sparxie Bot 🎪
+let presenceIndex = 0;
+function startRotatingPresence() {
+  const presences = [
+    {
+      name: 'CrunchyVerse Stage 🎪 | Akt VII: Tirai Tantangan',
+      type: ActivityType.Playing
+    },
+    {
+      name: 'Lagu & Musik Teater 🎵 | Sound Detector',
+      type: ActivityType.Listening
+    },
+    {
+      name: 'Pemain & Penonton Teater 🍿 | CV$ Economy',
+      type: ActivityType.Watching
+    },
+    {
+      name: 'Sekte Kerupuk vs Keripik ⚔️ | Liga Panggung',
+      type: ActivityType.Competing
+    },
+    {
+      name: 'Kartu Deck Tantangan 🎴 | Klik Reaksi ✅',
+      type: ActivityType.Playing
+    },
+    {
+      name: 'Suara Voice Channel 🎙️ | Transkrip STT 24/7',
+      type: ActivityType.Listening
+    }
+  ];
+
+  const updatePresence = () => {
+    if (!state.client || !state.client.user) return;
+    try {
+      const current = presences[presenceIndex % presences.length];
+      presenceIndex++;
+
+      state.client.user.setPresence({
+        activities: [{ name: current.name, type: current.type }],
+        status: 'online'
+      });
+    } catch (err) {
+      console.warn('⚠️ [RPC] Gagal update presence:', err.message);
+    }
+  };
+
+  updatePresence();
+  setInterval(updatePresence, 15000); // Rotasi setiap 15 detik!
 }
 
 function initializeBot(token) {
@@ -167,10 +214,8 @@ function initializeBot(token) {
         });
       }
 
-      state.client.user.setPresence({
-        activities: [{ name: 'CrunchyVerse Stage 🎪', type: ActivityType.Watching }],
-        status: 'online',
-      });
+      // Start dynamic rotating Custom Rich Presence (RPC) every 15s
+      startRotatingPresence();
 
       tiktok.updateDiscordLiveStatusChannels();
       updateUptimeStatusChannel(true);
