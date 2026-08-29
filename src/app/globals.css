@@ -62,6 +62,27 @@
   }
 }
 
+@keyframes dot-bounce {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+  40% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+.animate-dot-1 {
+  animation: dot-bounce 1.2s infinite 0s ease-in-out;
+}
+.animate-dot-2 {
+  animation: dot-bounce 1.2s infinite 0.2s ease-in-out;
+}
+.animate-dot-3 {
+  animation: dot-bounce 1.2s infinite 0.4s ease-in-out;
+}
+
 /* Base resets & utilities */
 html, body {
   background: var(--background);

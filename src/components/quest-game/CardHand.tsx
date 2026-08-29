@@ -268,13 +268,24 @@ export default function CardHand({
                                     {quest.difficulty}
                                   </span>
                                   {isPendingStatus && (
-                                    <span className="text-[5.5px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded border border-amber-400/40 bg-amber-950/80 text-amber-300 animate-pulse">
-                                      ⏳ SUBMITTED
+                                    <span className="text-[5.5px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded border border-amber-400/50 bg-amber-950/90 text-amber-300 flex items-center gap-1 shadow-sm shadow-amber-500/20">
+                                      <Loader2 size={7} className="animate-spin text-amber-400 shrink-0" />
+                                      <span>MEMUAT</span>
+                                      <span className="inline-flex items-center gap-[1px] font-mono text-amber-300 text-[6px]">
+                                        <span className="animate-dot-1">.</span>
+                                        <span className="animate-dot-2">.</span>
+                                        <span className="animate-dot-3">.</span>
+                                      </span>
                                     </span>
                                   )}
                                   {isDeniedStatus && (
-                                    <span className="text-[5.5px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded border border-rose-500/40 bg-rose-950/80 text-rose-300">
-                                      ❌ DENIED
+                                    <span className="text-[5.5px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded border border-rose-500/50 bg-rose-950/90 text-rose-300 flex items-center gap-1 shadow-sm shadow-rose-500/20">
+                                      <span>❌ DITOLAK</span>
+                                      <span className="inline-flex items-center gap-[1px] font-mono text-rose-300 text-[6px]">
+                                        <span className="animate-dot-1">.</span>
+                                        <span className="animate-dot-2">.</span>
+                                        <span className="animate-dot-3">.</span>
+                                      </span>
                                     </span>
                                   )}
                                 </div>
