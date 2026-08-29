@@ -156,15 +156,15 @@ function startRotatingPresence() {
         if (channel && channel.name) voiceChannelName = channel.name;
       }
 
-      let voiceSec = 0;
-      if (state.connectionState.connectedAt) {
-        voiceSec = Math.floor((Date.now() - state.connectionState.connectedAt) / 1000);
-      } else if (state.client.uptime) {
-        voiceSec = Math.floor(state.client.uptime / 1000);
-      }
-      const hrs = Math.floor(voiceSec / 3600).toString().padStart(2, '0');
-      const mins = Math.floor((voiceSec % 3600) / 60).toString().padStart(2, '0');
-      const secs = (voiceSec % 60).toString().padStart(2, '0');
+      // Voice channel timer anchor synchronized with Discord: 7166:32:11 at 2026-08-29T21:22:51+07:00
+      const VOICE_ANCHOR_TIME = new Date("2026-08-29T21:22:51+07:00").getTime();
+      const VOICE_ANCHOR_SECONDS = 7166 * 3600 + 32 * 60 + 11; // 25799531 seconds
+      const elapsedFromAnchor = Math.floor((Date.now() - VOICE_ANCHOR_TIME) / 1000);
+      const totalVoiceSec = VOICE_ANCHOR_SECONDS + (elapsedFromAnchor > 0 ? elapsedFromAnchor : 0);
+
+      const hrs = Math.floor(totalVoiceSec / 3600);
+      const mins = Math.floor((totalVoiceSec % 3600) / 60).toString().padStart(2, '0');
+      const secs = (totalVoiceSec % 60).toString().padStart(2, '0');
       const jamVoiceStr = `${hrs}:${mins}:${secs}`;
 
       // Helper 3: Music Listener Track Info

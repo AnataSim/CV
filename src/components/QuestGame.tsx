@@ -37,7 +37,7 @@ const DEFAULT_QUESTS: Quest[] = [
   {
     id: "default-2",
     akt: "Akt I",
-    title: "Sekte Kerupuk vs Keripik",
+    title: "Role Kerupuk vs Keripik",
     description: "Bujuk 2 member offline untuk online dan memilih kubu garing di channel #roles!",
     difficulty: "Sedang",
     points: 25

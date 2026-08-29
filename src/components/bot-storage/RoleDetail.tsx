@@ -116,7 +116,7 @@ export default function RoleDetail({ role, roleColor }: RoleDetailProps) {
             <div className="text-sm font-black text-yellow-400 font-display mt-0.5">
               {role.cvAmount ? `CV ${role.cvAmount}` : "—"}
             </div>
-            <div className="text-[9px] text-neutral-600">Nilai kontribusi kasta/role server</div>
+            <div className="text-[9px] text-neutral-600">Nilai kontribusi hierarki/role server</div>
           </div>
         </div>
 

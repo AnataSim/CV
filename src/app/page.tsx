@@ -229,7 +229,7 @@ export default function CrunchyVerseStage() {
 
   const STAGE_TIPS = [
     "🎭 Tips: Gunakan bilah navigasi di samping untuk berpindah panggung teater kapan saja.",
-    "🍿 Sekte Kerupuk vs Keripik mengumpulkan poin dari keaktifan member server Discord.",
+    "🍿 Role Kerupuk vs Keripik mengumpulkan poin dari keaktifan member server Discord.",
     "🤖 Bot Sparxie terhubung langsung untuk menampilkan log aktivitas real-time.",
     "🃏 Selesaikan quest di Tirai Tantangan untuk meraih poin CV dan lencana langka.",
     "📻 Saluran suara panggung menyiarkan status lagu & durasi siaran secara otomatis."
@@ -359,8 +359,8 @@ export default function CrunchyVerseStage() {
   const [voiceDuration, setVoiceDuration] = useState(18090021);
 
   useEffect(() => {
-    const referenceWallTime = new Date("2026-06-01T15:51:00+07:00").getTime();
-    const referenceVoiceDuration = 18090021; // 5025:00:21 in seconds
+    const referenceWallTime = new Date("2026-08-29T21:22:51+07:00").getTime();
+    const referenceVoiceDuration = 7166 * 3600 + 32 * 60 + 11; // 25799531 seconds (7166:32:11)
     
     // Immediately calculate and update on client-mount to avoid static lag and hydration errors
     const updateTime = () => {
@@ -420,7 +420,7 @@ export default function CrunchyVerseStage() {
     },
     {
       id: "b2",
-      content: "🍿 **DIVISI KERUPUK & KERIPIK BERTEMPUR!** \n\nPertarungan sengit antara sekte Kerupuk gurih melawan sekte Keripik renyah akan dimulai di panggung koloseum suara malam ini pukul 20.00 WIB. Siapakah yang akan membawa pulang mahkota garing termegah? Pilih kubu Anda sekarang di channel #roles!",
+      content: "🍿 **DIVISI KERUPUK & KERIPIK BERTEMPUR!** \n\nPertarungan sengit antara kubu Kerupuk gurih melawan kubu Keripik renyah akan dimulai di panggung koloseum suara malam ini pukul 20.00 WIB. Siapakah yang akan membawa pulang mahkota garing termegah? Pilih kubu Anda sekarang di channel #roles!",
       author: "Sutradara Event",
       authorAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=director",
       timestamp: "Kemarin pukul 18:15",
@@ -1336,14 +1336,14 @@ export default function CrunchyVerseStage() {
       icon: <Sparkles className="h-5 w-5 text-sky-400 animate-pulse" />,
       points: [
         "Materi interaktif bertema Honkai: Star Rail 4.5.",
-        "Visualisasi kasta teater & persamaan algebra secara real-time.",
+        "Visualisasi hierarki teater & persamaan algebra secara real-time.",
         "Presentasi visual performa tinggi dengan transisi velvet."
       ]
     },
     {
       title: "Sistem Kalkulasi Persamaan Teater",
       subtitle: "Formula & Algoritma Value Role (CV)",
-      desc: "Kalkulasi kasta Anomaly CrunchyVerse didasarkan pada perolehan role Discord yang memiliki bobot nominal terhitung. Sistem secara otomatis memetakan member dengan kontribusi nilai poin tertinggi.",
+      desc: "Kalkulasi hierarki Anomaly CrunchyVerse didasarkan pada perolehan role Discord yang memiliki bobot nominal terhitung. Sistem secara otomatis memetakan member dengan kontribusi nilai poin tertinggi.",
       badge: "BAGIAN 02 · MEKANIKA",
       icon: <Award className="h-5 w-5 text-amber-400 animate-pulse" />,
       points: [
@@ -1361,7 +1361,7 @@ export default function CrunchyVerseStage() {
       points: [
         "Status live TikTok Volunteer dengan deteksi cron 3 menit.",
         "Sinkronisasi durasi voice chat real-time berpresisi tinggi.",
-        "Buku besar arsip kasta teater interaktif ber-paginasi."
+        "Buku besar arsip hierarki teater interaktif ber-paginasi."
       ]
     },
     {
@@ -1408,7 +1408,7 @@ export default function CrunchyVerseStage() {
       icon: <Radio className="h-5 w-5 text-sky-400 animate-pulse" />,
       points: [
         "Event drop rate tinggi setiap akhir pekan teater.",
-        "Tantangan kuis cepat dengan hadiah kasta instan.",
+        "Tantangan kuis cepat dengan hadiah hierarki instan.",
         "Integrasi otomatis ke kanal khusus pengumuman bot."
       ]
     },
@@ -1420,19 +1420,19 @@ export default function CrunchyVerseStage() {
       icon: <Award className="h-5 w-5 text-amber-400 animate-pulse" />,
       points: [
         "Leaderboard khusus kecepatan klir (Clear Time).",
-        "Rekomendasi komposisi kasta terbaik secara dinamis.",
+        "Rekomendasi komposisi hierarki terbaik secara dinamis.",
         "Medali digital eksklusif untuk 3 besar penantang."
       ]
     },
     {
       title: "Sinkronisasi Discord & API Web Teater",
       subtitle: "Komunikasi Dua Arah Berkecepatan Tinggi",
-      desc: "Memastikan sinkronisasi data instan antara bot Discord dan web front-end CrunchyVerse. Setiap pembaruan kasta, status live, atau log aktivitas langsung tecermin dalam hitungan milidetik.",
+      desc: "Memastikan sinkronisasi data instan antara bot Discord dan web front-end CrunchyVerse. Setiap pembaruan hierarki, status live, atau log aktivitas langsung tecermin dalam hitungan milidetik.",
       badge: "BAGIAN 09 · INTEGRASI",
       icon: <Tv className="h-5 w-5 text-rose-400 animate-pulse" />,
       points: [
         "Websockets untuk pembaruan instan tanpa refresh halaman.",
-        "Optimasi performa query database kasta teater.",
+        "Optimasi performa query database hierarki teater.",
         "Validasi token keamanan untuk hak akses Volunteer."
       ]
     },
@@ -1904,8 +1904,8 @@ export default function CrunchyVerseStage() {
   const sidebarItems = [
     { id: "stage-welcome", label: "Lobi Utama", icon: Home },
     { id: "stage-dashboard", label: "Dashboard Teater", icon: Tv },
-    { id: "stage-roles", label: "Arsip Kasta", icon: Users },
-    { id: "stage-leaderboard", label: "Papan Jawara", icon: Award },
+    { id: "stage-roles", label: "Arsip Hierarki", icon: Users },
+    { id: "stage-leaderboard", label: "Leaderboard", icon: Award },
     { id: "stage-divergent", label: "Divergent Universe", icon: Layers },
     ...(isUserAdmin(userRole) ? [{ id: "stage-chat", label: "Konsol Obrolan", icon: MessageSquare }] : []),
     { id: "stage-game", label: "Tirai Tantangan", icon: Gamepad2 }
@@ -1996,7 +1996,7 @@ export default function CrunchyVerseStage() {
                     CRUNCHY<span className="text-theater-red-light">VERSE</span>
                   </h2>
                   <p className="text-xs text-neutral-400 font-medium max-w-xs mt-1">
-                    Buka tirai grand teater untuk melihat statistik real-time, aktivitas voice, dan pertunjukan kasta.
+                    Buka tirai grand teater untuk melihat statistik real-time, aktivitas voice, dan pertunjukan hierarki.
                   </p>
                 </div>
 
@@ -2141,7 +2141,7 @@ export default function CrunchyVerseStage() {
                 <span className="text-neutral-500">|</span>
                 <span className="flex items-center gap-1.5">
                   <Users size={12} className="text-amber-400" />
-                  Sekte War: Kerupuk {stats.totalKerupuk} vs Keripik {stats.totalKeripik} Poin
+                  Role War: Kerupuk {stats.totalKerupuk} vs Keripik {stats.totalKeripik} Poin
                 </span>
                 <span className="text-neutral-500">|</span>
                 <span className="flex items-center gap-1.5 text-theater-red-light font-extrabold">
@@ -2240,11 +2240,11 @@ export default function CrunchyVerseStage() {
 
           {/* Tagline */}
           <h2 className="font-display text-xs sm:text-sm md:text-base font-extrabold text-theater-gold/90 tracking-[0.25em] uppercase mb-4">
-            PANGGUNG SPEKTAKULER &amp; ARSIP KASTA TEATER
+            PANGGUNG SPEKTAKULER &amp; ARSIP HIERARKI TEATER
           </h2>
 
           <p className="text-xs sm:text-base md:text-lg text-neutral-300 font-light max-w-2xl leading-relaxed tracking-wide mb-8 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]">
-            Tirai panggung telah terbuka! Selamat datang di koloseum hiburan para Anomaly. Saksikan interaksi live, periksa pertarungan sekte kasta, pantau papan jawara, dan nikmati atmosfer teater CrunchyVerse.
+            Tirai panggung telah terbuka! Selamat datang di koloseum hiburan para Anomaly. Saksikan interaksi live, periksa pertarungan role hierarki, pantau leaderboard, dan nikmati atmosfer teater CrunchyVerse.
           </p>
 
           {/* 3 HERO FEATURE SNAPSHOT CARDS */}
@@ -2279,7 +2279,7 @@ export default function CrunchyVerseStage() {
               </div>
             </div>
 
-            {/* Snapshot 2: Sekte Colosseum */}
+            {/* Snapshot 2: Role Colosseum */}
             <div 
               onClick={() => safeScrollTo("stage-roles")}
               className="group p-4 rounded-2xl border border-theater-gold/25 bg-neutral-950/80 hover:bg-neutral-900/90 hover:border-theater-gold/60 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-[0_0_30px_rgba(212,175,55,0.25)] flex flex-col justify-between"
@@ -2287,10 +2287,10 @@ export default function CrunchyVerseStage() {
               <div>
                 <div className="flex items-center justify-between text-xs mb-2">
                   <span className="text-amber-400 font-bold flex items-center gap-1.5 uppercase text-[10px] tracking-wider">
-                    <Shield size={12} /> Sekte Colosseum
+                    <Shield size={12} /> Role Colosseum
                   </span>
                   <span className="text-[10px] font-mono text-theater-gold font-bold">
-                    Arsip Kasta
+                    Arsip Hierarki
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs font-extrabold text-white mb-1.5">
@@ -3023,15 +3023,15 @@ export default function CrunchyVerseStage() {
         {/* Scroll To Roles Frame CTA Strip */}
         <div className="border-t border-neutral-900 bg-neutral-950/50 py-5 px-4 flex flex-col sm:flex-row items-center justify-center gap-4 relative z-30">
           <div className="text-center sm:text-left">
-            <div className="text-[9px] font-black text-theater-gold/60 uppercase tracking-widest mb-0.5">Arsip Kasta Teater</div>
-            <div className="text-xs font-bold text-neutral-300">Jelajahi semua role, sekte, dan detail Value Role di server CrunchyVerse</div>
+            <div className="text-[9px] font-black text-theater-gold/60 uppercase tracking-widest mb-0.5">Arsip Hierarki Teater</div>
+            <div className="text-xs font-bold text-neutral-300">Jelajahi semua role dan detail Value Role di server CrunchyVerse</div>
           </div>
           <button
             onClick={scrollToRoles}
             className="shrink-0 bg-gradient-to-r from-theater-gold to-theater-gold-dim hover:from-theater-gold-dim hover:to-theater-gold text-theater-black font-black text-[10px] tracking-widest uppercase py-2.5 px-6 rounded-xl shadow-lg shadow-theater-gold/10 hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
           >
             <Shield size={13} />
-            <span>Buka Arsip Kasta</span>
+            <span>Buka Arsip Hierarki</span>
             <ChevronDown size={13} />
           </button>
         </div>
@@ -3052,7 +3052,7 @@ export default function CrunchyVerseStage() {
         </footer>
       </section>
 
-      {/* FRAME 3: ARSIP KASTA — ROLE & SEKTE STORAGE */}
+      {/* FRAME 3: ARSIP HIERARKI — ROLE STORAGE */}
       <section
         id="stage-roles"
         className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col overflow-hidden"
@@ -3101,13 +3101,13 @@ export default function CrunchyVerseStage() {
               <div>
                 <div className="flex items-center gap-2 text-theater-gold text-xs font-bold uppercase tracking-widest mb-1.5">
                   <Shield size={13} />
-                  <span>Arsip Kasta Teater · Frame III</span>
+                  <span>Arsip Hierarki Teater · Frame III</span>
                 </div>
                 <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-wide uppercase select-none">
-                  PENYIMPANAN <span className="text-theater-gold">ROLE &amp; SEKTE</span>
+                  PENYIMPANAN <span className="text-theater-gold">ROLE &amp; HIERARKI</span>
                 </h2>
                 <p className="text-xs text-neutral-500 mt-1.5 font-medium max-w-lg">
-                  Buku besar kasta panggung — nama, warna, kekuasaan, pemegang role, dan besaran Value Role dari tiap hierarki CrunchyVerse.
+                  Buku besar hierarki panggung — nama, warna, kekuasaan, pemegang role, dan besaran Value Role dari tiap hierarki CrunchyVerse.
                 </p>
               </div>
 
@@ -3141,9 +3141,9 @@ export default function CrunchyVerseStage() {
           </div>
         ) : (
           <FramePlaceholder
-            title="Arsip Kasta Teater"
+            title="Arsip Hierarki Teater"
             icon={Users}
-            description="Penyimpanan Role & Sekte Server Discord CrunchyVerse"
+            description="Penyimpanan Role Server Discord CrunchyVerse"
           />
         )}
 
@@ -3162,7 +3162,7 @@ export default function CrunchyVerseStage() {
             className="bg-gradient-to-r from-theater-red to-theater-red-dark hover:from-theater-red-light hover:to-theater-red text-white font-black text-[10px] tracking-widest uppercase py-2.5 px-6 rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer border border-theater-red-light/20"
           >
             <Award size={13} />
-            <span>Buka Papan Jawara ↓</span>
+            <span>Buka Leaderboard ↓</span>
           </button>
         </div>
 
@@ -3171,7 +3171,7 @@ export default function CrunchyVerseStage() {
           <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-theater-gold/50" />
-              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE · ARSIP KASTA</span>
+              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE · ARSIP HIERARKI</span>
             </div>
             <p className="flex items-center justify-center gap-1">
               <span>Data role diambil langsung dari Discord Bot CrunchyVerse</span>
@@ -3181,7 +3181,7 @@ export default function CrunchyVerseStage() {
         </footer>
       </section>
 
-      {/* FRAME 4: PAPAN PERINGKAT JAWARA & VALUE ROLE — LEADERBOARD ANOMALY */}
+      {/* FRAME 4: LEADERBOARD & VALUE ROLE — LEADERBOARD ANOMALY */}
       <section
         id="stage-leaderboard"
         className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col overflow-hidden"
@@ -3230,10 +3230,10 @@ export default function CrunchyVerseStage() {
               <div>
                 <div className="flex items-center gap-2 text-theater-red-light text-xs font-bold uppercase tracking-widest mb-1.5">
                   <Award size={13} />
-                  <span>Panggung Jawara · Frame IV</span>
+                  <span>Panggung Leaderboard · Frame IV</span>
                 </div>
                 <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-wide uppercase select-none">
-                  PAPAN PERINGKAT <span className="text-theater-red-light">JAWARA &amp; VALUE ROLE</span>
+                  PAPAN PERINGKAT <span className="text-theater-red-light">LEADERBOARD &amp; VALUE ROLE</span>
                 </h2>
                 <p className="text-xs text-neutral-500 mt-1.5 font-medium max-w-lg">
                   Klasemen keaktifan Anomaly — Leveling, Streak, dan Voice Hours dari Cakey Bot, serta 10 Anomaly dengan Value Role (CV) tertinggi.
@@ -3245,7 +3245,7 @@ export default function CrunchyVerseStage() {
                   onClick={scrollToRoles}
                   className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
                 >
-                  ↑ <span>Kembali ke Kasta</span>
+                  ↑ <span>Kembali ke Hierarki</span>
                 </button>
                 <button
                   onClick={scrollToStage}
@@ -3262,7 +3262,7 @@ export default function CrunchyVerseStage() {
           </div>
         ) : (
           <FramePlaceholder
-            title="Papan Jawara Teater"
+            title="Leaderboard Teater"
             icon={Award}
             description="Klasemen Peringkat Leveling & Value Role Anomaly"
           />
@@ -3293,7 +3293,7 @@ export default function CrunchyVerseStage() {
           <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-theater-red-light/50" />
-              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE · PAPAN JAWARA</span>
+              <span className="font-display font-extrabold text-neutral-500 text-xs">CRUNCHYVERSE · LEADERBOARD</span>
             </div>
             <p className="flex items-center justify-center gap-1">
               <span>Data peringkat diintegrasikan langsung dengan Cakey Bot API &amp; Discord Bot</span>
@@ -3366,7 +3366,7 @@ export default function CrunchyVerseStage() {
                 onClick={scrollToLeaderboard}
                 className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
               >
-                ↑ <span>Papan Jawara</span>
+                ↑ <span>Leaderboard</span>
               </button>
               <button
                 onClick={scrollToStage}

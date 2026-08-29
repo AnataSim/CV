@@ -519,7 +519,7 @@ function registerRoutes(app) {
       },
       {
         id: "1403300491214983178",
-        name: "Sekte Kerupuk Gurih | CV$ 420.000",
+        name: "Role Kerupuk Gurih | CV$ 420.000",
         color: "#ff3366",
         icon: "https://api.dicebear.com/7.x/identicon/svg?seed=kerupuk",
         cvAmount: "420.000",
@@ -530,7 +530,7 @@ function registerRoutes(app) {
       },
       {
         id: "1411319287720837230",
-        name: "Sekte Keripik Renyah | CV$ 690.000",
+        name: "Role Keripik Renyah | CV$ 690.000",
         color: "#ff9900",
         icon: "https://api.dicebear.com/7.x/identicon/svg?seed=keripik",
         cvAmount: "690.000",

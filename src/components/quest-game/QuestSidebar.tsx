@@ -179,7 +179,7 @@ export default function QuestSidebar({
                           )}
                         </div>
                         <span className="text-[9.5px] text-[#949ba4] truncate mt-0.5 font-medium leading-none">
-                          {(user.role === "Volunteer Theater" ? "🕹️ Mengelola Teater" : user.role === "Ketua Kerupuk" ? "👑 Ketua Sekte Kerupuk" : user.role === "Ketua Keripik" ? "👑 Ketua Sekte Keripik" : "🍿 Menonton CrunchyVerse")} • CV$ {(user.cv || user.points || 0).toLocaleString("id-ID")}
+                          {(user.role === "Volunteer Theater" ? "🕹️ Mengelola Teater" : user.role === "Ketua Kerupuk" ? "👑 Ketua Kerupuk" : user.role === "Ketua Keripik" ? "👑 Ketua Keripik" : "🍿 Menonton CrunchyVerse")} • CV$ {(user.cv || user.points || 0).toLocaleString("id-ID")}
                         </span>
                       </div>
                     </div>

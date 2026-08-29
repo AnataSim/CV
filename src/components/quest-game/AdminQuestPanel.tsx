@@ -95,7 +95,7 @@ export default function AdminQuestPanel({
     } catch (err: any) {
       console.warn("Verify role failed, using offline fallback:", err.message);
       if (roleId.trim() === "123" || !isFirebaseConfigured) {
-        const mockName = `Sekte Kerupuk Elite (Mock)`;
+        const mockName = `Role Kerupuk Elite (Mock)`;
         const mockColor = `#d4af37`;
         const mockCv = 150;
         setRoleName(mockName);

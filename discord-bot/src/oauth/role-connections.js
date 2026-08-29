@@ -362,7 +362,7 @@ router.get('/api/oauth/callback', async (req, res) => {
       <html>
         <body style="background:#0a0a0a; color:#fff; font-family:sans-serif; text-align:center; padding-top:50px;">
           <h2 style="color:#57F287;">Koneksi Berhasil! (Cached)</h2>
-          <p>Akun Discord @${cachedData.username} telah terhubung dengan kasta stage teater.</p>
+          <p>Akun Discord @${cachedData.username} telah terhubung dengan hierarki stage teater.</p>
           <p style="color:gray; font-size:12px;">Anda dapat menutup jendela ini dan kembali ke teater.</p>
           <script>setTimeout(() => window.close(), 3000);</script>
         </body>
@@ -377,7 +377,7 @@ router.get('/api/oauth/callback', async (req, res) => {
         <html>
           <body style="background:#0a0a0a; color:#fff; font-family:sans-serif; text-align:center; padding-top:50px;">
             <h2 style="color:#57F287;">Koneksi Berhasil!</h2>
-            <p>Akun Discord @${result.username} telah terhubung dengan kasta stage teater.</p>
+            <p>Akun Discord @${result.username} telah terhubung dengan hierarki stage teater.</p>
             <p style="color:gray; font-size:12px;">Anda dapat menutup jendela ini dan kembali ke teater.</p>
             <script>setTimeout(() => window.close(), 3000);</script>
           </body>
@@ -905,7 +905,7 @@ router.post('/api/quests/load-defaults', requireClientToken, async (req, res) =>
   try {
     const DEFAULT_QUESTS = [
       { id: "default-1", akt: "Akt I", title: "Tebak Member Anomaly", description: "Sebutkan nama member Anomaly terpopuler malam ini di voice channel utama beserta alasannya!", difficulty: "Mudah", points: 10 },
-      { id: "default-2", akt: "Akt I", title: "Sekte Kerupuk vs Keripik", description: "Bujuk 2 member offline untuk online dan memilih kubu garing di channel #roles!", difficulty: "Sedang", points: 25 },
+      { id: "default-2", akt: "Akt I", title: "Role Kerupuk vs Keripik", description: "Bujuk 2 member offline untuk online dan memilih kubu garing di channel #roles!", difficulty: "Sedang", points: 25 },
       { id: "default-3", akt: "Akt II", title: "Karaoke 1 Menit", description: "Nyanyikan sepenggal lagu favoritmu di Voice Channel selama minimal 1 menit!", difficulty: "Sedang", points: 30 },
       { id: "default-4", akt: "Akt II", title: "Kolektor Kerupuk Teater", description: "Kumpulkan 100 poin kerupuk dalam game panggung utama dalam waktu 5 menit!", difficulty: "Sulit", points: 50 },
       { id: "default-5", akt: "Akt III", title: "Misteri Admin Bahagia", description: "Cari tahu alasan kenapa admin utama CrunchyVerse sedang bahagia malam ini!", difficulty: "Legendaris", points: 100 }

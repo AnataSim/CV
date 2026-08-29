@@ -98,8 +98,8 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
         ],
         cvWealth: [
           { rank: 1, id: "588988763204616214", username: "crunchyweeb", displayName: "CrunchyWeeb", avatar: "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my", cvAmount: "12.982.500", roleName: "Serial #1 — Crescent Eclipse" },
-          { rank: 2, id: "820154491654504458", username: "fuzusovereign", displayName: "[AFK] [aFuzu IX]", avatar: "https://cdn.discordapp.com/avatars/820154491654504458/fe01ce2652b29d57502d0f8be2a633c2.png?size=256", cvAmount: "8.450.000", roleName: "Sekte Kerupuk Gurih" },
-          { rank: 3, id: "1051027211160928276", username: "palecursedvessel", displayName: "Sadie Grey | Badmood", avatar: "https://cdn.discordapp.com/avatars/1051027211160928276/6742f358ec926f7dcce287c8fbb50a4a.png?size=256", cvAmount: "6.900.000", roleName: "Sekte Keripik Renyah" }
+          { rank: 2, id: "820154491654504458", username: "fuzusovereign", displayName: "[AFK] [aFuzu IX]", avatar: "https://cdn.discordapp.com/avatars/820154491654504458/fe01ce2652b29d57502d0f8be2a633c2.png?size=256", cvAmount: "8.450.000", roleName: "Role Kerupuk Gurih" },
+          { rank: 3, id: "1051027211160928276", username: "palecursedvessel", displayName: "Sadie Grey | Badmood", avatar: "https://cdn.discordapp.com/avatars/1051027211160928276/6742f358ec926f7dcce287c8fbb50a4a.png?size=256", cvAmount: "6.900.000", roleName: "Role Keripik Renyah" }
         ]
       };
       setData(mockLeaderboard);
@@ -208,7 +208,7 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
             </div>
             <div>
               <h3 className="font-display text-base font-black text-white uppercase tracking-widest">
-                Panggung Jawara &amp; Value Role
+                Panggung Leaderboard &amp; Value Role
               </h3>
               <p className="text-[10px] text-neutral-500 font-semibold tracking-wide mt-0.5">
                 Klasemen ranking anomaly CrunchyVerse teratas berdasarkan Value Role
@@ -291,7 +291,7 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
           type="text"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          placeholder={`Cari nama jawara di dalam papan ${tabs.find(t => t.key === activeTab)?.label}...`}
+          placeholder={`Cari nama member di dalam papan ${tabs.find(t => t.key === activeTab)?.label}...`}
           className="w-full bg-neutral-950 border border-neutral-800 hover:border-neutral-700 focus:border-theater-red-light/40 focus:outline-none text-xs text-white placeholder-neutral-600 rounded-xl pl-9 pr-4 py-2.5 transition-all font-sans"
         />
         {searchQuery && (
@@ -314,12 +314,12 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
         <div className="flex flex-col items-center justify-center py-20 gap-3">
           <div className="h-10 w-10 rounded-full border-2 border-theater-red-light/20 border-t-theater-red-light animate-spin" />
           <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">
-            Menyelaraskan Papan Jawara...
+            Menyelaraskan Leaderboard...
           </span>
         </div>
       ) : filteredList.length === 0 ? (
         <div className="rounded-2xl border border-neutral-900 bg-neutral-950/20 py-16 text-center text-neutral-600 italic text-sm">
-          {searchQuery ? `Tidak ada jawara yang cocok dengan "${searchQuery}"` : "Klasemen kosong atau belum tersinkronisasi."}
+          {searchQuery ? `Tidak ada member yang cocok dengan "${searchQuery}"` : "Klasemen kosong atau belum tersinkronisasi."}
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -384,7 +384,7 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
               {/* Page info + input row */}
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <span className="text-[9px] text-neutral-600 font-mono uppercase tracking-widest">
-                  Halaman {currentPage} / {totalPages} &nbsp;·&nbsp; {filteredList.length} jawara
+                  Halaman {currentPage} / {totalPages} &nbsp;·&nbsp; {filteredList.length} member
                 </span>
                 <div className="flex items-center gap-1.5 font-sans">
                   <span className="text-[9px] text-neutral-600 font-mono uppercase">Ke halaman:</span>
@@ -418,7 +418,7 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
           {/* Footer count */}
           {!loading && filteredList.length > 0 && totalPages <= 1 && (
             <div className="text-center text-[9px] text-neutral-700 font-mono uppercase tracking-widest pb-2">
-              {filteredList.length} jawara terdaftar
+              {filteredList.length} member terdaftar
             </div>
           )}
         </div>

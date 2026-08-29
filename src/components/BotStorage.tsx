@@ -57,7 +57,7 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
     const cleanUrl = (backendUrl || "").replace(/\/+$/, "");
     try {
       const res = await fetch(`${cleanUrl}/api/roles`);
-      if (!res.ok) throw new Error("Gagal mengambil data kasta role teater.");
+      if (!res.ok) throw new Error("Gagal mengambil data hierarki role teater.");
       const data: RoleData[] = await res.json();
       setRoles(data);
       setLastUpdated(new Date().toLocaleTimeString("id-ID"));
@@ -81,7 +81,7 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
         },
         {
           id: "1403300491214983178",
-          name: "Sekte Kerupuk Gurih | CV$ 420.000",
+          name: "Role Kerupuk Gurih | CV$ 420.000",
           color: "#ff3366",
           gradientColors: null,
           icon: "https://api.dicebear.com/7.x/identicon/svg?seed=kerupuk",
@@ -94,7 +94,7 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
         },
         {
           id: "1411319287720837230",
-          name: "Sekte Keripik Renyah | CV$ 690.000",
+          name: "Role Keripik Renyah | CV$ 690.000",
           color: "#ff9900",
           gradientColors: null,
           icon: "https://api.dicebear.com/7.x/identicon/svg?seed=keripik",
@@ -256,7 +256,7 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
             </div>
             <div>
               <h3 className="font-display text-base font-black text-white uppercase tracking-widest">
-                Arsip Role &amp; Sekte
+                Arsip Role &amp; Hierarki
               </h3>
               <p className="text-[10px] text-neutral-500 font-semibold tracking-wide mt-0.5">
                 Data langsung dari Discord Bot CrunchyVerse
@@ -300,7 +300,7 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Cari nama role atau sekte..."
+          placeholder="Cari nama role..."
           className="w-full bg-neutral-950 border border-neutral-800 hover:border-neutral-700 focus:border-yellow-700/50 focus:outline-none text-xs text-white placeholder-neutral-600 rounded-xl pl-9 pr-4 py-2.5 transition-all font-sans"
         />
         {search && (
@@ -360,7 +360,7 @@ export default function BotStorage({ backendUrl }: BotStorageProps) {
         <div className="flex flex-col items-center justify-center py-20 gap-3">
           <div className="h-10 w-10 rounded-full border-2 border-yellow-600/30 border-t-yellow-500 animate-spin" />
           <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">
-            Membuka lembar kasta...
+            Membuka lembar hierarki...
           </span>
         </div>
       ) : sortedRoles.length === 0 ? (
