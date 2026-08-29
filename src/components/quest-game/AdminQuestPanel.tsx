@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Shield, Edit3, Trash2 } from "lucide-react";
+import { Shield, Edit3, Trash2, X } from "lucide-react";
 import { signedFetch } from "../../lib/api";
 import { isFirebaseConfigured } from "../../lib/firebase";
 
@@ -854,17 +854,16 @@ export default function AdminQuestPanel({
                                 
                                 {status === "Completed" ? (
                                   <div className="flex items-center gap-1.5 shrink-0">
-                                    <span className="text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded border bg-emerald-950/40 text-emerald-400 border-emerald-500/20">
+                                    <span className="text-[8.5px] font-black uppercase tracking-wider px-2.5 py-1 rounded border bg-emerald-950/40 text-emerald-400 border-emerald-500/20">
                                       SELESAI
                                     </span>
                                     <button
                                       type="button"
                                       onClick={() => handleResetSpecificQuest(player.userId, quest, approvedSub)}
-                                      className="bg-rose-950/60 hover:bg-rose-900 border border-rose-900/40 text-rose-300 hover:text-white font-bold text-[8.5px] uppercase tracking-wider py-1 px-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
-                                      title="Reset progress quest ini jika terjadi human error"
+                                      className="w-6 h-6 rounded-lg bg-rose-950/70 hover:bg-rose-900 border border-rose-800/60 text-rose-300 hover:text-white flex items-center justify-center transition-all cursor-pointer hover:scale-110 shadow-sm"
+                                      title="Hapus / Reset status quest ini (Jika volunteer human error)"
                                     >
-                                      <Trash2 size={10} />
-                                      <span>Reset Progress</span>
+                                      <X size={12} className="stroke-[3]" />
                                     </button>
                                   </div>
                                 ) : (
