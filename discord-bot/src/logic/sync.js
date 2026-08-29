@@ -273,8 +273,10 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
       try {
         const channel = await state.client.channels.fetch(vChanId).catch(() => null);
         if (channel && channel.type === ChannelType.GuildVoice) {
-          let detectedStatus = (typeof channel.status === 'string' && channel.status.trim().length > 0) ? channel.status : null;
-          if (!detectedStatus && state.jockieMusicStatus) {
+          let detectedStatus = null;
+
+          // Priority 1: Bot Music Listener (Elaina, Jockie, etc. with ✅ reaction)
+          if (state.jockieMusicStatus && state.lastJockieTrackTime) {
             const timeDiff = Date.now() - state.lastJockieTrackTime;
             if (timeDiff < 1800000) {
               const elapsedTotalSec = Math.floor(timeDiff / 1000);
@@ -286,6 +288,7 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
             }
           }
 
+          // Priority 2: Member Spotify presence
           if (!detectedStatus) {
             for (const [, m] of channel.members) {
               try {
@@ -308,6 +311,7 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
             }
           }
 
+          // Priority 3: Custom / Listening activity
           if (!detectedStatus) {
             for (const [, m] of channel.members) {
               try {
@@ -328,7 +332,12 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
             }
           }
 
-          const finalStatus = detectedStatus || (typeof channel.status === 'string' && channel.status ? channel.status : "[05:14] • I Always Wanna Die (Sometimes) - The 1975");
+          // Priority 4: Voice Channel status string
+          if (!detectedStatus && typeof channel.status === 'string' && channel.status.trim().length > 0) {
+            detectedStatus = channel.status;
+          }
+
+          const finalStatus = detectedStatus || "[05:14] • I Always Wanna Die (Sometimes) - The 1975";
           const activeMembers = channel.members.map(m => {
             const isMuted = m.voice.selfMute || m.voice.serverMute;
             const isDeafened = m.voice.selfDeaf || m.voice.serverDeaf;
