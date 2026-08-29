@@ -291,6 +291,34 @@ export default function AdminQuestPanel({
     }
   };
 
+  // Admin / Volunteer: Reset specific quest progress
+  const handleResetSpecificQuest = async (playerUserId: string, targetQuest: Quest, approvedSubmission?: any) => {
+    if (confirm(`Apakah Anda yakin ingin mereset progress quest "${targetQuest.title}" untuk pemain ini? Poin quest akan dikurangi dan kartu ini dapat muncul kembali saat mengocok deck.`)) {
+      try {
+        const response = await signedFetch(`${backendUrl}/api/submissions/reset-specific`, {
+          method: "POST",
+          body: JSON.stringify({
+            userId: playerUserId,
+            questId: targetQuest.id,
+            originalQuestId: (targetQuest as any).originalQuestId || targetQuest.id,
+            submissionId: approvedSubmission?.id
+          }),
+          sensitive: true
+        });
+
+        if (!response.ok) {
+          const errJson = await response.json().catch(() => ({}));
+          throw new Error(errJson.error || `HTTP error! status: ${response.status}`);
+        }
+
+        alert(`✅ Progress quest "${targetQuest.title}" berhasil direset! Kartu ini dapat muncul kembali saat kocok deck.`);
+        onTriggerSync();
+      } catch (err: any) {
+        alert("❌ Gagal mereset progress quest: " + err.message);
+      }
+    }
+  };
+
   // Group all submissions by user for Player Progress tracking
   const playersProgress = useMemo(() => {
     const groups: Record<string, {
@@ -824,13 +852,29 @@ export default function AdminQuestPanel({
                                   </div>
                                 )}
                                 
-                                <span className={`text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
-                                  status === "Completed" ? "bg-emerald-950/40 text-emerald-400 border-emerald-500/20" :
-                                  status === "Pending" ? "bg-amber-950/40 text-amber-400 border border-amber-500/20" :
-                                  "bg-neutral-900 text-neutral-500 border border-neutral-800"
-                                }`}>
-                                  {status === "Completed" ? "Selesai" : status === "Pending" ? "Pending Review" : "Belum Selesai"}
-                                </span>
+                                {status === "Completed" ? (
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    <span className="text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded border bg-emerald-950/40 text-emerald-400 border-emerald-500/20">
+                                      SELESAI
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleResetSpecificQuest(player.userId, quest, approvedSub)}
+                                      className="bg-rose-950/60 hover:bg-rose-900 border border-rose-900/40 text-rose-300 hover:text-white font-bold text-[8.5px] uppercase tracking-wider py-1 px-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                                      title="Reset progress quest ini jika terjadi human error"
+                                    >
+                                      <Trash2 size={10} />
+                                      <span>Reset Progress</span>
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span className={`text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
+                                    status === "Pending" ? "bg-amber-950/40 text-amber-400 border border-amber-500/20" :
+                                    "bg-neutral-900 text-neutral-500 border border-neutral-800"
+                                  }`}>
+                                    {status === "Pending" ? "Pending Review" : "Belum Selesai"}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           );

@@ -1687,35 +1687,115 @@ function registerRoutes(app) {
   });
 
   app.post('/api/submissions/reset-specific', requireClientToken, async (req, res) => {
-    const { userId, questId } = req.body;
-    if (!userId || !questId) return res.status(400).json({ error: "userId dan questId wajib diisi" });
+    const { userId, questId, originalQuestId, submissionId } = req.body;
+    if (!userId || (!questId && !submissionId)) {
+      return res.status(400).json({ error: "userId dan questId/submissionId wajib diisi" });
+    }
 
+    // 1. Filter local submissions & calculate points to deduct
     let localSubs = db.loadLocalSubmissions();
-    localSubs = localSubs.filter(s => !(s.userId === userId && s.questId === questId));
+    const removedSubs = localSubs.filter(s =>
+      s.userId === userId && (
+        (submissionId && s.id === submissionId) ||
+        (questId && (s.questId === questId || s.originalQuestId === questId || (s.questId && s.questId.includes(questId)))) ||
+        (originalQuestId && (s.questId === originalQuestId || s.originalQuestId === originalQuestId))
+      )
+    );
+
+    localSubs = localSubs.filter(s => !removedSubs.some(r => r.id === s.id));
     db.saveLocalSubmissions(localSubs);
 
+    // Deduct points for approved submissions that were deleted
+    let pointsToDeduct = 0;
+    removedSubs.forEach(s => {
+      if (s.status === 'approved') {
+        pointsToDeduct += Number(s.points) || 0;
+      }
+    });
+
+    if (pointsToDeduct > 0) {
+      const localUsers = db.loadLocalUsers();
+      const userKey = Object.keys(localUsers).find(k => k === userId || localUsers[k].uid === userId || localUsers[k].discordId === userId) || userId;
+      if (localUsers[userKey]) {
+        localUsers[userKey].cv = Math.max(0, (localUsers[userKey].cv || 0) - pointsToDeduct);
+        localUsers[userKey].points = Math.max(0, (localUsers[userKey].points || 0) - pointsToDeduct);
+        db.saveLocalUsers(localUsers);
+      }
+    }
+
+    // 2. Remove card status from local user decks
     const decks = db.loadLocalDecks();
     if (decks[userId] && decks[userId].statuses) {
-      delete decks[userId].statuses[questId];
+      Object.keys(decks[userId].statuses).forEach(k => {
+        if (k === questId || k === originalQuestId || (questId && k.includes(questId))) {
+          delete decks[userId].statuses[k];
+        }
+      });
       db.saveLocalDecks(decks);
     }
 
+    // 3. Firestore Sync
     if (state.db) {
       try {
+        // Delete submission docs from Firestore
+        const subsSnap = await getDocs(collection(state.db, "submissions"));
+        subsSnap.forEach(async (docSnap) => {
+          const sData = docSnap.data();
+          if (sData.userId === userId && (
+            (submissionId && docSnap.id === submissionId) ||
+            (questId && (sData.questId === questId || sData.originalQuestId === questId || (sData.questId && sData.questId.includes(questId)))) ||
+            (originalQuestId && (sData.questId === originalQuestId || sData.originalQuestId === originalQuestId))
+          )) {
+            await deleteDoc(doc(state.db, "submissions", docSnap.id)).catch(() => {});
+          }
+        });
+
+        // Deduct points in Firestore user doc
+        if (pointsToDeduct > 0) {
+          const userRef = doc(state.db, "users", userId);
+          const userDoc = await getDoc(userRef).catch(() => null);
+          if (userDoc && userDoc.exists()) {
+            const currentPoints = userDoc.data().cv || userDoc.data().points || 0;
+            const newPoints = Math.max(0, currentPoints - pointsToDeduct);
+            await updateDoc(userRef, { cv: newPoints, points: newPoints }).catch(() => {});
+          }
+        }
+
+        // Delete status from Firestore user_decks doc
         const deckRef = doc(state.db, "user_decks", userId);
-        const deckDoc = await getDoc(deckRef);
-        if (deckDoc.exists()) {
+        const deckDoc = await getDoc(deckRef).catch(() => null);
+        if (deckDoc && deckDoc.exists()) {
           const deckData = deckDoc.data();
           if (deckData.statuses) {
-            delete deckData.statuses[questId];
-            await updateDoc(deckRef, { statuses: deckData.statuses });
+            Object.keys(deckData.statuses).forEach(k => {
+              if (k === questId || k === originalQuestId || (questId && k.includes(questId))) {
+                delete deckData.statuses[k];
+              }
+            });
+            await updateDoc(deckRef, { statuses: deckData.statuses }).catch(() => {});
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Update Discord member progress roles
+    if (state.client && state.isDiscordReady && GUILD_ID) {
+      try {
+        const guild = await state.client.guilds.fetch(GUILD_ID).catch(() => null);
+        let targetDiscordId = userId;
+        const match = userId.match(/\d{17,20}/);
+        if (match) targetDiscordId = match[0];
+        if (guild && targetDiscordId) {
+          const member = await guild.members.fetch(targetDiscordId).catch(() => null);
+          if (member) {
+            await discordUtil.updatePlayerProgressRoles(member, userId);
           }
         }
       } catch (e) {}
     }
 
     global.broadcastWsUpdate('global');
-    res.json({ success: true });
+    res.json({ success: true, removedCount: removedSubs.length, pointsDeducted: pointsToDeduct });
   });
 
   app.post('/api/submissions/reset-all', requireClientToken, async (req, res) => {
