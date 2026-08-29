@@ -4,6 +4,7 @@ import ActiveQuestCard from "./ActiveQuestCard";
 
 interface Quest {
   id: string;
+  originalQuestId?: string;
   akt: string;
   title: string;
   description: string;
@@ -50,7 +51,19 @@ export default function CardHand({
   isUploading,
   isDealing = false
 }: CardHandProps) {
-  const visibleQuests = dealtQuests.filter(q => cardStatuses[q.id] !== "Completed");
+  // Deduplicate cards in hand by originalQuestId or id
+  const uniqueQuests: Quest[] = [];
+  const seenKeys = new Set<string>();
+  dealtQuests.forEach(q => {
+    const key = q.originalQuestId || q.id;
+    if (!seenKeys.has(key)) {
+      seenKeys.add(key);
+      uniqueQuests.push(q);
+    }
+  });
+
+  const getStatus = (q: Quest) => cardStatuses[q.id] || (q.originalQuestId ? cardStatuses[q.originalQuestId] : undefined) || "active";
+  const visibleQuests = uniqueQuests.filter(q => getStatus(q) !== "Completed");
   const count = visibleQuests.length;
   const isAnyActive = activeQuestId !== null;
 
@@ -166,7 +179,8 @@ export default function CardHand({
               {(() => {
                 let newCardIdx = 0;
                 return visibleQuests.map((quest, idx) => {
-                  const isFlippedToFront = !!cardFlipped[quest.id] || (cardStatuses[quest.id] && cardStatuses[quest.id] !== "active");
+                  const questStatus = getStatus(quest);
+                  const isFlippedToFront = !!cardFlipped[quest.id] || (quest.originalQuestId && !!cardFlipped[quest.originalQuestId]) || (questStatus !== "active");
                   const isActive = activeQuestId === quest.id;
                   const isAnyActive = activeQuestId !== null;
 
@@ -182,7 +196,6 @@ export default function CardHand({
                   const spacing = 62;
 
                   if (isActive) {
-                    const questStatus = cardStatuses[quest.id] || "active";
                     return (
                       <ActiveQuestCard
                         key={quest.id || idx}
@@ -234,7 +247,7 @@ export default function CardHand({
 
                         {/* Front Face (Revealed Card) */}
                         {(() => {
-                          const status = cardStatuses[quest.id] || "active";
+                          const status = questStatus;
                           const isPendingStatus = status === "pending" || status === "Review";
                           const isDeniedStatus = status === "Denied";
 

@@ -675,17 +675,23 @@ export default function QuestGame({
       const hardQuests = quests.filter(q => q.difficulty === "Sulit");
       const legendaryQuests = quests.filter(q => q.difficulty === "Legendaris");
 
-      const completedQuestIds = new Set(
-        allSubmissions
-          .filter((s: any) => s.userId === currentUser.uid && s.status === "approved")
-          .map((s: any) => s.questId)
-      );
+      const completedQuestIds = new Set<string>();
+      allSubmissions.forEach((s: any) => {
+        if (s.userId === currentUser.uid && s.status === "approved") {
+          if (s.questId) completedQuestIds.add(s.questId);
+          if (s.originalQuestId) completedQuestIds.add(s.originalQuestId);
+        }
+      });
+      Object.entries(cardStatuses).forEach(([k, v]) => {
+        if (v === "Completed") completedQuestIds.add(k);
+      });
+
       const completedCount = completedQuestIds.size;
       const isFirstTime = completedCount === 0;
 
       // Retain all cards in hand that are NOT completed (active/pending)
       const retainedCards = dealt ? dealtQuests.filter(q => {
-        const st = cardStatuses[q.id] || "active";
+        const st = cardStatuses[q.id] || (q.originalQuestId ? cardStatuses[q.originalQuestId] : undefined) || "active";
         return st !== "Completed";
       }) : [];
 
@@ -698,7 +704,11 @@ export default function QuestGame({
       }
 
       const selected: Quest[] = [...retainedCards];
-      const selectedIds = new Set<string>(retainedCards.map(c => c.id));
+      const selectedIds = new Set<string>();
+      retainedCards.forEach(c => {
+        selectedIds.add(c.id);
+        if (c.originalQuestId) selectedIds.add(c.originalQuestId);
+      });
       const pool = quests.filter(q => !completedQuestIds.has(q.id) && !selectedIds.has(q.id));
       const cardsToDraw = 5 - retainedCards.length;
 

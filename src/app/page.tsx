@@ -607,6 +607,10 @@ export default function CrunchyVerseStage() {
       socket.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data);
+          if (payload.action === "update") {
+            sendWsSync();
+            return;
+          }
           if (payload.action === "syncResponse" && payload.data) {
             const data = payload.data;
             

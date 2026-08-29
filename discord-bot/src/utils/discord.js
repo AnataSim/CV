@@ -838,8 +838,11 @@ function initializeBot(token) {
           if (decks[userId]) {
             decks[userId].statuses = decks[userId].statuses || {};
             decks[userId].statuses[questId] = "Completed";
+            if (mergedSub.originalQuestId) {
+              decks[userId].statuses[mergedSub.originalQuestId] = "Completed";
+            }
             db.saveLocalDecks(decks);
-            console.log(`🔥 [Reaction] Updated local user deck card ${questId} status to Completed`);
+            console.log(`🔥 [Reaction] Updated local user deck card ${questId} (${mergedSub.originalQuestId || ''}) status to Completed`);
           }
         }
 
@@ -850,7 +853,11 @@ function initializeBot(token) {
             const deckDoc = await state.withTimeout(getDoc(deckRef));
             if (deckDoc.exists()) {
               const deckData = deckDoc.data();
-              const updatedStatuses = { ...deckData.statuses, [questId]: "Completed" };
+              const updatedStatuses = { 
+                ...deckData.statuses, 
+                [questId]: "Completed",
+                ...(mergedSub.originalQuestId ? { [mergedSub.originalQuestId]: "Completed" } : {})
+              };
               await state.withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
               console.log(`🔥 [Reaction] Updated Firestore user deck card ${questId} status to Completed`);
             }
@@ -981,6 +988,9 @@ function initializeBot(token) {
           if (decks[userId]) {
             decks[userId].statuses = decks[userId].statuses || {};
             decks[userId].statuses[questId] = "Denied";
+            if (mergedSub.originalQuestId) {
+              decks[userId].statuses[mergedSub.originalQuestId] = "Denied";
+            }
             db.saveLocalDecks(decks);
             console.log(`🔥 [Reaction] Updated local user deck card ${questId} status to Denied`);
           }
@@ -993,7 +1003,11 @@ function initializeBot(token) {
             const deckDoc = await state.withTimeout(getDoc(deckRef));
             if (deckDoc.exists()) {
               const deckData = deckDoc.data();
-              const updatedStatuses = { ...deckData.statuses, [questId]: "Denied" };
+              const updatedStatuses = { 
+                ...deckData.statuses, 
+                [questId]: "Denied",
+                ...(mergedSub.originalQuestId ? { [mergedSub.originalQuestId]: "Denied" } : {})
+              };
               await state.withTimeout(updateDoc(deckRef, { statuses: updatedStatuses }));
               console.log(`🔥 [Reaction] Updated Firestore user deck card ${questId} status to Denied`);
             }
@@ -1007,6 +1021,17 @@ function initializeBot(token) {
         } catch (replyErr) {
           console.error("❌ Gagal membalas pesan di Discord:", replyErr.message);
         }
+      }
+
+      // Clear cache & trigger INSTANT WebSocket sync broadcast (0 delay)
+      if (state.cache) {
+        state.cache.del('api:submissions:all');
+        if (userId) state.cache.del(`user_cv:${userId}`);
+      }
+
+      if (global.broadcastWsUpdate) {
+        global.broadcastWsUpdate('quests', userId);
+        global.broadcastWsUpdate('global');
       }
     });
 
