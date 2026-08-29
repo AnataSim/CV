@@ -289,18 +289,20 @@ async function registerSlashCommands() {
     const rest = new REST({ version: '10' }).setToken(token);
     const clientId = state.client.user.id;
 
+    // 1. Register Global Commands (Required for green "{/}" SUPPORTS COMMANDS badge on profile)
+    await rest.put(
+      Routes.applicationCommands(clientId),
+      { body: commands }
+    );
+    console.log(`✅ [SlashCommands] Global commands (/) terdaftar! (Lencana {/} aktif di profil)`);
+
+    // 2. Register Guild Commands for instant server updates
     if (GUILD_ID) {
       await rest.put(
         Routes.applicationGuildCommands(clientId, GUILD_ID),
         { body: commands }
       );
-      console.log(`✅ [SlashCommands] Slash commands (/) berhasil terdaftar di Server ID ${GUILD_ID}!`);
-    } else {
-      await rest.put(
-        Routes.applicationCommands(clientId),
-        { body: commands }
-      );
-      console.log(`✅ [SlashCommands] Slash commands (/) global berhasil terdaftar!`);
+      console.log(`✅ [SlashCommands] Guild commands (/) terdaftar di Server ID ${GUILD_ID}!`);
     }
   } catch (err) {
     console.error(`❌ [SlashCommands] Gagal mendaftarkan slash commands: ${err.message}`);
