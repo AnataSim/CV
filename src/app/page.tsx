@@ -1662,9 +1662,11 @@ export default function CrunchyVerseStage() {
     setUserAvatar(null);
   };
 
-  // State for Stage Transition Title Splash Screen
+  // State for Stage Transition Title Splash & 1-100% Progress Counter
   const [transitionTitle, setTransitionTitle] = useState<string | null>(null);
+  const [transitionProgress, setTransitionProgress] = useState<number>(0);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+  const transitionTimerRef = useRef<any>(null);
 
   // Publish Volunteer Override Settings to Bot Express Backend API
   const publishVolunteerSettings = async (overrideState: boolean, isLiveState: boolean, titleText: string) => {
@@ -1717,33 +1719,47 @@ export default function CrunchyVerseStage() {
     }
   };
 
-  // Safe helper to scroll with cinematic stage title transition splash screen
+  // Safe helper to scroll with 1-100% theatrical stage loading progress
   const safeScrollTo = (elementId: string) => {
     const item = sidebarItems.find(i => i.id === elementId);
     const label = item ? item.label : "PANGGUNG TEATER";
 
+    if (transitionTimerRef.current) {
+      clearInterval(transitionTimerRef.current);
+    }
+
     setTransitionTitle(label);
+    setTransitionProgress(1);
     setIsTransitioning(true);
 
     const snapContainer = containerRef.current;
     const targetElement = document.getElementById(elementId);
     if (!snapContainer || !targetElement) {
-      setTimeout(() => setIsTransitioning(false), 950);
+      setTimeout(() => setIsTransitioning(false), 850);
       return;
     }
 
     const originalSnapType = snapContainer.style.scrollSnapType || '';
     snapContainer.style.scrollSnapType = "none";
-    
     targetElement.scrollIntoView({ behavior: "smooth" });
 
-    setTimeout(() => {
-      snapContainer.style.scrollSnapType = originalSnapType;
-    }, 500);
+    // Smooth 1% -> 100% progress counter over ~750ms
+    const startTime = Date.now();
+    const duration = 750;
 
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 950);
+    transitionTimerRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(100, Math.floor((elapsed / duration) * 100) + 1);
+      setTransitionProgress(progress);
+
+      if (progress >= 100) {
+        clearInterval(transitionTimerRef.current);
+        snapContainer.style.scrollSnapType = originalSnapType;
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 120);
+      }
+    }, 16);
   };
 
   // Scroll to Frame 2
@@ -1795,9 +1811,9 @@ export default function CrunchyVerseStage() {
     <CosmeticProvider>
       <CursorTrail />
 
-      {/* Cinematic Stage Transition Title Splash Overlay */}
+      {/* Cinematic Stage Transition Progress Overlay (1% - 100%) */}
       {isTransitioning && transitionTitle && (
-        <div className="fixed inset-0 z-[200] pointer-events-none flex flex-col items-center justify-center bg-neutral-950/90 backdrop-blur-2xl transition-all duration-500">
+        <div className="fixed inset-0 z-[200] pointer-events-auto flex flex-col items-center justify-center bg-neutral-950/95 backdrop-blur-2xl">
           {/* Spotlight & Ambient Aura Orbs */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-theater-gold/25 blur-[140px] pointer-events-none animate-pulse-glow" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[650px] w-[650px] rounded-full bg-theater-red-light/20 blur-[170px] pointer-events-none" />
@@ -1811,8 +1827,8 @@ export default function CrunchyVerseStage() {
                 style={{
                   left: p.left,
                   bottom: '-20px',
-                  '--duration': '2.8s',
-                  '--delay': `${idx * 0.08}s`,
+                  '--duration': '2.5s',
+                  '--delay': `${idx * 0.05}s`,
                   '--drift-x': p.drift,
                   width: `${Math.max(4, p.size * 1.5)}px`,
                   height: `${Math.max(4, p.size * 1.5)}px`,
@@ -1821,21 +1837,38 @@ export default function CrunchyVerseStage() {
             ))}
           </div>
 
-          {/* Large Animated Golden Title Card */}
-          <div className="relative z-10 flex flex-col items-center gap-3.5 px-10 py-9 rounded-3xl border-2 border-theater-gold/45 bg-neutral-950/85 shadow-[0_0_100px_rgba(212,175,55,0.45),_0_0_40px_rgba(229,26,45,0.2)] animate-stage-title-pop text-center max-w-2xl mx-4">
+          {/* Golden Stage Title Card & Progress Counter */}
+          <div className="relative z-10 flex flex-col items-center gap-4 px-10 py-9 rounded-3xl border-2 border-theater-gold/45 bg-neutral-950/90 shadow-[0_0_100px_rgba(212,175,55,0.45),_0_0_40px_rgba(229,26,45,0.2)] text-center max-w-2xl mx-4">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.35em] text-theater-gold">
               <Sparkles size={16} className="animate-spin text-theater-gold" />
-              <span>MEMBUKA PANGGUNG</span>
+              <span>MEMUAT PANGGUNG TEATER</span>
               <Sparkles size={16} className="animate-spin text-theater-gold" />
             </div>
 
-            <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-theater-gold to-white tracking-[0.12em] uppercase drop-shadow-[0_0_35px_rgba(212,175,55,0.85)] py-2 select-none">
+            <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-theater-gold to-white tracking-[0.12em] uppercase drop-shadow-[0_0_35px_rgba(212,175,55,0.85)] py-1 select-none">
               {transitionTitle}
             </h1>
 
-            <div className="h-0.5 w-48 bg-gradient-to-r from-transparent via-theater-gold to-transparent my-1" />
+            {/* Progress Bar & Percentage Counter */}
+            <div className="w-full max-w-md flex flex-col items-center gap-2.5 mt-2">
+              <div className="flex items-center justify-between w-full text-xs font-black uppercase tracking-widest px-1">
+                <span className="text-neutral-400 font-sans">MEMPROSES PEMANDANGAN...</span>
+                <span className="text-theater-gold font-mono text-base font-black">{transitionProgress}%</span>
+              </div>
+
+              {/* Progress Track */}
+              <div className="w-full h-3 rounded-full bg-neutral-900 border border-theater-gold/30 p-0.5 relative overflow-hidden shadow-inner">
+                {/* Progress Fill */}
+                <div 
+                  className="h-full rounded-full bg-gradient-to-r from-theater-red-light via-theater-gold to-yellow-300 transition-all duration-75 shadow-[0_0_15px_#d4af37]"
+                  style={{ width: `${transitionProgress}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="h-0.5 w-48 bg-gradient-to-r from-transparent via-theater-gold/40 to-transparent my-1" />
             
-            <span className="text-[10px] sm:text-xs font-extrabold text-neutral-300 uppercase tracking-[0.25em] font-sans">
+            <span className="text-[10px] sm:text-xs font-extrabold text-neutral-400 uppercase tracking-[0.25em] font-sans">
               CrunchyVerse Spectacular Stage
             </span>
           </div>
