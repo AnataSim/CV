@@ -132,6 +132,8 @@ async function updatePlayerProgressRoles(member, userId) {
   } catch (err) {
     console.error("❌ Error di updatePlayerProgressRoles:", err.message);
   }
+}
+
 // Rotating Custom Rich Presence (RPC) for Sparxie Bot 🎪
 let presenceIndex = 0;
 function startRotatingPresence() {
