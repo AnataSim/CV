@@ -2674,16 +2674,47 @@ export default function CrunchyVerseStage() {
       {/* FRAME 3: ARSIP KASTA — ROLE & SEKTE STORAGE */}
       <section
         id="stage-roles"
-        className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col"
+        className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col overflow-hidden"
         style={{
-          background: 'radial-gradient(circle at top left, #0d0800 0%, #060102 60%, #000308 100%)'
+          backgroundImage: `linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(20,12,2,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
         }}
       >
+        {/* Animated Background Environment Layers */}
+        <div className="absolute -top-40 left-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-gold/25 via-amber-500/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep opacity-70" />
+        <div className="absolute -top-40 right-1/4 w-[320px] h-[900px] bg-gradient-to-b from-amber-400/20 via-theater-gold-dim/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep [animation-delay:-8s] opacity-70" />
+
+        <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-theater-gold/20 via-amber-500/15 to-transparent blur-[110px] pointer-events-none z-0 animate-pulse-glow" />
+        <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] bg-amber-600/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift" />
+        <div className="absolute bottom-10 -right-40 w-[550px] h-[550px] bg-theater-gold/15 rounded-full blur-[150px] pointer-events-none z-0" />
+
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          {dustParticles.map((p, idx) => (
+            <div
+              key={`roles-firefly-${p.id || idx}`}
+              className="firefly-particle"
+              style={{
+                left: p.left,
+                bottom: '-20px',
+                '--duration': `${parseFloat(p.duration) * 1.3}s`,
+                '--delay': p.delay,
+                '--drift-x': p.drift,
+                width: `${Math.max(3, p.size * 1.2)}px`,
+                height: `${Math.max(3, p.size * 1.2)}px`,
+              } as React.CSSProperties}
+            />
+          ))}
+        </div>
+        
+        <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
+
         {/* Theatrical Top Trim */}
-        <div className="w-full h-4 bg-gradient-to-r from-theater-gold-dim via-theater-gold to-theater-gold-dim border-b border-theater-gold/60 shadow-md" />
+        <div className="w-full h-4 bg-gradient-to-r from-theater-gold-dim via-theater-gold to-theater-gold-dim border-b border-theater-gold/60 shadow-md relative z-10" />
 
         {/* Content Area */}
-        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8">
+        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
 
           {/* Frame 3 Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
@@ -2766,16 +2797,47 @@ export default function CrunchyVerseStage() {
       {/* FRAME 4: PAPAN PERINGKAT JAWARA & VALUE ROLE — LEADERBOARD ANOMALY */}
       <section
         id="stage-leaderboard"
-        className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col"
+        className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col overflow-hidden"
         style={{
-          background: 'radial-gradient(circle at bottom right, #0d0800 0%, #060102 60%, #000308 100%)'
+          backgroundImage: `linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(25,2,8,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
         }}
       >
+        {/* Animated Background Environment Layers */}
+        <div className="absolute -top-40 left-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-red-light/25 via-theater-red/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep opacity-70" />
+        <div className="absolute -top-40 right-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-gold/20 via-theater-red-dark/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep [animation-delay:-8s] opacity-70" />
+
+        <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-theater-red-light/20 via-theater-red/15 to-transparent blur-[110px] pointer-events-none z-0 animate-pulse-glow" />
+        <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] bg-theater-red/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift" />
+        <div className="absolute bottom-10 -right-40 w-[550px] h-[550px] bg-theater-gold/15 rounded-full blur-[150px] pointer-events-none z-0" />
+
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          {dustParticles.map((p, idx) => (
+            <div
+              key={`leaderboard-firefly-${p.id || idx}`}
+              className="firefly-particle"
+              style={{
+                left: p.left,
+                bottom: '-20px',
+                '--duration': `${parseFloat(p.duration) * 1.3}s`,
+                '--delay': p.delay,
+                '--drift-x': p.drift,
+                width: `${Math.max(3, p.size * 1.2)}px`,
+                height: `${Math.max(3, p.size * 1.2)}px`,
+              } as React.CSSProperties}
+            />
+          ))}
+        </div>
+        
+        <div className="absolute inset-0 bg-[radial-gradient(#e51a2d_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
+
         {/* Theatrical Top Trim */}
-        <div className="w-full h-4 bg-gradient-to-r from-theater-red-dark via-theater-red to-theater-red-dark border-b border-theater-red-light/30 shadow-md" />
+        <div className="w-full h-4 bg-gradient-to-r from-theater-red-dark via-theater-red to-theater-red-dark border-b border-theater-red-light/30 shadow-md relative z-10" />
 
         {/* Content Area */}
-        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8">
+        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
 
           {/* Frame 4 Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
@@ -2851,16 +2913,47 @@ export default function CrunchyVerseStage() {
       {/* FRAME 5: MATERI DIVERGENT UNIVERSE — THEATER PRESENTATION BLUEPRINT */}
       <section
         id="stage-divergent"
-        className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col min-h-screen"
+        className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col min-h-screen overflow-hidden"
         style={{
-          background: 'radial-gradient(circle at top right, #000c1a 0%, #060102 60%, #080500 100%)'
+          backgroundImage: `linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(2,15,30,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/challenge_bg.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
         }}
       >
+        {/* Animated Background Environment Layers */}
+        <div className="absolute -top-40 left-1/4 w-[320px] h-[900px] bg-gradient-to-b from-sky-400/25 via-cyan-500/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep opacity-70" />
+        <div className="absolute -top-40 right-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-gold/20 via-sky-900/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep [animation-delay:-8s] opacity-70" />
+
+        <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-sky-500/20 via-cyan-400/15 to-transparent blur-[110px] pointer-events-none z-0 animate-pulse-glow" />
+        <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] bg-sky-600/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift" />
+        <div className="absolute bottom-10 -right-40 w-[550px] h-[550px] bg-theater-gold/15 rounded-full blur-[150px] pointer-events-none z-0" />
+
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          {dustParticles.map((p, idx) => (
+            <div
+              key={`divergent-firefly-${p.id || idx}`}
+              className="firefly-particle"
+              style={{
+                left: p.left,
+                bottom: '-20px',
+                '--duration': `${parseFloat(p.duration) * 1.3}s`,
+                '--delay': p.delay,
+                '--drift-x': p.drift,
+                width: `${Math.max(3, p.size * 1.2)}px`,
+                height: `${Math.max(3, p.size * 1.2)}px`,
+              } as React.CSSProperties}
+            />
+          ))}
+        </div>
+        
+        <div className="absolute inset-0 bg-[radial-gradient(#0ea5e9_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
+
         {/* Theatrical Top Trim */}
-        <div className="w-full h-4 bg-gradient-to-r from-sky-900 via-sky-500 to-sky-900 border-b border-sky-400/40 shadow-md shadow-sky-950/20" />
+        <div className="w-full h-4 bg-gradient-to-r from-sky-900 via-sky-500 to-sky-900 border-b border-sky-400/40 shadow-md shadow-sky-950/20 relative z-10" />
 
         {/* Content Area - Enlarge frame container to max-w-7xl */}
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
           
           {/* Frame 5 Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
@@ -3237,18 +3330,49 @@ export default function CrunchyVerseStage() {
       <section
         id="stage-chat"
         ref={frame6Ref}
-        className={`scroll-frame-inner bg-theater-black relative z-20 flex flex-col min-h-screen ${
+        className={`scroll-frame-inner bg-theater-black relative z-20 flex flex-col min-h-screen overflow-hidden ${
           !isUserAdmin(userRole) ? "hidden" : ""
         }`}
         style={{
-          background: 'radial-gradient(circle at bottom left, #020c1b 0%, #060102 60%, #0d0800 100%)'
+          backgroundImage: `linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(2,16,28,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/challenge_bg.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
         }}
       >
+        {/* Animated Background Environment Layers */}
+        <div className="absolute -top-40 left-1/4 w-[320px] h-[900px] bg-gradient-to-b from-sky-500/25 via-cyan-500/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep opacity-70" />
+        <div className="absolute -top-40 right-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-gold/20 via-sky-950/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep [animation-delay:-8s] opacity-70" />
+
+        <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-sky-400/20 via-sky-500/15 to-transparent blur-[110px] pointer-events-none z-0 animate-pulse-glow" />
+        <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] bg-sky-700/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift" />
+        <div className="absolute bottom-10 -right-40 w-[550px] h-[550px] bg-theater-gold/15 rounded-full blur-[150px] pointer-events-none z-0" />
+
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          {dustParticles.map((p, idx) => (
+            <div
+              key={`chat-firefly-${p.id || idx}`}
+              className="firefly-particle"
+              style={{
+                left: p.left,
+                bottom: '-20px',
+                '--duration': `${parseFloat(p.duration) * 1.3}s`,
+                '--delay': p.delay,
+                '--drift-x': p.drift,
+                width: `${Math.max(3, p.size * 1.2)}px`,
+                height: `${Math.max(3, p.size * 1.2)}px`,
+              } as React.CSSProperties}
+            />
+          ))}
+        </div>
+        
+        <div className="absolute inset-0 bg-[radial-gradient(#0ea5e9_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
+
         {/* Theatrical Top Trim */}
-        <div className="w-full h-4 bg-gradient-to-r from-sky-950 via-sky-500 to-sky-950 border-b border-sky-400/40 shadow-md shadow-sky-950/20" />
+        <div className="w-full h-4 bg-gradient-to-r from-sky-950 via-sky-500 to-sky-950 border-b border-sky-400/40 shadow-md shadow-sky-950/20 relative z-10" />
 
         {/* Content Area */}
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
           
           {/* Frame 6 Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
