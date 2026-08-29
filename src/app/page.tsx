@@ -180,6 +180,26 @@ const MOCK_VOICE_MEMBERS = [
   { name: "✨¨ Alice", avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=alice", isMuted: true, isDeafened: true, roleValueSymbol: "1 ⭐" }
 ];
 
+function FramePlaceholder({ title, icon: Icon, description }: { title: string; icon: any; description: string }) {
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center py-28 px-4 text-center min-h-[55vh] select-none my-auto">
+      <div className="w-14 h-14 rounded-2xl bg-theater-gold/10 border border-theater-gold/30 flex items-center justify-center text-theater-gold shadow-[0_0_30px_rgba(212,175,55,0.15)] mb-4 animate-pulse">
+        <Icon size={26} />
+      </div>
+      <h3 className="font-display font-black text-lg text-white uppercase tracking-wider mb-1.5">
+        {title}
+      </h3>
+      <p className="text-xs text-neutral-500 font-medium max-w-xs mb-4">
+        {description}
+      </p>
+      <div className="flex items-center gap-2 text-[10px] text-theater-gold/70 font-mono uppercase tracking-widest bg-neutral-950 px-3.5 py-1.5 rounded-full border border-neutral-900 shadow-inner">
+        <span className="h-1.5 w-1.5 rounded-full bg-theater-gold animate-ping" />
+        PANGGUNG STANDBY
+      </div>
+    </div>
+  );
+}
+
 export default function CrunchyVerseStage() {
   function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 1500): Promise<T> {
     return Promise.race([
@@ -198,6 +218,22 @@ export default function CrunchyVerseStage() {
   const [isScrollUnlocked, setIsScrollUnlocked] = useState(false);
   const [spotlightPos, setSpotlightPos] = useState({ x: "50%", y: "45%" });
   const [dustParticles, setDustParticles] = useState<Array<{ id: number; left: string; delay: string; duration: string; drift: string; size: number }>>([]);
+  const [tipIndex, setTipIndex] = useState(0);
+
+  const STAGE_TIPS = [
+    "🎭 Tips: Gunakan bilah navigasi di samping untuk berpindah panggung teater kapan saja.",
+    "🍿 Sekte Kerupuk vs Keripik mengumpulkan poin dari keaktifan member server Discord.",
+    "🤖 Bot Sparxie terhubung langsung untuk menampilkan log aktivitas real-time.",
+    "🃏 Selesaikan quest di Tirai Tantangan untuk meraih poin CV dan lencana langka.",
+    "📻 Saluran suara panggung menyiarkan status lagu & durasi siaran secara otomatis."
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTipIndex(prev => (prev + 1) % 5);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, []);
   
   // Divergent Universe Slide Deck States
   const [activeSlide, setActiveSlide] = useState(0);
@@ -713,6 +749,47 @@ export default function CrunchyVerseStage() {
       });
     }
   }, [chatMessagesList]);
+
+  // Set up IntersectionObserver for dynamic activeFrame tracking and frame performance virtualization
+  useEffect(() => {
+    if (typeof window === "undefined" || !hasMounted) return;
+
+    const frameIds = [
+      "stage-welcome",
+      "stage-dashboard",
+      "stage-roles",
+      "stage-leaderboard",
+      "stage-divergent",
+      "stage-chat",
+      "stage-game"
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveFrame(entry.target.id);
+          }
+        });
+      },
+      {
+        root: containerRef.current,
+        threshold: 0.35
+      }
+    );
+
+    const timer = setTimeout(() => {
+      frameIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el);
+      });
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [hasMounted]);
 
   // Handle Authentication Session Monitoring
   useEffect(() => {
@@ -1725,6 +1802,8 @@ export default function CrunchyVerseStage() {
     const item = sidebarItems.find(i => i.id === elementId);
     const label = item ? item.label : "PANGGUNG TEATER";
 
+    setActiveFrame(elementId);
+
     const snapContainer = containerRef.current;
     const targetElement = document.getElementById(elementId);
     if (!snapContainer || !targetElement) return;
@@ -1827,22 +1906,22 @@ export default function CrunchyVerseStage() {
 
       {/* Cinematic Stage Transition Progress Overlay (1% - 100%) */}
       {isTransitioning && transitionTitle && (
-        <div className="fixed inset-0 z-[200] pointer-events-auto flex flex-col items-center justify-center bg-neutral-950/95 backdrop-blur-2xl">
+        <div className="fixed inset-0 z-[200] pointer-events-auto flex flex-col items-center justify-center bg-neutral-950/95 backdrop-blur-2xl transition-all duration-300">
           {/* Spotlight & Ambient Aura Orbs */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-theater-gold/25 blur-[140px] pointer-events-none animate-pulse-glow" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[650px] w-[650px] rounded-full bg-theater-red-light/20 blur-[170px] pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[550px] w-[550px] rounded-full bg-theater-gold/25 blur-[150px] pointer-events-none animate-pulse-glow" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full bg-theater-red-light/20 blur-[180px] pointer-events-none" />
           
           {/* Floating Fireflies / Glowing Ember Particles */}
           <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            {dustParticles.slice(0, 14).map((p, idx) => (
+            {dustParticles.slice(0, 16).map((p, idx) => (
               <div
                 key={`trans-firefly-${p.id || idx}`}
                 className="firefly-particle"
                 style={{
                   left: p.left,
                   bottom: '-20px',
-                  '--duration': '2.5s',
-                  '--delay': `${idx * 0.05}s`,
+                  '--duration': '2.2s',
+                  '--delay': `${idx * 0.04}s`,
                   '--drift-x': p.drift,
                   width: `${Math.max(4, p.size * 1.5)}px`,
                   height: `${Math.max(4, p.size * 1.5)}px`,
@@ -1852,35 +1931,52 @@ export default function CrunchyVerseStage() {
           </div>
 
           {/* Golden Stage Title Card & Progress Counter */}
-          <div className="relative z-10 flex flex-col items-center gap-4 px-10 py-9 rounded-3xl border-2 border-theater-gold/45 bg-neutral-950/90 shadow-[0_0_100px_rgba(212,175,55,0.45),_0_0_40px_rgba(229,26,45,0.2)] text-center max-w-2xl mx-4">
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.35em] text-theater-gold">
+          <div className="relative z-10 flex flex-col items-center gap-5 px-8 sm:px-12 py-10 rounded-3xl border-2 border-theater-gold/50 bg-gradient-to-b from-neutral-950/95 via-neutral-900/90 to-neutral-950/95 shadow-[0_0_100px_rgba(212,175,55,0.45),_0_0_40px_rgba(229,26,45,0.25)] text-center max-w-xl mx-4 animate-shimmer backdrop-blur-md">
+            
+            {/* Top Stage Header Pill */}
+            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-theater-gold/40 bg-theater-gold/10 text-xs sm:text-sm font-black uppercase tracking-[0.35em] text-theater-gold shadow-[0_0_20px_rgba(212,175,55,0.2)]">
               <Sparkles size={16} className="animate-spin text-theater-gold" />
               <span>MEMUAT PANGGUNG TEATER</span>
               <Sparkles size={16} className="animate-spin text-theater-gold" />
             </div>
 
-            <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-theater-gold to-white tracking-[0.12em] uppercase drop-shadow-[0_0_35px_rgba(212,175,55,0.85)] py-1 select-none">
+            {/* Frame Title */}
+            <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-theater-gold to-yellow-200 tracking-[0.12em] uppercase drop-shadow-[0_0_35px_rgba(212,175,55,0.85)] py-1 select-none">
               {transitionTitle}
             </h1>
 
             {/* Progress Bar & Percentage Counter */}
-            <div className="w-full max-w-md flex flex-col items-center gap-2.5 mt-2">
+            <div className="w-full max-w-md flex flex-col items-center gap-2.5 mt-1">
               <div className="flex items-center justify-between w-full text-xs font-black uppercase tracking-widest px-1">
-                <span className="text-neutral-400 font-sans">MEMPROSES PEMANDANGAN...</span>
-                <span className="text-theater-gold font-mono text-base font-black">{transitionProgress}%</span>
+                <span className="text-neutral-400 font-sans flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-theater-gold animate-ping" />
+                  MEMPROSES PEMANDANGAN...
+                </span>
+                <span className="text-theater-gold font-mono text-base font-black px-2.5 py-0.5 rounded-md bg-theater-gold/10 border border-theater-gold/30">
+                  {transitionProgress}%
+                </span>
               </div>
 
               {/* Progress Track */}
-              <div className="w-full h-3 rounded-full bg-neutral-900 border border-theater-gold/30 p-0.5 relative overflow-hidden shadow-inner">
+              <div className="w-full h-3.5 rounded-full bg-neutral-900/90 border border-theater-gold/40 p-0.5 relative overflow-hidden shadow-inner">
                 {/* Progress Fill */}
                 <div 
-                  className="h-full rounded-full bg-gradient-to-r from-theater-red-light via-theater-gold to-yellow-300 transition-all duration-75 shadow-[0_0_15px_#d4af37]"
+                  className="h-full rounded-full bg-gradient-to-r from-theater-red-light via-theater-gold to-yellow-300 transition-all duration-75 relative shadow-[0_0_20px_#d4af37]"
                   style={{ width: `${transitionProgress}%` }}
-                />
+                >
+                  {/* Leading Spark Orb */}
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-[0_0_12px_#fff,0_0_24px_#ffd700]" />
+                </div>
               </div>
             </div>
 
-            <div className="h-0.5 w-48 bg-gradient-to-r from-transparent via-theater-gold/40 to-transparent my-1" />
+            {/* Stage Tips Ticker */}
+            <div className="mt-2 px-4 py-2 rounded-xl bg-neutral-900/60 border border-theater-gold/20 text-[11px] font-medium text-amber-200/80 tracking-wide flex items-center justify-center gap-2 max-w-md">
+              <Sparkles size={12} className="text-theater-gold shrink-0" />
+              <span className="truncate">{STAGE_TIPS[tipIndex % STAGE_TIPS.length]}</span>
+            </div>
+
+            <div className="h-0.5 w-48 bg-gradient-to-r from-transparent via-theater-gold/40 to-transparent my-0.5" />
             
             <span className="text-[10px] sm:text-xs font-extrabold text-neutral-400 uppercase tracking-[0.25em] font-sans">
               CrunchyVerse Spectacular Stage
@@ -1903,7 +1999,7 @@ export default function CrunchyVerseStage() {
             className={`absolute top-0 left-0 bottom-0 w-1/2 curtain-fabric transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] z-[101] origin-left ${
               curtainsOpened ? "-translate-x-full opacity-0 pointer-events-none" : "translate-x-0"
             }`}
-            style={!curtainsOpened ? { borderRight: '4px solid rgba(212,175,55,0.5)', boxShadow: 'none' } : { border: 'none', boxShadow: 'none' }}
+            style={!curtainsOpened ? { borderRight: '4px solid rgba(212,175,55,0.6)', boxShadow: '10px 0 40px rgba(0,0,0,0.8)' } : { border: 'none', boxShadow: 'none' }}
           >
             <div className="absolute inset-0 curtain-shadow-right" />
           </div>
@@ -1913,33 +2009,51 @@ export default function CrunchyVerseStage() {
             className={`absolute top-0 right-0 bottom-0 w-1/2 curtain-fabric transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] z-[101] origin-right ${
               curtainsOpened ? "translate-x-full opacity-0 pointer-events-none" : "translate-x-0"
             }`}
-            style={!curtainsOpened ? { borderLeft: '4px solid rgba(212,175,55,0.5)', boxShadow: 'none' } : { border: 'none', boxShadow: 'none' }}
+            style={!curtainsOpened ? { borderLeft: '4px solid rgba(212,175,55,0.6)', boxShadow: '-10px 0 40px rgba(0,0,0,0.8)' } : { border: 'none', boxShadow: 'none' }}
           >
             <div className="absolute inset-0 curtain-shadow-left" />
           </div>
 
           {/* Centered Floating Open Curtain Prompt */}
           {!curtainsOpened && (
-            <div className="absolute inset-0 flex items-center justify-center z-[102] pointer-events-auto bg-neutral-950/40 backdrop-blur-[2px] transition-all duration-1000">
-              <button
-                onClick={() => {
-                  setCurtainsOpened(true);
-                  setTimeout(() => {
-                    setIsScrollUnlocked(true);
-                  }, 1000);
-                }}
-                className="group relative px-8 sm:px-12 py-5 sm:py-7 rounded-2xl border-2 border-theater-gold bg-gradient-to-br from-theater-black via-neutral-900 to-theater-black text-theater-gold hover:text-white font-display font-black text-xs sm:text-sm tracking-[0.2em] uppercase shadow-[0_0_50px_rgba(212,175,55,0.35)] hover:shadow-[0_0_80px_rgba(212,175,55,0.6)] transition-all duration-500 hover:scale-105 active:scale-95 cursor-pointer flex flex-col items-center gap-3 overflow-hidden"
-              >
-                {/* Shimmer overlay effect */}
-                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-                {/* Inner frame */}
-                <span className="absolute inset-1 rounded-xl border border-theater-gold/30 group-hover:border-theater-gold/60 transition-colors pointer-events-none" />
-                <div className="flex flex-col items-center gap-2.5 relative z-10">
-                  <Ticket size={24} className="text-theater-gold group-hover:scale-110 transition-transform duration-300 animate-bounce" />
-                  <span className="font-extrabold tracking-[0.25em]">Buka Tirai Teater</span>
-                  <span className="text-[8px] sm:text-[9px] font-bold tracking-widest text-neutral-500 group-hover:text-neutral-300 transition-colors mt-1 font-sans">Click to Enter Stage</span>
+            <div className="absolute inset-0 flex items-center justify-center z-[102] pointer-events-auto bg-neutral-950/50 backdrop-blur-sm transition-all duration-1000">
+              <div className="px-8 sm:px-12 py-9 rounded-3xl border-2 border-theater-gold/60 bg-gradient-to-b from-neutral-950/90 via-theater-black/95 to-neutral-950/90 shadow-[0_0_100px_rgba(212,175,55,0.45)] flex flex-col items-center gap-5 text-center max-w-lg mx-4 relative overflow-hidden backdrop-blur-md animate-shimmer">
+                
+                {/* Decorative Crown / Emblem */}
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-theater-gold to-theater-gold-dim border-2 border-yellow-200 flex items-center justify-center shadow-lg shadow-theater-gold/30">
+                  <Ticket size={28} className="text-theater-black animate-pulse" />
                 </div>
-              </button>
+
+                <div className="flex flex-col items-center gap-1.5">
+                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] text-theater-gold">
+                    🎭 SPEKTAKULER STAGE ANOMALY
+                  </span>
+                  <h2 className="font-display text-2xl sm:text-3xl font-black text-white uppercase tracking-wider">
+                    CRUNCHY<span className="text-theater-red-light">VERSE</span>
+                  </h2>
+                  <p className="text-xs text-neutral-400 font-medium max-w-xs mt-1">
+                    Buka tirai grand teater untuk melihat statistik real-time, aktivitas voice, dan pertunjukan kasta.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setCurtainsOpened(true);
+                    setTimeout(() => {
+                      setIsScrollUnlocked(true);
+                    }, 1000);
+                  }}
+                  className="group relative w-full py-4 sm:py-5 rounded-2xl border-2 border-theater-gold bg-gradient-to-r from-theater-red-dark via-neutral-900 to-theater-red-dark text-theater-gold hover:text-white font-display font-black text-xs sm:text-sm tracking-[0.25em] uppercase shadow-[0_0_40px_rgba(212,175,55,0.4)] hover:shadow-[0_0_80px_rgba(212,175,55,0.7)] transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-3 overflow-hidden"
+                >
+                  <Ticket size={20} className="text-theater-gold group-hover:rotate-12 transition-transform duration-300" />
+                  <span className="font-extrabold">Buka Tirai Teater</span>
+                  <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+                
+                <span className="text-[9px] font-bold tracking-widest text-neutral-500 uppercase">
+                  Click to Enter Interactive Stage
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -2013,7 +2127,7 @@ export default function CrunchyVerseStage() {
         onMouseMove={handleMouseMove}
         className="scroll-frame flex flex-col justify-between items-center relative overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(6,1,2,0.9), rgba(6,1,2,0.7)), url('/theater_stage_bg.png')`,
+          backgroundImage: `linear-gradient(to bottom, rgba(6,1,2,0.92), rgba(6,1,2,0.75)), url('/theater_stage_bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
@@ -2045,12 +2159,33 @@ export default function CrunchyVerseStage() {
           ))}
         </div>
 
+        {/* Top Valance Curtain Border with Marquee */}
+        <div className="absolute top-0 left-0 right-0 h-16 sm:h-20 curtain-valance z-40 flex items-center justify-between px-4 sm:px-6 border-b-2 border-theater-gold/80 shadow-2xl">
+          <div className="flex items-center gap-3 overflow-hidden max-w-[45%] sm:max-w-[55%]">
+            <div className="flex items-center gap-2 shrink-0 bg-theater-black/70 px-2.5 py-1 rounded-full border border-theater-gold/30">
+              <span className="h-2 w-2 rounded-full bg-theater-gold animate-ping" />
+              <span className="font-display font-black tracking-widest text-theater-gold text-[10px] sm:text-xs select-none">LIVE STAGE</span>
+            </div>
 
-        {/* Top Valance Curtain Border */}
-        <div className="absolute top-0 left-0 right-0 h-16 sm:h-24 curtain-valance z-40 flex items-center justify-between px-6 border-b-2 border-theater-gold/80">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-theater-gold animate-ping" />
-            <span className="font-display font-bold tracking-widest text-theater-gold text-xs sm:text-sm select-none">CRUNCHYVERSE SHOW</span>
+            {/* Marquee activity scroll */}
+            <div className="hidden md:flex overflow-hidden relative text-xs text-neutral-300 font-medium">
+              <div className="animate-marquee flex items-center gap-6">
+                <span className="flex items-center gap-1.5 text-theater-gold font-bold">
+                  <Radio size={12} className="text-emerald-400 animate-pulse" />
+                  Voice: {voiceChannelName} ({voiceMembers.length > 0 ? voiceMembers.length : 14} Online)
+                </span>
+                <span className="text-neutral-500">|</span>
+                <span className="flex items-center gap-1.5">
+                  <Users size={12} className="text-amber-400" />
+                  Sekte War: Kerupuk {stats.totalKerupuk} vs Keripik {stats.totalKeripik} Poin
+                </span>
+                <span className="text-neutral-500">|</span>
+                <span className="flex items-center gap-1.5 text-theater-red-light font-extrabold">
+                  <Sparkles size={12} />
+                  Total Anomaly: {stats.totalMembers} Member
+                </span>
+              </div>
+            </div>
           </div>
           
           <div className="flex items-center gap-2 sm:gap-3 z-50">
@@ -2081,7 +2216,6 @@ export default function CrunchyVerseStage() {
             {/* 3. LOKET TIKET / PROFILE BADGE */}
             {currentUser ? (
               <div className="flex items-center gap-1.5 sm:gap-2.5">
-                {/* User Profile Avatar */}
                 <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full overflow-hidden border border-theater-gold/45 bg-neutral-950 flex items-center justify-center shrink-0 shadow-md shadow-theater-black">
                   {userAvatar ? (
                     <img src={userAvatar} alt="Avatar" className="h-full w-full object-cover" />
@@ -2090,7 +2224,6 @@ export default function CrunchyVerseStage() {
                   )}
                 </div>
 
-                {/* Discord Display Name */}
                 <div className="flex flex-col text-left text-xs max-w-[65px] sm:max-w-none">
                   <span className="font-extrabold text-white leading-none truncate max-w-[60px] sm:max-w-none">{displayName}</span>
                   <span className={`hidden sm:inline text-[9px] font-black tracking-widest uppercase mt-0.5 leading-none ${
@@ -2102,7 +2235,6 @@ export default function CrunchyVerseStage() {
                   </span>
                 </div>
 
-                {/* Logout Button */}
                 <button 
                   onClick={handleLogout}
                   className="bg-theater-red-dark/80 hover:bg-theater-red text-white p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-theater-red-light/30 transition-all flex items-center gap-1 cursor-pointer text-[10px] sm:text-xs font-bold uppercase tracking-wider"
@@ -2125,39 +2257,148 @@ export default function CrunchyVerseStage() {
         </div>
 
         {/* Welcome Text Content */}
-        <div className="flex-1 flex flex-col justify-center items-center px-4 relative z-20 text-center max-w-4xl mt-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-theater-gold/20 bg-theater-red-dark/60 text-theater-gold text-xs font-bold tracking-wider uppercase mb-6 shadow-lg shadow-theater-red-dark/35 animate-float">
-            <Sparkles size={14} className="text-theater-gold" />
-            <span>Pertunjukan Akbar Anomaly</span>
+        <div className="flex-1 flex flex-col justify-center items-center px-4 relative z-20 text-center max-w-5xl mt-14 sm:mt-18 pb-6">
+          
+          {/* Floating Season Pill */}
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-theater-gold/30 bg-gradient-to-r from-theater-red-dark/80 via-neutral-900/90 to-theater-red-dark/80 text-theater-gold text-xs font-extrabold tracking-widest uppercase mb-4 shadow-[0_0_30px_rgba(212,175,55,0.25)] animate-float">
+            <Sparkles size={14} className="text-theater-gold animate-spin" />
+            <span>PERTUNJUKAN AKBAR ANOMALY 2026</span>
+            <Sparkles size={14} className="text-theater-gold animate-spin" />
           </div>
 
-          <h1 className="font-display text-4xl sm:text-6xl md:text-8xl font-black text-white tracking-wider uppercase leading-none drop-shadow-[0_8px_24px_rgba(0,0,0,0.9)] select-none">
-            Crunchy<span className="text-theater-red-light bg-gradient-to-r from-theater-red-light to-red-400 bg-clip-text text-transparent drop-shadow-none">Verse</span>
+          {/* Title */}
+          <h1 className="font-display text-4xl sm:text-6xl md:text-8xl font-black text-white tracking-wider uppercase leading-none drop-shadow-[0_10px_35px_rgba(0,0,0,0.95)] select-none">
+            Crunchy<span className="text-theater-red-light bg-gradient-to-r from-theater-red-light via-red-400 to-amber-300 bg-clip-text text-transparent drop-shadow-none">Verse</span>
           </h1>
 
-          <div className="h-1.5 w-40 bg-gradient-to-r from-transparent via-theater-gold to-transparent my-6 sm:my-8" />
+          {/* Golden Divider */}
+          <div className="h-1.5 w-44 bg-gradient-to-r from-transparent via-theater-gold to-transparent my-4 sm:my-5" />
 
-          <p className="text-sm sm:text-lg md:text-xl text-neutral-300 font-light max-w-2xl leading-relaxed tracking-wide mb-10 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]">
-            Tirai panggung telah terbuka! Selamat datang di koloseum hiburan para Anomaly. Saksikan interaksi live kami, periksa pengumuman terhangat, dan rasakan kemeriahan panggung spektakuler CrunchyVerse.
+          {/* Tagline */}
+          <h2 className="font-display text-xs sm:text-sm md:text-base font-extrabold text-theater-gold/90 tracking-[0.25em] uppercase mb-4">
+            PANGGUNG SPEKTAKULER &amp; ARSIP KASTA TEATER
+          </h2>
+
+          <p className="text-xs sm:text-base md:text-lg text-neutral-300 font-light max-w-2xl leading-relaxed tracking-wide mb-8 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]">
+            Tirai panggung telah terbuka! Selamat datang di koloseum hiburan para Anomaly. Saksikan interaksi live, periksa pertarungan sekte kasta, pantau papan jawara, dan nikmati atmosfer teater CrunchyVerse.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+          {/* 3 HERO FEATURE SNAPSHOT CARDS */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 w-full max-w-3xl mb-8 text-left">
+            {/* Snapshot 1: Live Voice Stage */}
+            <div 
+              onClick={() => safeScrollTo("stage-dashboard")}
+              className="group p-4 rounded-2xl border border-theater-gold/25 bg-neutral-950/80 hover:bg-neutral-900/90 hover:border-theater-gold/60 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-[0_0_30px_rgba(212,175,55,0.25)] flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between text-xs mb-2">
+                  <span className="text-emerald-400 font-bold flex items-center gap-1.5 uppercase text-[10px] tracking-wider">
+                    <Radio size={12} className="animate-pulse" /> Live Voice
+                  </span>
+                  <span className="text-[10px] font-mono text-neutral-500 font-bold">
+                    {formatVoiceDuration(voiceDuration)}
+                  </span>
+                </div>
+                <h4 className="font-bold text-white text-xs truncate group-hover:text-theater-gold transition-colors">
+                  {voiceChannelName}
+                </h4>
+                <p className="text-[10px] text-neutral-400 mt-1 line-clamp-1">
+                  {voiceChannelStatus || "Saluran Suara Panggung Aktif"}
+                </p>
+              </div>
+              <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-neutral-900 text-[10px] text-theater-gold font-bold">
+                <span>{voiceMembers.length > 0 ? voiceMembers.length : 14} Member Join</span>
+                <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
+            {/* Snapshot 2: Sekte Colosseum */}
+            <div 
+              onClick={() => safeScrollTo("stage-roles")}
+              className="group p-4 rounded-2xl border border-theater-gold/25 bg-neutral-950/80 hover:bg-neutral-900/90 hover:border-theater-gold/60 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-[0_0_30px_rgba(212,175,55,0.25)] flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between text-xs mb-2">
+                  <span className="text-amber-400 font-bold flex items-center gap-1.5 uppercase text-[10px] tracking-wider">
+                    <Shield size={12} /> Sekte Colosseum
+                  </span>
+                  <span className="text-[10px] font-mono text-theater-gold font-bold">
+                    Arsip Kasta
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs font-extrabold text-white mb-1.5">
+                  <span className="text-rose-400">Kerupuk {stats.totalKerupuk}</span>
+                  <span className="text-amber-400">Keripik {stats.totalKeripik}</span>
+                </div>
+                {/* Mini Ratio Bar */}
+                <div className="w-full h-2 rounded-full bg-neutral-900 overflow-hidden flex">
+                  <div className="h-full bg-rose-500" style={{ width: `${(stats.totalKerupuk / (stats.totalKerupuk + stats.totalKeripik || 1)) * 100}%` }} />
+                  <div className="h-full bg-amber-500" style={{ width: `${(stats.totalKeripik / (stats.totalKerupuk + stats.totalKeripik || 1)) * 100}%` }} />
+                </div>
+              </div>
+              <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-neutral-900 text-[10px] text-theater-gold font-bold">
+                <span>Buka Lembar Role</span>
+                <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
+            {/* Snapshot 3: Tirai Tantangan */}
+            <div 
+              onClick={() => safeScrollTo("stage-game")}
+              className="group p-4 rounded-2xl border border-theater-gold/25 bg-neutral-950/80 hover:bg-neutral-900/90 hover:border-theater-gold/60 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-[0_0_30px_rgba(212,175,55,0.25)] flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between text-xs mb-2">
+                  <span className="text-theater-red-light font-bold flex items-center gap-1.5 uppercase text-[10px] tracking-wider">
+                    <Gamepad2 size={12} /> Quest Teater
+                  </span>
+                  <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                    Interactive
+                  </span>
+                </div>
+                <h4 className="font-bold text-white text-xs truncate group-hover:text-theater-gold transition-colors">
+                  Tirai Tantangan
+                </h4>
+                <p className="text-[10px] text-neutral-400 mt-1 line-clamp-1">
+                  Mainkan kartu quest &amp; raih poin CV
+                </p>
+              </div>
+              <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-neutral-900 text-[10px] text-theater-gold font-bold">
+                <span>Mulai Quest Game</span>
+                <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </div>
+
+          {/* Action CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3.5 items-center justify-center">
             <a 
               href="https://discord.gg/sGgCVMssDS"
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-theater-gold via-[#ffd700] to-theater-gold-dim border-2 border-yellow-300 hover:border-white px-8 py-4 rounded-xl text-sm font-black uppercase tracking-widest text-neutral-950 shadow-xl shadow-theater-gold/30 hover:shadow-theater-gold/50 transition-all hover:scale-105 duration-300 cursor-pointer active:scale-95 animate-pulse-glow"
+              className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-theater-gold via-[#ffd700] to-theater-gold-dim border-2 border-yellow-300 hover:border-white px-8 py-3.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest text-neutral-950 shadow-xl shadow-theater-gold/30 hover:shadow-theater-gold/50 transition-all hover:scale-105 duration-300 cursor-pointer active:scale-95 animate-shimmer"
             >
-              <span className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
-              <span>VIP Ticket Entry</span>
+              <Ticket size={16} className="text-neutral-950" />
+              <span>Beli Tiket VIP</span>
+              <span className="px-2 py-0.5 rounded-md bg-neutral-950/85 text-theater-gold font-mono text-[10px] font-bold">
+                {stats.totalMembers} Member
+              </span>
               <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </a>
             
+            <button 
+              onClick={scrollToStage}
+              className="inline-flex items-center gap-2.5 text-neutral-200 hover:text-white px-6 py-3.5 font-extrabold text-xs tracking-widest uppercase border border-theater-gold/40 hover:border-theater-gold rounded-xl bg-theater-black/60 hover:bg-neutral-900/80 transition-all shadow-lg hover:scale-105 cursor-pointer"
+            >
+              <Tv size={14} className="text-theater-gold" />
+              <span>Jelajahi Panggung</span>
+            </button>
+
             <a 
               href="https://hsr.hoyoverse.com/id-id/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 text-neutral-300 hover:text-white px-5 py-2.5 font-bold text-xs tracking-wider uppercase border border-neutral-700 hover:border-neutral-500 rounded-xl bg-theater-black/40 hover:bg-neutral-900/40 transition-all z-20"
+              className="inline-flex items-center gap-2 text-neutral-400 hover:text-white px-4 py-3.5 font-bold text-xs tracking-wider uppercase border border-neutral-800 hover:border-neutral-600 rounded-xl bg-theater-black/40 hover:bg-neutral-900/40 transition-all"
             >
               <span>Honkai: Star Rail 4.3</span>
               <img 
@@ -2172,14 +2413,14 @@ export default function CrunchyVerseStage() {
         {/* Scroll Indicator */}
         <button 
           onClick={scrollToStage}
-          className="pb-8 flex flex-col items-center gap-2 text-theater-gold/60 hover:text-theater-gold transition-colors z-20 cursor-pointer animate-bounce"
+          className="pb-6 flex flex-col items-center gap-1.5 text-theater-gold/70 hover:text-theater-gold transition-colors z-20 cursor-pointer animate-bounce"
         >
           <span className="text-[10px] font-black tracking-widest uppercase">Scroll ke Bawah</span>
           <ChevronDown size={20} />
         </button>
 
         {/* Stage Lights Ground Reflection */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-theater-gold to-transparent opacity-80 z-20" />
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-theater-gold to-transparent opacity-90 z-20" />
       </section>
 
       {/* LOKET TIKET & CONFIG MODALS */}
@@ -2823,51 +3064,59 @@ export default function CrunchyVerseStage() {
         <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
 
         {/* Content Area */}
-        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
+        {activeFrame === "stage-roles" || isTransitioning ? (
+          <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
 
-          {/* Frame 3 Header */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
-            <div>
-              <div className="flex items-center gap-2 text-theater-gold text-xs font-bold uppercase tracking-widest mb-1.5">
-                <Shield size={13} />
-                <span>Arsip Kasta Teater · Frame III</span>
+            {/* Frame 3 Header */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
+              <div>
+                <div className="flex items-center gap-2 text-theater-gold text-xs font-bold uppercase tracking-widest mb-1.5">
+                  <Shield size={13} />
+                  <span>Arsip Kasta Teater · Frame III</span>
+                </div>
+                <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-wide uppercase select-none">
+                  PENYIMPANAN <span className="text-theater-gold">ROLE &amp; SEKTE</span>
+                </h2>
+                <p className="text-xs text-neutral-500 mt-1.5 font-medium max-w-lg">
+                  Buku besar kasta panggung — nama, warna, kekuasaan, pemegang role, dan besaran Value Role dari tiap hierarki CrunchyVerse.
+                </p>
               </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-wide uppercase select-none">
-                PENYIMPANAN <span className="text-theater-gold">ROLE &amp; SEKTE</span>
-              </h2>
-              <p className="text-xs text-neutral-500 mt-1.5 font-medium max-w-lg">
-                Buku besar kasta panggung — nama, warna, kekuasaan, pemegang role, dan besaran Value Role dari tiap hierarki CrunchyVerse.
-              </p>
+
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl border border-neutral-900 bg-neutral-950/60 p-1.5 px-3 flex items-center gap-2 text-xs">
+                  <span className="text-neutral-500 font-medium">Sumber:</span>
+                  <span className={`font-bold flex items-center gap-1.5 ${
+                    isBotConnected ? 'text-emerald-400' : 'text-theater-gold'
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${
+                      isBotConnected ? 'bg-emerald-400 animate-pulse' : 'bg-theater-gold'
+                    }`} />
+                    {isBotConnected ? 'Discord Bot Live' : 'Offline / Simulasi'}
+                  </span>
+                </div>
+                <button
+                  onClick={scrollToStage}
+                  className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
+                >
+                  ↑ <span>Kembali ke Lobi</span>
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl border border-neutral-900 bg-neutral-950/60 p-1.5 px-3 flex items-center gap-2 text-xs">
-                <span className="text-neutral-500 font-medium">Sumber:</span>
-                <span className={`font-bold flex items-center gap-1.5 ${
-                  isBotConnected ? 'text-emerald-400' : 'text-theater-gold'
-                }`}>
-                  <span className={`h-1.5 w-1.5 rounded-full ${
-                    isBotConnected ? 'bg-emerald-400 animate-pulse' : 'bg-theater-gold'
-                  }`} />
-                  {isBotConnected ? 'Discord Bot Live' : 'Offline / Simulasi'}
-                </span>
-              </div>
-              <button
-                onClick={scrollToStage}
-                className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
-              >
-                ↑ <span>Kembali ke Lobi</span>
-              </button>
-            </div>
+            {/* Decorative separator lines */}
+            <div className="absolute top-4 right-0 h-full w-64 opacity-5 pointer-events-none bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:20px_20px]" />
+
+            {/* BotStorage Full Width */}
+            <BotStorage backendUrl={backendUrl} />
+
           </div>
-
-          {/* Decorative separator lines */}
-          <div className="absolute top-4 right-0 h-full w-64 opacity-5 pointer-events-none bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:20px_20px]" />
-
-          {/* BotStorage Full Width */}
-          <BotStorage backendUrl={backendUrl} />
-
-        </div>
+        ) : (
+          <FramePlaceholder
+            title="Arsip Kasta Teater"
+            icon={Users}
+            description="Penyimpanan Role & Sekte Server Discord CrunchyVerse"
+          />
+        )}
 
         {/* Bottom Navigation Strip */}
         <div className="border-t border-neutral-900 bg-neutral-950/60 py-5 px-4 flex flex-col sm:flex-row items-center justify-center gap-4 relative z-30">
@@ -2944,43 +3193,51 @@ export default function CrunchyVerseStage() {
         <div className="absolute inset-0 bg-[radial-gradient(#e51a2d_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
 
         {/* Content Area */}
-        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
+        {activeFrame === "stage-leaderboard" || isTransitioning ? (
+          <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 md:py-12 flex-1 flex flex-col gap-8 relative z-10">
 
-          {/* Frame 4 Header */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
-            <div>
-              <div className="flex items-center gap-2 text-theater-red-light text-xs font-bold uppercase tracking-widest mb-1.5">
-                <Award size={13} />
-                <span>Panggung Jawara · Frame IV</span>
+            {/* Frame 4 Header */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
+              <div>
+                <div className="flex items-center gap-2 text-theater-red-light text-xs font-bold uppercase tracking-widest mb-1.5">
+                  <Award size={13} />
+                  <span>Panggung Jawara · Frame IV</span>
+                </div>
+                <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-wide uppercase select-none">
+                  PAPAN PERINGKAT <span className="text-theater-red-light">JAWARA &amp; VALUE ROLE</span>
+                </h2>
+                <p className="text-xs text-neutral-500 mt-1.5 font-medium max-w-lg">
+                  Klasemen keaktifan Anomaly — Leveling, Streak, dan Voice Hours dari Cakey Bot, serta 10 Anomaly dengan Value Role (CV) tertinggi.
+                </p>
               </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-wide uppercase select-none">
-                PAPAN PERINGKAT <span className="text-theater-red-light">JAWARA &amp; VALUE ROLE</span>
-              </h2>
-              <p className="text-xs text-neutral-500 mt-1.5 font-medium max-w-lg">
-                Klasemen keaktifan Anomaly — Leveling, Streak, dan Voice Hours dari Cakey Bot, serta 10 Anomaly dengan Value Role (CV) tertinggi.
-              </p>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={scrollToRoles}
+                  className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
+                >
+                  ↑ <span>Kembali ke Kasta</span>
+                </button>
+                <button
+                  onClick={scrollToStage}
+                  className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
+                >
+                  ↑ <span>Lobi Utama</span>
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                onClick={scrollToRoles}
-                className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
-              >
-                ↑ <span>Kembali ke Kasta</span>
-              </button>
-              <button
-                onClick={scrollToStage}
-                className="text-xs font-bold text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full border border-neutral-800 hover:border-neutral-600 bg-neutral-950"
-              >
-                ↑ <span>Lobi Utama</span>
-              </button>
-            </div>
+            {/* Leaderboard Board Component */}
+            <LeaderboardBoard backendUrl={backendUrl} userRole={userRole} />
+
           </div>
-
-          {/* Leaderboard Board Component */}
-          <LeaderboardBoard backendUrl={backendUrl} userRole={userRole} />
-
-        </div>
+        ) : (
+          <FramePlaceholder
+            title="Papan Jawara Teater"
+            icon={Award}
+            description="Klasemen Peringkat Leveling & Value Role Anomaly"
+          />
+        )}
 
         {/* Bottom Back Button Strip */}
         <div className="border-t border-neutral-900 bg-neutral-950/60 py-5 px-4 flex flex-col sm:flex-row items-center justify-center gap-4 relative z-30">
@@ -4327,20 +4584,28 @@ export default function CrunchyVerseStage() {
         {/* Theatrical Top Trim */}
         <div className="w-full h-4 bg-gradient-to-r from-theater-red-dark via-theater-gold to-theater-red-dark border-b border-theater-gold/50 shadow-md shadow-theater-red-dark/20" />
 
-        {isCountdownActive && !isUserAdmin(userRole) ? (
-          <TiraiCountdown
-            timeLeft={timeLeft}
-            onScrollToLobby={scrollToStage}
-          />
+        {activeFrame === "stage-game" || isTransitioning ? (
+          isCountdownActive && !isUserAdmin(userRole) ? (
+            <TiraiCountdown
+              timeLeft={timeLeft}
+              onScrollToLobby={scrollToStage}
+            />
+          ) : (
+            <QuestGame
+              currentUser={currentUser}
+              displayName={displayName}
+              userRole={userRole}
+              onScrollToLobby={scrollToStage}
+              backendUrl={backendUrl}
+              syncData={syncGameData}
+              onTriggerSync={triggerSyncRefresh}
+            />
+          )
         ) : (
-          <QuestGame
-            currentUser={currentUser}
-            displayName={displayName}
-            userRole={userRole}
-            onScrollToLobby={scrollToStage}
-            backendUrl={backendUrl}
-            syncData={syncGameData}
-            onTriggerSync={triggerSyncRefresh}
+          <FramePlaceholder
+            title="Tirai Tantangan Teater"
+            icon={Gamepad2}
+            description="Permainan Quest Kartu Interaktif Anomaly CrunchyVerse"
           />
         )}
       </section>

@@ -374,3 +374,78 @@ html, body {
   transition: background 1.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
+/* Luxury Shimmer & Gold Sweeps */
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  100% { transform: translateX(200%) rotate(25deg); }
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(255, 215, 0, 0.25) 50%,
+    rgba(255, 255, 255, 0.08) 55%,
+    transparent 100%
+  );
+  animation: shimmer-sweep 4s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+@keyframes marquee-scroll {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee-scroll 25s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes glow-pulse-gold {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.35), inset 0 0 15px rgba(212, 175, 55, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(212, 175, 55, 0.7), inset 0 0 25px rgba(212, 175, 55, 0.3);
+  }
+}
+
+.gold-glow-card {
+  animation: glow-pulse-gold 3s infinite ease-in-out;
+}
+
+/* Stage Light Rays Background */
+.stage-rays {
+  background: repeating-conic-gradient(
+    from 0deg at 50% -20%,
+    rgba(212, 175, 55, 0.04) 0deg 10deg,
+    transparent 10deg 20deg
+  );
+}
+
+@keyframes ray-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-ray-spin {
+  animation: ray-spin 60s linear infinite;
+}
+
+
