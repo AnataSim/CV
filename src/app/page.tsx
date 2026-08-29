@@ -2444,42 +2444,39 @@ export default function CrunchyVerseStage() {
                 '--delay': p.delay,
                 '--drift-x': p.drift,
                 width: `${Math.max(3, p.size * 1.2)}px`,
-                height: `${Math.max(3, p.size * 1.2)}px`,
+                height: `${Math.max(3, p.size * 1.2)}px`
               } as React.CSSProperties}
             />
           ))}
         </div>
-        
-        {/* 4. Stage Grid Overlay Pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
 
         {/* Dashboard Content Container */}
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 md:py-10 flex-1 flex flex-col gap-6 md:gap-8 justify-center relative z-10">
           
           {/* Dashboard Header */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-neutral-900 pb-5">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-theater-gold/25 pb-5">
             <div>
-              <div className="flex items-center gap-2 text-theater-red-light text-xs font-bold uppercase tracking-widest mb-1">
-                <Tv size={14} />
-                <span>Pusat Informasi & Statistik Live</span>
+              <div className="flex items-center gap-2 text-theater-gold text-xs font-black uppercase tracking-widest mb-1.5">
+                <Tv size={14} className="text-theater-gold animate-pulse" />
+                <span>Pusat Informasi &amp; Statistik Live Teater</span>
               </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-wide uppercase select-none">
-                LOBI <span className="text-theater-gold">CRUNCHYVERSE</span>
+              <h2 className="font-display text-3xl sm:text-5xl font-black text-white tracking-wide uppercase select-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">
+                LOBI <span className="text-theater-red-light bg-gradient-to-r from-theater-gold via-amber-300 to-theater-gold-dim bg-clip-text text-transparent">CRUNCHYVERSE</span>
               </h2>
             </div>
             
             <div className="flex items-center gap-3">
               {currentUser && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-theater-gold/20 bg-theater-gold/5 text-xs text-theater-gold font-bold">
+                <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-theater-gold/30 bg-neutral-950/80 text-xs text-theater-gold font-bold shadow-lg shadow-black/60 backdrop-blur-md">
                   {/* User Profile Avatar */}
-                  <div className="h-5 w-5 rounded-full overflow-hidden border border-theater-gold/40 bg-neutral-950 flex items-center justify-center shrink-0">
+                  <div className="h-6 w-6 rounded-full overflow-hidden border border-theater-gold/60 bg-neutral-950 flex items-center justify-center shrink-0 shadow-sm">
                     {userAvatar ? (
                       <img src={userAvatar} alt="Avatar" className="h-full w-full object-cover" />
                     ) : (
-                      <User size={10} className="text-theater-gold" />
+                      <User size={12} className="text-theater-gold" />
                     )}
                   </div>
-                  <span>{displayName} ({userRole === "Volunteer Theater" ? "Volunteer" : userRole === "Ketua Kerupuk" ? "Ketua Kerupuk" : userRole === "Ketua Keripik" ? "Ketua Keripik" : "Penonton"})</span>
+                  <span className="truncate max-w-[140px] sm:max-w-none">{displayName} ({userRole === "Volunteer Theater" ? "Volunteer" : userRole === "Ketua Kerupuk" ? "Ketua Kerupuk" : userRole === "Ketua Keripik" ? "Ketua Keripik" : "Penonton"})</span>
                 </div>
               )}
               
@@ -2488,16 +2485,16 @@ export default function CrunchyVerseStage() {
                   performUnifiedSync(false);
                 }}
                 disabled={loading}
-                className="bg-neutral-900 border border-neutral-800 hover:border-theater-gold/40 p-2.5 rounded-xl text-neutral-400 hover:text-white transition-all cursor-pointer flex items-center justify-center disabled:opacity-50"
+                className="bg-neutral-950/80 border border-theater-gold/30 hover:border-theater-gold p-2.5 rounded-xl text-theater-gold hover:text-white transition-all cursor-pointer flex items-center justify-center disabled:opacity-50 shadow-lg hover:scale-105 active:scale-95"
                 title="Refresh Live Data"
               >
                 <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''}`} />
               </button>
               
-              <div className="rounded-xl border border-neutral-900 bg-neutral-950/60 p-1.5 px-3 flex items-center gap-2 text-xs">
-                <span className="text-neutral-500 font-medium">Mode:</span>
-                <span className={`font-bold flex items-center gap-1.5 ${isBotConnected ? 'text-emerald-400' : 'text-theater-gold'}`}>
-                  <span className={`h-1.5 w-1.5 rounded-full ${isBotConnected ? 'bg-emerald-400' : 'bg-theater-gold'}`} />
+              <div className="rounded-xl border border-theater-gold/25 bg-neutral-950/80 p-2 px-3.5 flex items-center gap-2 text-xs backdrop-blur-md shadow-lg">
+                <span className="text-neutral-400 font-medium">Mode:</span>
+                <span className={`font-black tracking-wide flex items-center gap-2 ${isBotConnected ? 'text-emerald-400' : 'text-theater-gold'}`}>
+                  <span className={`h-2 w-2 rounded-full ${isBotConnected ? 'bg-emerald-400 animate-ping' : 'bg-theater-gold'}`} />
                   {isBotConnected ? "Discord Bot Live API" : "Simulasi/Offline"}
                 </span>
               </div>
@@ -2511,23 +2508,23 @@ export default function CrunchyVerseStage() {
             <div className="lg:col-span-7 flex flex-col gap-6 md:gap-8 w-full">
               
               {/* TIKTOK STREAM BAR WITH COUNTIK API STATS */}
-              <div className="relative rounded-2xl border border-theater-gold/35 bg-neutral-950/70 backdrop-blur-xl p-4 sm:p-5 shadow-2xl shadow-black/80 overflow-hidden group hover:border-theater-gold/60 transition-all duration-300">
+              <div className="relative rounded-2xl border border-theater-gold/40 bg-neutral-950/85 backdrop-blur-xl p-5 shadow-[0_15px_40px_rgba(0,0,0,0.9),_0_0_25px_rgba(212,175,55,0.06)] overflow-hidden group hover:border-theater-gold/70 transition-all duration-300">
                 {/* Glowing red accent light inside card when Live */}
                 {tiktok.isLive && (
-                  <div className="absolute top-0 right-0 h-48 w-48 rounded-full bg-theater-red-light/20 blur-[50px] pointer-events-none animate-pulse" />
+                  <div className="absolute top-0 right-0 h-48 w-48 rounded-full bg-theater-red-light/25 blur-[50px] pointer-events-none animate-pulse" />
                 )}
                 
                 {/* Stage gold background grid */}
                 <div className="absolute inset-0 bg-[radial-gradient(#d4af37_0.6px,transparent_0.6px)] [background-size:16px_16px] opacity-10 pointer-events-none" />
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 z-10 relative">
-                  <div className="flex items-center gap-3.5 w-full sm:w-auto">
+                  <div className="flex items-center gap-4 w-full sm:w-auto">
                     {/* TikTok Profile Picture Wrapper */}
                     <div className="relative shrink-0">
                       <div className={`h-16 w-16 rounded-full overflow-hidden border-2 p-0.5 transition-all duration-300 ${
                         tiktok.isLive 
-                          ? 'border-theater-red-light shadow-[0_0_20px_rgba(255,0,80,0.4)] scale-105' 
-                          : 'border-theater-gold/40 hover:border-theater-gold'
+                          ? 'border-theater-red-light shadow-[0_0_25px_rgba(255,0,80,0.5)] scale-105' 
+                          : 'border-theater-gold/50 hover:border-theater-gold'
                       }`}>
                         <img 
                           src={tiktok.avatarUrl || "https://api.dicebear.com/7.x/adventurer/svg?seed=crunchy-tiktok"} 
@@ -2549,17 +2546,17 @@ export default function CrunchyVerseStage() {
                     <div className="flex-1 text-left">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-base font-extrabold text-white tracking-wide font-display">{tiktok.displayName}</h3>
-                        <span className="text-[10px] text-theater-gold/80 font-mono font-bold bg-theater-gold/10 px-2 py-0.5 rounded-full border border-theater-gold/20">
+                        <span className="text-[10px] text-theater-gold font-mono font-bold bg-theater-gold/15 px-2 py-0.5 rounded-full border border-theater-gold/30">
                           {tiktok.username}
                         </span>
                       </div>
                       
                       {/* TikTok Status Banner */}
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider rounded-full px-2.5 py-0.5 border ${
+                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider rounded-full px-3 py-0.5 border ${
                           tiktok.isLive 
-                            ? 'border-theater-red-light/40 bg-theater-red-dark/60 text-theater-red-light animate-pulse shadow-sm shadow-red-900/50' 
-                            : 'border-neutral-800 bg-neutral-900/80 text-neutral-400'
+                            ? 'border-theater-red-light/50 bg-theater-red-dark/70 text-theater-red-light animate-pulse shadow-sm shadow-red-900/50' 
+                            : 'border-neutral-800 bg-neutral-900/90 text-neutral-400'
                         }`}>
                           <span className={`h-1.5 w-1.5 rounded-full ${tiktok.isLive ? 'bg-theater-red-light animate-ping' : 'bg-neutral-600'}`} />
                           {tiktok.isLive ? '🔴 AIRING (SIARAN LANGSUNG)' : '⚫ INTERMISSION / SHOW OVER'}
@@ -2574,7 +2571,7 @@ export default function CrunchyVerseStage() {
                       href={`https://www.tiktok.com/@${(tiktok.username || 'jobetmaritoas').replace('@','')}`}
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white font-bold text-[10px] tracking-wider uppercase py-2 px-3 rounded-xl border border-neutral-800 hover:border-theater-gold/40 transition-all flex items-center gap-1 cursor-pointer"
+                      className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white font-extrabold text-[10px] tracking-wider uppercase py-2.5 px-3.5 rounded-xl border border-neutral-800 hover:border-theater-gold/40 transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
                       title="Lihat Profil TikTok"
                     >
                       <span>Profil</span>
@@ -2585,7 +2582,7 @@ export default function CrunchyVerseStage() {
                       href={watchUrl} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="bg-gradient-to-r from-theater-red to-rose-600 hover:from-rose-600 hover:to-theater-red text-white font-extrabold text-[10px] tracking-widest uppercase py-2 px-4 rounded-xl shadow-lg shadow-theater-red-dark/50 hover:shadow-theater-red-light/30 transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+                      className="bg-gradient-to-r from-theater-red to-rose-600 hover:from-rose-600 hover:to-theater-red text-white font-black text-[10px] tracking-widest uppercase py-2.5 px-4.5 rounded-xl shadow-xl shadow-theater-red-dark/50 hover:shadow-theater-red-light/30 transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
                     >
                       <span>Tonton Live</span>
                       <ExternalLink size={10} />
@@ -2594,10 +2591,10 @@ export default function CrunchyVerseStage() {
                 </div>
 
                 {/* COUNTIK API REALTIME STATS 4-GRID PILLS */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-3.5 border-t border-neutral-900/80 z-10 relative">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-3.5 border-t border-neutral-900/80 z-10 relative">
                   {/* Stat 1: Negara */}
-                  <div className="flex items-center gap-2.5 p-2 px-3 rounded-xl bg-neutral-900/60 border border-theater-gold/15 hover:border-theater-gold/30 transition-colors">
-                    <Globe size={14} className="text-theater-gold shrink-0" />
+                  <div className="flex items-center gap-2.5 p-2.5 px-3 rounded-xl bg-neutral-900/70 border border-theater-gold/20 hover:border-theater-gold/40 transition-all hover:scale-102">
+                    <Globe size={15} className="text-theater-gold shrink-0" />
                     <div className="flex flex-col text-left overflow-hidden">
                       <span className="text-[7.5px] font-black uppercase text-neutral-400 tracking-widest">NEGARA</span>
                       <span className="text-[11px] font-bold text-white truncate">
@@ -2607,8 +2604,8 @@ export default function CrunchyVerseStage() {
                   </div>
 
                   {/* Stat 2: Follower Count */}
-                  <div className="flex items-center gap-2.5 p-2 px-3 rounded-xl bg-neutral-900/60 border border-theater-gold/15 hover:border-theater-gold/30 transition-colors">
-                    <Users size={14} className="text-sky-400 shrink-0" />
+                  <div className="flex items-center gap-2.5 p-2.5 px-3 rounded-xl bg-neutral-900/70 border border-theater-gold/20 hover:border-theater-gold/40 transition-all hover:scale-102">
+                    <Users size={15} className="text-sky-400 shrink-0" />
                     <div className="flex flex-col text-left overflow-hidden">
                       <span className="text-[7.5px] font-black uppercase text-neutral-400 tracking-widest">PENGIKUT</span>
                       <span className="text-[11px] font-extrabold text-sky-300 font-mono">
@@ -2618,8 +2615,8 @@ export default function CrunchyVerseStage() {
                   </div>
 
                   {/* Stat 3: Heart / Suka Count */}
-                  <div className="flex items-center gap-2.5 p-2 px-3 rounded-xl bg-neutral-900/60 border border-theater-gold/15 hover:border-theater-gold/30 transition-colors">
-                    <Heart size={14} className="text-rose-400 shrink-0 fill-rose-400/20" />
+                  <div className="flex items-center gap-2.5 p-2.5 px-3 rounded-xl bg-neutral-900/70 border border-theater-gold/20 hover:border-theater-gold/40 transition-all hover:scale-102">
+                    <Heart size={15} className="text-rose-400 shrink-0 fill-rose-400/20" />
                     <div className="flex flex-col text-left overflow-hidden">
                       <span className="text-[7.5px] font-black uppercase text-neutral-400 tracking-widest">TOTAL SUKA</span>
                       <span className="text-[11px] font-extrabold text-rose-300 font-mono">
@@ -2629,8 +2626,8 @@ export default function CrunchyVerseStage() {
                   </div>
 
                   {/* Stat 4: Video Count */}
-                  <div className="flex items-center gap-2.5 p-2 px-3 rounded-xl bg-neutral-900/60 border border-theater-gold/15 hover:border-theater-gold/30 transition-colors">
-                    <Video size={14} className="text-emerald-400 shrink-0" />
+                  <div className="flex items-center gap-2.5 p-2.5 px-3 rounded-xl bg-neutral-900/70 border border-theater-gold/20 hover:border-theater-gold/40 transition-all hover:scale-102">
+                    <Video size={15} className="text-emerald-400 shrink-0" />
                     <div className="flex flex-col text-left overflow-hidden">
                       <span className="text-[7.5px] font-black uppercase text-neutral-400 tracking-widest">TOTAL VIDEO</span>
                       <span className="text-[11px] font-extrabold text-emerald-300 font-mono">
@@ -2701,61 +2698,61 @@ export default function CrunchyVerseStage() {
               </div>
 
               {/* DISCORD #BROADCAST BOARD */}
-              <div className="flex-1 rounded-2xl border border-theater-gold/20 bg-neutral-950/60 backdrop-blur-md hover:border-theater-gold/40 transition-all duration-300 p-5 md:p-6 shadow-[0_12px_40px_rgba(0,0,0,0.85),_0_0_20px_rgba(212,175,55,0.03)] flex flex-col gap-5 text-left relative overflow-hidden">
+              <div className="flex-1 rounded-2xl border border-theater-gold/30 bg-neutral-950/70 backdrop-blur-xl hover:border-theater-gold/50 transition-all duration-300 p-5 md:p-6 shadow-[0_15px_40px_rgba(0,0,0,0.9),_0_0_20px_rgba(212,175,55,0.04)] flex flex-col gap-5 text-left relative overflow-hidden">
                 {/* Decorative retro stage lights board backdrop */}
-                <div className="absolute top-0 right-0 h-1 w-full bg-gradient-to-r from-transparent via-theater-red-light/40 to-transparent pointer-events-none" />
+                <div className="absolute top-0 right-0 h-1 w-full bg-gradient-to-r from-transparent via-theater-red-light/50 to-transparent pointer-events-none" />
 
                 <div className="flex items-center justify-between border-b border-neutral-900 pb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-theater-red-dark/80 text-theater-red-light border border-theater-red-light/35">
-                      <MessageSquare size={16} />
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-theater-red-dark/80 text-theater-red-light border border-theater-red-light/40 shadow-md">
+                      <MessageSquare size={17} />
                     </div>
                     <div>
-                      <h3 className="font-display text-lg font-bold text-white uppercase tracking-wide">Papan Broadcast</h3>
-                      <p className="text-[10px] text-neutral-500 font-semibold tracking-wide">Berita terkini dari channel #broadcast Discord</p>
+                      <h3 className="font-display text-lg font-extrabold text-white uppercase tracking-wide">Papan Broadcast</h3>
+                      <p className="text-[10px] text-neutral-400 font-medium tracking-wide">Berita &amp; pengumuman resmi dari channel #broadcast Discord</p>
                     </div>
                   </div>
-                  <span className="rounded-full border border-neutral-800 bg-neutral-900/60 px-2 py-0.5 text-[9px] font-bold text-neutral-400 tracking-wider font-mono">#broadcast</span>
+                  <span className="rounded-full border border-theater-gold/20 bg-theater-gold/10 px-3 py-1 text-[9px] font-bold text-theater-gold tracking-wider font-mono shadow-sm">#broadcast</span>
                 </div>
 
                 {/* Broadcast Messages Feed */}
-                <div className="flex flex-col gap-5 overflow-y-auto max-h-[460px] pr-1.5 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent">
+                <div className="flex flex-col gap-4 overflow-y-auto max-h-[460px] pr-1.5 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent">
                   {broadcasts.length === 0 ? (
-                    <div className="text-neutral-600 italic text-center py-10 font-sans">
-                      Belum ada broadcast yang dikirim di panggung utama.
+                    <div className="text-neutral-500 italic text-center py-12 font-sans text-xs">
+                      Belum ada pengumuman broadcast yang dikirim di panggung utama.
                     </div>
                   ) : (
                     broadcasts.map((msg, index) => (
                       <div 
                         key={msg.id || index}
-                        className="rounded-xl border border-neutral-900/80 bg-neutral-950/60 hover:bg-neutral-950/90 p-4 transition-all duration-300 flex flex-col gap-3 group/msg relative"
+                        className="rounded-xl border border-neutral-800/90 bg-neutral-950/80 hover:bg-neutral-900/60 border-l-4 border-l-theater-gold p-4 transition-all duration-300 flex flex-col gap-3 group/msg relative shadow-md"
                       >
                         {/* Message Sender Header */}
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2.5">
-                            <div className="h-8 w-8 rounded-lg overflow-hidden border border-neutral-800 bg-neutral-900 flex items-center justify-center">
+                            <div className="h-8 w-8 rounded-lg overflow-hidden border border-theater-gold/30 bg-neutral-900 flex items-center justify-center shrink-0 shadow-sm">
                               {msg.authorAvatar ? (
-                                <img src={msg.authorAvatar} alt="Sender Avatar" className="h-full w-full" />
+                                <img src={msg.authorAvatar} alt="Sender Avatar" className="h-full w-full object-cover" />
                               ) : (
                                 <span className="text-xs">🤖</span>
                               )}
                             </div>
                             <div>
                               <div className="text-xs font-black text-white font-sans">{msg.author}</div>
-                              <div className="text-[9px] text-neutral-500 font-semibold font-mono tracking-tighter">{msg.timestamp}</div>
+                              <div className="text-[9px] text-neutral-400 font-semibold font-mono tracking-tighter">{msg.timestamp}</div>
                             </div>
                           </div>
-                          <span className="text-[9px] font-black text-theater-gold/50 tracking-widest uppercase">AKT KEDUA</span>
+                          <span className="text-[8px] font-black text-theater-gold uppercase tracking-widest bg-theater-gold/10 border border-theater-gold/20 px-2 py-0.5 rounded-full">AKT KEDUA</span>
                         </div>
 
                         {/* Message Content */}
-                        <div className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-sans font-light select-text whitespace-pre-wrap pl-1 border-l-2 border-theater-red/30 focus:border-theater-red-light/60 outline-none">
+                        <div className="text-xs sm:text-sm text-neutral-200 leading-relaxed font-sans font-normal select-text whitespace-pre-wrap pl-1 border-l-2 border-theater-red/30 focus:border-theater-red-light/60 outline-none">
                           {renderMessageContent(msg.content)}
                         </div>
 
                         {/* Broadcast Image Attachment if present */}
                         {msg.imageUrl && (
-                          <div className="relative rounded-lg overflow-hidden border border-neutral-900/80 max-h-60 mt-1 shadow-md bg-neutral-950">
+                          <div className="relative rounded-lg overflow-hidden border border-neutral-800 max-h-60 mt-1 shadow-md bg-neutral-950">
                             <img 
                               src={msg.imageUrl} 
                               alt="Broadcast Asset" 
@@ -2776,26 +2773,26 @@ export default function CrunchyVerseStage() {
             <div className="lg:col-span-5 flex flex-col gap-6 md:gap-8 w-full">
               
               {/* ACTIVE VOICE CHANNEL PANEL (Specific to ID 1435053596742914160) */}
-              <div className="rounded-2xl border border-emerald-500/30 bg-neutral-950/60 p-5 md:p-6 shadow-xl text-left relative overflow-hidden flex flex-col gap-4">
+              <div className="rounded-2xl border border-emerald-500/40 bg-neutral-950/80 p-5 md:p-6 shadow-2xl text-left relative overflow-hidden flex flex-col gap-4.5 backdrop-blur-xl">
                 {/* Glowing green accent light */}
-                <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-emerald-500/5 blur-[35px] pointer-events-none" />
-                <div className="absolute inset-0 bg-[radial-gradient(#10b981_0.5px,transparent_0.5px)] [background-size:16px_16px] opacity-[0.03] pointer-events-none" />
+                <div className="absolute top-0 right-0 h-36 w-36 rounded-full bg-emerald-500/10 blur-[40px] pointer-events-none animate-pulse" />
+                <div className="absolute inset-0 bg-[radial-gradient(#10b981_0.5px,transparent_0.5px)] [background-size:16px_16px] opacity-[0.04] pointer-events-none" />
                 
                 <div className="flex items-center justify-between border-b border-neutral-900 pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/50 animate-pulse" />
-                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-md shadow-emerald-500/60 animate-ping" />
+                    <span className="text-[9.5px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
                       Obrolan Suara Aktif
                     </span>
                   </div>
-                  <span className="text-[9px] font-bold text-neutral-500 font-mono tracking-wide">ID: 1435053596742914160</span>
+                  <span className="text-[9px] font-bold text-neutral-400 font-mono tracking-wide">ID: 1435053596742914160</span>
                 </div>
 
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3.5 min-w-0">
                     {/* Glowing Speaker Icon Container */}
-                    <div className="h-11 w-11 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-950/50 animate-pulse-glow">
-                      <Mic size={20} className="animate-bounce-slow" />
+                    <div className="h-12 w-12 rounded-xl bg-emerald-950/90 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-950/80">
+                      <Mic size={22} className="animate-bounce-slow" />
                     </div>
                     
                     <div className="text-left min-w-0">
@@ -2804,20 +2801,18 @@ export default function CrunchyVerseStage() {
                       </h4>
                       {/* Track Details */}
                       {(() => {
-                        const { duration: statusDuration, track: statusTrack, seed: statusSeed } = parseVoiceStatus(voiceChannelStatus);
+                        const { duration: statusDuration, track: statusTrack } = parseVoiceStatus(voiceChannelStatus);
                         return voiceChannelStatus ? (
-                          <div className="flex items-center gap-1.5 mt-1 text-[10px] text-neutral-400 font-medium">
-                            {hasMounted ? (
+                          <div className="flex items-center gap-1.5 mt-1 text-[10px] text-neutral-300 font-medium">
+                            {hasMounted && (
                               <img 
                                 src="/turtle_shell.png" 
                                 alt="Track" 
                                 className="h-3.5 w-3.5 object-cover shrink-0 animate-pulse" 
                               />
-                            ) : (
-                              <div className="h-3.5 w-3.5 shrink-0" />
                             )}
-                            {statusDuration && <span className="text-emerald-400 font-mono">[{statusDuration}]</span>}
-                            <span className="truncate">{statusDuration ? `• ${statusTrack}` : statusTrack}</span>
+                            {statusDuration && <span className="text-emerald-400 font-mono font-bold">[{statusDuration}]</span>}
+                            <span className="truncate text-neutral-200">{statusDuration ? `• ${statusTrack}` : statusTrack}</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1.5 mt-1 text-[10px] text-neutral-400 font-medium">
@@ -2830,31 +2825,31 @@ export default function CrunchyVerseStage() {
 
                   {/* Duration timer */}
                   <div className="text-right shrink-0">
-                    <span className="font-mono text-sm sm:text-base font-bold text-emerald-400 tracking-wide tabular-nums">
+                    <span className="font-mono text-base sm:text-lg font-black text-emerald-400 tracking-wide tabular-nums drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">
                       {formatVoiceDuration(voiceDuration)}
                     </span>
-                    <span className="block text-[8px] font-black text-neutral-500 uppercase tracking-wider mt-0.5">DURASI</span>
+                    <span className="block text-[8px] font-black text-neutral-400 uppercase tracking-wider mt-0.5">DURASI</span>
                   </div>
                 </div>
 
                 {/* Overlapping member PFPs berjejer ke kanan */}
-                <div className="flex items-center justify-between mt-1 pt-3 border-t border-neutral-900/60">
-                  <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-wider">
-                    Member Terhubung
+                <div className="flex items-center justify-between mt-1 pt-3.5 border-t border-neutral-900/80">
+                  <span className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-wider">
+                    Member Terhubung ({voiceMembers.length > 0 ? voiceMembers.length : voiceTotalCount})
                   </span>
                   
-                  <div className="flex -space-x-2.5 overflow-hidden">
+                  <div className="flex -space-x-2 overflow-hidden">
                     {hasMounted && voiceMembers.slice(0, 5).map((member, idx) => (
                       <div 
                         key={idx}
-                        className="h-6 w-6 rounded-full overflow-hidden border-2 border-neutral-950 hover:-translate-y-1 transition-all duration-200 cursor-pointer shadow-sm relative group shrink-0"
+                        className="h-7 w-7 rounded-full overflow-hidden border-2 border-neutral-950 hover:scale-115 transition-all duration-200 cursor-pointer shadow-md relative group shrink-0"
                         title={member.name}
                       >
                         <img src={member.avatar} alt={member.name} className="h-full w-full object-cover" />
                       </div>
                     ))}
                     {hasMounted && (voiceTotalCount > 5 || voiceMembers.length > 5) && (
-                      <div className="h-6 w-6 rounded-full bg-neutral-900 border-2 border-neutral-950 flex items-center justify-center text-[8px] font-black text-emerald-400 shrink-0 select-none">
+                      <div className="h-7 w-7 rounded-full bg-emerald-950 border-2 border-neutral-950 flex items-center justify-center text-[9px] font-black text-emerald-300 shrink-0 select-none shadow-md">
                         +{voiceTotalCount > 5 ? (voiceTotalCount - 5) : (voiceMembers.length - 5)}
                       </div>
                     )}
@@ -2863,125 +2858,130 @@ export default function CrunchyVerseStage() {
               </div>
 
               {/* MEMBER STATS BOARD */}
-              <div className="rounded-2xl border border-theater-gold/30 bg-neutral-950/60 p-5 md:p-6 shadow-xl text-left relative overflow-hidden flex flex-col gap-6">
+              <div className="rounded-2xl border border-theater-gold/35 bg-neutral-950/80 p-5 md:p-6 shadow-2xl text-left relative overflow-hidden flex flex-col gap-6 backdrop-blur-xl">
                 
                 {/* Backdrop design of a seating theater chart */}
-                <div className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-theater-gold/5 blur-[50px] pointer-events-none" />
-                <div className="absolute inset-0 bg-[radial-gradient(#800020_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.03] pointer-events-none" />
+                <div className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-theater-gold/10 blur-[50px] pointer-events-none" />
+                <div className="absolute inset-0 bg-[radial-gradient(#800020_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.04] pointer-events-none" />
 
                 <div className="border-b border-neutral-900 pb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-theater-gold/10 text-theater-gold border border-theater-gold/35">
-                      <Users size={16} />
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-theater-gold/15 text-theater-gold border border-theater-gold/40 shadow-md">
+                      <Users size={17} />
                     </div>
                     <div>
-                      <h3 className="font-display text-lg font-bold text-white uppercase tracking-wide">Panggung Penonton</h3>
-                      <p className="text-[10px] text-neutral-500 font-semibold tracking-wide">Kehadiran penonton CrunchyVerse real-time</p>
+                      <h3 className="font-display text-lg font-extrabold text-white uppercase tracking-wide">Panggung Penonton</h3>
+                      <p className="text-[10px] text-neutral-400 font-medium tracking-wide">Demografi &amp; kehadiran penonton CrunchyVerse real-time</p>
                     </div>
                   </div>
                 </div>
 
                 {/* THEATRICAL LAYOUT OF STATS */}
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-5">
                   
                   {/* LEVEL 1: TOTAL ANOMALY (SERVER MEMBERS) */}
-                  <div className="relative rounded-xl border border-neutral-800 bg-neutral-950/90 p-5 flex flex-col items-center justify-center text-center shadow-md overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-b from-theater-gold/5 via-transparent to-transparent pointer-events-none" />
+                  <div className="relative rounded-2xl border border-theater-gold/35 bg-gradient-to-b from-neutral-950 via-neutral-950/90 to-neutral-950 p-5 flex flex-col items-center justify-center text-center shadow-xl overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-b from-theater-gold/10 via-transparent to-transparent pointer-events-none" />
                     
                     {/* Neon bar line representation of a stage screen */}
-                    <div className="absolute top-0 inset-x-8 h-[2px] bg-gradient-to-r from-transparent via-theater-gold to-transparent" />
+                    <div className="absolute top-0 inset-x-6 h-[2px] bg-gradient-to-r from-transparent via-theater-gold to-transparent" />
 
-                    <div className="text-[10px] font-black text-theater-gold uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                      <Award size={10} className="text-theater-gold" />
+                    <div className="text-[10px] font-black text-theater-gold uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                      <Award size={12} className="text-theater-gold animate-pulse" />
                       <span>Total Member (Anomaly)</span>
                     </div>
 
-                    <div className="font-display text-4xl sm:text-5xl font-black text-white tracking-wider flex items-center justify-center drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                    <div className="font-display text-4xl sm:text-6xl font-black text-white tracking-wider flex items-center justify-center drop-shadow-[0_0_20px_rgba(212,175,55,0.2)] my-1">
                       {formatNum(stats.totalMembers)}
                     </div>
                     
-                    <p className="text-[9px] text-neutral-500 mt-2 font-medium">Jiwa terdaftar yang berada di bawah panggung CrunchyVerse</p>
+                    <p className="text-[9.5px] text-neutral-400 font-medium">Jiwa terdaftar yang berada di bawah panggung CrunchyVerse</p>
                   </div>
 
-                  {/* LEVEL 2: DETAILED THEATER ROLES (KERUPUK & KERIPIK) */}
-                  <div className="grid grid-cols-2 gap-4">
-                    
-                    {/* ROLE KERUPUK */}
-                    <div className="rounded-xl border border-neutral-800/80 bg-neutral-950/70 p-4 text-center relative overflow-hidden group">
-                      <div className="absolute top-0 left-0 w-full h-[2px] bg-theater-red" />
-                      
-                      <div className="text-[9px] font-black text-neutral-400 uppercase tracking-widest mb-1 flex items-center justify-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-theater-red" />
-                        <span>Role Kerupuk</span>
-                      </div>
-                      
-                      <div className="font-display text-2xl sm:text-3xl font-black text-white tracking-wide">
-                        {formatNum(stats.totalKerupuk)}
-                      </div>
-                      <span className="text-[9px] text-neutral-500 mt-1 font-semibold uppercase tracking-wider block">Garing & Gurih</span>
+                  {/* LEVEL 2: DETAILED THEATER ROLES (KERUPUK & KERIPIK VERSUS BAR) */}
+                  <div className="flex flex-col gap-3 rounded-2xl border border-neutral-800/90 bg-neutral-950/80 p-4 shadow-lg">
+                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider">
+                      <span className="text-theater-red-light flex items-center gap-1">
+                        <span className="h-2 w-2 rounded-full bg-theater-red animate-ping" />
+                        Role Kerupuk ({stats.totalKerupuk})
+                      </span>
+                      <span className="text-amber-400 flex items-center gap-1">
+                        Role Keripik ({stats.totalKeripik})
+                        <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
+                      </span>
                     </div>
 
-                    {/* ROLE KERIPIK */}
-                    <div className="rounded-xl border border-neutral-800/80 bg-neutral-950/70 p-4 text-center relative overflow-hidden group">
-                      <div className="absolute top-0 left-0 w-full h-[2px] bg-amber-600" />
-                      
-                      <div className="text-[9px] font-black text-neutral-400 uppercase tracking-widest mb-1 flex items-center justify-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
-                        <span>Role Keripik</span>
-                      </div>
-                      
-                      <div className="font-display text-2xl sm:text-3xl font-black text-white tracking-wide">
-                        {formatNum(stats.totalKeripik)}
-                      </div>
-                      <span className="text-[9px] text-neutral-500 mt-1 font-semibold uppercase tracking-wider block">Renyah & Tipis</span>
+                    {/* Animated Versus Bar */}
+                    <div className="h-3.5 w-full rounded-full bg-neutral-900 border border-neutral-800 overflow-hidden flex shadow-inner">
+                      <div 
+                        className="h-full bg-gradient-to-r from-theater-red-dark via-theater-red to-rose-500 transition-all duration-700 shadow-md"
+                        style={{ width: `${(stats.totalKerupuk + stats.totalKeripik) > 0 ? (stats.totalKerupuk / (stats.totalKerupuk + stats.totalKeripik)) * 100 : 50}%` }}
+                      />
+                      <div 
+                        className="h-full bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-400 transition-all duration-700 shadow-md"
+                        style={{ width: `${(stats.totalKerupuk + stats.totalKeripik) > 0 ? (stats.totalKeripik / (stats.totalKerupuk + stats.totalKeripik)) * 100 : 50}%` }}
+                      />
                     </div>
 
+                    <div className="grid grid-cols-2 gap-3 mt-1">
+                      {/* ROLE KERUPUK BOX */}
+                      <div className="rounded-xl border border-theater-red/30 bg-theater-red-dark/20 p-3 text-center">
+                        <span className="text-[8.5px] text-neutral-400 font-extrabold uppercase tracking-wider block">Garing &amp; Gurih</span>
+                        <span className="font-display text-2xl font-black text-white">{formatNum(stats.totalKerupuk)} Member</span>
+                      </div>
+
+                      {/* ROLE KERIPIK BOX */}
+                      <div className="rounded-xl border border-amber-600/30 bg-amber-950/20 p-3 text-center">
+                        <span className="text-[8.5px] text-neutral-400 font-extrabold uppercase tracking-wider block">Renyah &amp; Tipis</span>
+                        <span className="font-display text-2xl font-black text-white">{formatNum(stats.totalKeripik)} Member</span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* LEVEL 3: PRESENCE BREAKDOWN (ONLINE, IDLE, DND, OFFLINE) */}
-                  <div className="rounded-xl border border-neutral-900 bg-neutral-950/40 p-4">
-                    <div className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-3 flex items-center gap-1">
-                      <Activity size={10} className="text-theater-red-light" />
+                  <div className="rounded-2xl border border-neutral-800/90 bg-neutral-950/80 p-4 shadow-lg">
+                    <div className="text-[10px] font-black text-theater-gold uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                      <Activity size={12} className="text-theater-gold animate-pulse" />
                       <span>Status Kursi Penonton</span>
                     </div>
 
                     {/* Grid of statuses */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
                       
                       {/* ONLINE STATUS */}
-                      <div className="rounded-lg border border-neutral-900/60 bg-neutral-950/50 p-2.5 flex flex-col items-center">
+                      <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-2.5 flex flex-col items-center hover:border-emerald-500/50 transition-colors">
                         <div className="flex items-center gap-1.5 mb-1">
-                          <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/50" />
-                          <span className="text-[9px] font-bold text-neutral-400 uppercase">Online</span>
+                          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-md shadow-emerald-500/60 animate-pulse" />
+                          <span className="text-[9px] font-black text-emerald-300 uppercase tracking-wider">Online</span>
                         </div>
-                        <span className="font-sans font-extrabold text-sm text-white">{stats.online}</span>
+                        <span className="font-mono font-extrabold text-base text-white">{stats.online}</span>
                       </div>
 
                       {/* IDLE STATUS */}
-                      <div className="rounded-lg border border-neutral-900/60 bg-neutral-950/50 p-2.5 flex flex-col items-center">
+                      <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-2.5 flex flex-col items-center hover:border-amber-500/50 transition-colors">
                         <div className="flex items-center gap-1.5 mb-1">
-                          <span className="h-2 w-2 rounded-full bg-amber-500 shadow-md shadow-amber-500/50" />
-                          <span className="text-[9px] font-bold text-neutral-400 uppercase">Idle</span>
+                          <span className="h-2 w-2 rounded-full bg-amber-400 shadow-md shadow-amber-500/60" />
+                          <span className="text-[9px] font-black text-amber-300 uppercase tracking-wider">Idle</span>
                         </div>
-                        <span className="font-sans font-extrabold text-sm text-white">{stats.idle}</span>
+                        <span className="font-mono font-extrabold text-base text-white">{stats.idle}</span>
                       </div>
 
                       {/* DND STATUS */}
-                      <div className="rounded-lg border border-neutral-900/60 bg-neutral-950/50 p-2.5 flex flex-col items-center">
+                      <div className="rounded-xl border border-rose-500/30 bg-rose-950/20 p-2.5 flex flex-col items-center hover:border-rose-500/50 transition-colors">
                         <div className="flex items-center gap-1.5 mb-1">
-                          <span className="h-2 w-2 rounded-full bg-rose-600 shadow-md shadow-rose-600/50" />
-                          <span className="text-[9px] font-bold text-neutral-400 uppercase">DND</span>
+                          <span className="h-2 w-2 rounded-full bg-rose-500 shadow-md shadow-rose-500/60" />
+                          <span className="text-[9px] font-black text-rose-300 uppercase tracking-wider">DND</span>
                         </div>
-                        <span className="font-sans font-extrabold text-sm text-white">{stats.dnd}</span>
+                        <span className="font-mono font-extrabold text-base text-white">{stats.dnd}</span>
                       </div>
 
                       {/* OFFLINE STATUS */}
-                      <div className="rounded-lg border border-neutral-900/60 bg-neutral-950/50 p-2.5 flex flex-col items-center">
+                      <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-2.5 flex flex-col items-center hover:border-neutral-700 transition-colors">
                         <div className="flex items-center gap-1.5 mb-1">
                           <span className="h-2 w-2 rounded-full bg-neutral-600" />
-                          <span className="text-[9px] font-bold text-neutral-400 uppercase">Offline</span>
+                          <span className="text-[9px] font-black text-neutral-400 uppercase tracking-wider">Offline</span>
                         </div>
-                        <span className="font-sans font-extrabold text-sm text-white">{stats.offline}</span>
+                        <span className="font-mono font-extrabold text-base text-white">{stats.offline}</span>
                       </div>
 
                     </div>
@@ -2989,10 +2989,10 @@ export default function CrunchyVerseStage() {
 
                 </div>
 
-                <div className="border-t border-neutral-900/80 pt-4 text-center mt-1">
-                  <div className="inline-flex items-center gap-1.5 text-[9px] text-neutral-500 font-bold uppercase tracking-wider">
-                    <UserCheck size={11} className="text-theater-gold-dim" />
-                    <span>Diverifikasi Secara Resmi Oleh CrunchyBot</span>
+                <div className="border-t border-neutral-900 pt-4 text-center mt-1">
+                  <div className="inline-flex items-center gap-2 text-[9px] text-theater-gold/80 font-bold uppercase tracking-wider bg-theater-gold/5 px-3 py-1 rounded-full border border-theater-gold/20">
+                    <UserCheck size={12} className="text-theater-gold" />
+                    <span>Diverifikasi Secara Resmi Oleh Sparxie Bot</span>
                   </div>
                 </div>
 
