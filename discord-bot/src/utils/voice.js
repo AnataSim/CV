@@ -67,6 +67,7 @@ async function connectToVoiceChannel(guildId, channelId) {
     state.connectionState.guildId = guildId;
     state.connectionState.channelId = channelId;
     state.connectionState.status = 'connected_voice';
+    state.connectionState.connectedAt = state.connectionState.connectedAt || Date.now();
     addVoiceAfkLog(`Bot berhasil masuk ke voice channel ${channelId} dan stay 24/7!`, 'success');
     db.saveVoiceAfkConfig({ guildId, channelId, isConnected: true });
 

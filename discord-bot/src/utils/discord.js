@@ -137,36 +137,90 @@ async function updatePlayerProgressRoles(member, userId) {
 // Rotating Custom Rich Presence (RPC) for Sparxie Bot 🎪
 let presenceIndex = 0;
 function startRotatingPresence() {
-  const presences = [
-    {
-      name: 'CrunchyVerse Stage 🎪 | Akt VII: Tirai Tantangan',
-      type: ActivityType.Playing
-    },
-    {
-      name: 'Lagu & Musik Teater 🎵 | Sound Detector',
-      type: ActivityType.Listening
-    },
-    {
-      name: 'Pemain & Penonton Teater 🍿 | CV$ Economy',
-      type: ActivityType.Watching
-    },
-    {
-      name: 'Sekte Kerupuk vs Keripik ⚔️ | Liga Panggung',
-      type: ActivityType.Competing
-    },
-    {
-      name: 'Kartu Deck Tantangan 🎴 | Klik Reaksi ✅',
-      type: ActivityType.Playing
-    },
-    {
-      name: 'Suara Voice Channel 🎙️ | Transkrip STT 24/7',
-      type: ActivityType.Listening
-    }
-  ];
-
   const updatePresence = () => {
     if (!state.client || !state.client.user) return;
+
     try {
+      // Helper 1: Total Members
+      let totalMembersStr = '377 Member';
+      if (GUILD_ID) {
+        const guild = state.client.guilds.cache.get(GUILD_ID);
+        if (guild) totalMembersStr = `${guild.memberCount} Member`;
+      }
+
+      // Helper 2: Voice Channel & Duration
+      const vChanId = state.connectionState.channelId || '1435053596742914160';
+      let voiceChannelName = '7K HOUR VOICE !!!';
+      if (state.client) {
+        const channel = state.client.channels.cache.get(vChanId);
+        if (channel && channel.name) voiceChannelName = channel.name;
+      }
+
+      let voiceSec = 0;
+      if (state.connectionState.connectedAt) {
+        voiceSec = Math.floor((Date.now() - state.connectionState.connectedAt) / 1000);
+      } else if (state.client.uptime) {
+        voiceSec = Math.floor(state.client.uptime / 1000);
+      }
+      const hrs = Math.floor(voiceSec / 3600).toString().padStart(2, '0');
+      const mins = Math.floor((voiceSec % 3600) / 60).toString().padStart(2, '0');
+      const secs = (voiceSec % 60).toString().padStart(2, '0');
+      const jamVoiceStr = `${hrs}:${mins}:${secs}`;
+
+      // Helper 3: Music Listener Track Info
+      let trackInfoStr = '[0:00] - CrunchyVerse Stage';
+      if (state.jockieMusicStatus) {
+        const timeDiff = Date.now() - state.lastJockieTrackTime;
+        if (timeDiff < 1800000) {
+          const elapsedTotalSec = Math.floor(timeDiff / 1000);
+          const elapsedMin = Math.floor(elapsedTotalSec / 60);
+          const elapsedSec = (elapsedTotalSec % 60).toString().padStart(2, '0');
+          const statusParts = state.jockieMusicStatus.split('] • ');
+          const trackInfo = statusParts[1] || statusParts[0];
+          trackInfoStr = `[${elapsedMin}:${elapsedSec}] - ${trackInfo}`;
+        }
+      } else if (state.client) {
+        const channel = state.client.channels.cache.get(vChanId);
+        if (channel && channel.members) {
+          for (const [, m] of channel.members) {
+            const presence = m.presence;
+            if (presence && presence.activities) {
+              const spotify = presence.activities.find(act => act.name === 'Spotify');
+              if (spotify) {
+                let progressStr = '[0:00]';
+                if (spotify.timestamps && spotify.timestamps.start) {
+                  const elapsedMs = Date.now() - spotify.timestamps.start.getTime();
+                  const elapsedMin = Math.floor(elapsedMs / 60000);
+                  const elapsedSec = Math.floor((elapsedMs % 60000) / 1000).toString().padStart(2, '0');
+                  progressStr = `[${elapsedMin}:${elapsedSec}]`;
+                }
+                trackInfoStr = `${progressStr} - ${spotify.details || 'Unknown Track'} - ${spotify.state || 'Unknown Artist'}`;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      const presences = [
+        {
+          name: 'CrunchyVerse Stage | kranciweb.vercel.app',
+          type: ActivityType.Playing
+        },
+        {
+          name: `Lagu🎵 | ${trackInfoStr}`,
+          type: ActivityType.Listening
+        },
+        {
+          name: `${jamVoiceStr} - ${voiceChannelName}`,
+          type: ActivityType.Watching
+        },
+        {
+          name: `Kerupuk & Keripik - ${totalMembersStr}`,
+          type: ActivityType.Competing
+        }
+      ];
+
       const current = presences[presenceIndex % presences.length];
       presenceIndex++;
 
