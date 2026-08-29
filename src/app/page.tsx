@@ -53,11 +53,9 @@ import {
   signOut, 
   onAuthStateChanged
 } from "firebase/auth";
-import { 
-  doc, 
-  getDoc,
-  setDoc 
-} from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { CosmeticProvider } from "../context/CosmeticContext";
+import { CursorTrail } from "../components/CursorTrail";
 
 // Import modular subcomponents
 import LoginModal from "../components/LoginModal";
@@ -1777,11 +1775,13 @@ export default function CrunchyVerseStage() {
   ];
 
   return (
-    <div 
-      ref={containerRef} 
-      className="scroll-container bg-theater-black text-foreground antialiased selection:bg-theater-red-light selection:text-white"
-      style={{ overflowY: isScrollUnlocked ? "scroll" : "hidden" }}
-    >
+    <CosmeticProvider>
+      <CursorTrail />
+      <div 
+        ref={containerRef} 
+        className="scroll-container bg-theater-black text-foreground antialiased selection:bg-theater-red-light selection:text-white"
+        style={{ overflowY: isScrollUnlocked ? "scroll" : "hidden" }}
+      >
       
       {/* Global Curtain Overlay */}
       {!isScrollUnlocked && (
@@ -2091,16 +2091,24 @@ export default function CrunchyVerseStage() {
       {/* FRAME 2: THE DASHBOARD & STATS STAGE */}
       <section 
         id="stage-dashboard"
-        className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col"
+        className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col overflow-hidden"
         style={{
-          background: 'radial-gradient(circle at top, #180004 0%, #060102 100%)'
+          background: 'radial-gradient(ellipse at 50% -10%, #3d020a 0%, #150105 45%, #060102 95%)'
         }}
       >
+        {/* Animated Background Aura & Spotlight Effects */}
+        <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-theater-gold/15 via-theater-red-light/10 to-transparent blur-[100px] pointer-events-none z-0 animate-pulse-glow" />
+        <div className="absolute top-1/4 -left-32 w-[450px] h-[450px] bg-theater-red-light/10 rounded-full blur-[130px] pointer-events-none z-0 animate-spotlight-drift" />
+        <div className="absolute bottom-10 -right-32 w-[500px] h-[500px] bg-theater-gold/10 rounded-full blur-[140px] pointer-events-none z-0" />
+        
+        {/* Stage Grid Overlay Pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.06] pointer-events-none z-0" />
+
         {/* Theatrical Curtain Header Trim */}
-        <div className="w-full h-4 bg-gradient-to-r from-theater-red-dark via-theater-red-light to-theater-red-dark border-b border-theater-gold/50 shadow-md flex items-center justify-center" />
+        <div className="w-full h-4 bg-gradient-to-r from-theater-red-dark via-theater-red-light to-theater-red-dark border-b border-theater-gold/50 shadow-md flex items-center justify-center relative z-10" />
 
         {/* Dashboard Content Container */}
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 md:py-10 flex-1 flex flex-col gap-6 md:gap-8 justify-center">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 md:py-10 flex-1 flex flex-col gap-6 md:gap-8 justify-center relative z-10">
           
           {/* Dashboard Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-neutral-900 pb-5">
@@ -2285,7 +2293,7 @@ export default function CrunchyVerseStage() {
               </div>
 
               {/* DISCORD #BROADCAST BOARD */}
-              <div className="flex-1 rounded-2xl border border-neutral-900 bg-neutral-950/40 p-5 md:p-6 shadow-xl flex flex-col gap-5 text-left relative overflow-hidden">
+              <div className="flex-1 rounded-2xl border border-theater-gold/20 bg-neutral-950/60 backdrop-blur-md hover:border-theater-gold/40 transition-all duration-300 p-5 md:p-6 shadow-[0_12px_40px_rgba(0,0,0,0.85),_0_0_20px_rgba(212,175,55,0.03)] flex flex-col gap-5 text-left relative overflow-hidden">
                 {/* Decorative retro stage lights board backdrop */}
                 <div className="absolute top-0 right-0 h-1 w-full bg-gradient-to-r from-transparent via-theater-red-light/40 to-transparent pointer-events-none" />
 
@@ -4084,5 +4092,6 @@ export default function CrunchyVerseStage() {
       </section>
 
     </div>
+    </CosmeticProvider>
   );
 }
