@@ -7,7 +7,10 @@ const {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
+  REST,
+  Routes,
+  SlashCommandBuilder
 } = require('discord.js');
 
 const state = require('./state');
@@ -250,6 +253,60 @@ function startRotatingPresence() {
   setInterval(updatePresence, 15000); // Rotasi setiap 15 detik!
 }
 
+async function registerSlashCommands() {
+  if (!state.client || !state.client.user) return;
+  const token = process.env.DISCORD_BOT_TOKEN;
+  if (!token) return;
+
+  try {
+    const commands = [
+      new SlashCommandBuilder()
+        .setName('ping')
+        .setDescription('Cek latensi & status koneksi bot Sparxie 🤖'),
+      new SlashCommandBuilder()
+        .setName('clearcolors')
+        .setDescription('Hapus warna dari semua role di bawah posisi Sparxie 🎨'),
+      new SlashCommandBuilder()
+        .setName('stt')
+        .setDescription('Aktifkan atau matikan Speech-to-Text di voice channel 🎙️')
+        .addStringOption(option =>
+          option.setName('status')
+            .setDescription('Pilih opsi: on atau off')
+            .setRequired(true)
+            .addChoices(
+              { name: 'on (aktifkan)', value: 'on' },
+              { name: 'off (matikan)', value: 'off' }
+            )
+        ),
+      new SlashCommandBuilder()
+        .setName('widget')
+        .setDescription('Tampilkan tombol setup Discord Board Profile Widget 🎪'),
+      new SlashCommandBuilder()
+        .setName('tiktok')
+        .setDescription('Cek status streaming & statistik TikTok @jobetmaritoas 📱')
+    ].map(cmd => cmd.toJSON());
+
+    const rest = new REST({ version: '10' }).setToken(token);
+    const clientId = state.client.user.id;
+
+    if (GUILD_ID) {
+      await rest.put(
+        Routes.applicationGuildCommands(clientId, GUILD_ID),
+        { body: commands }
+      );
+      console.log(`✅ [SlashCommands] Slash commands (/) berhasil terdaftar di Server ID ${GUILD_ID}!`);
+    } else {
+      await rest.put(
+        Routes.applicationCommands(clientId),
+        { body: commands }
+      );
+      console.log(`✅ [SlashCommands] Slash commands (/) global berhasil terdaftar!`);
+    }
+  } catch (err) {
+    console.error(`❌ [SlashCommands] Gagal mendaftarkan slash commands: ${err.message}`);
+  }
+}
+
 function initializeBot(token) {
   try {
     state.client = new Client({
@@ -285,6 +342,9 @@ function initializeBot(token) {
 
       // Start dynamic rotating Custom Rich Presence (RPC) every 15s
       startRotatingPresence();
+
+      // Register Slash Commands (/) with Discord REST API
+      registerSlashCommands();
 
       tiktok.updateDiscordLiveStatusChannels();
       updateUptimeStatusChannel(true);
@@ -1190,8 +1250,75 @@ function initializeBot(token) {
       }
     });
 
-    // ===== KRPK-0421: Ghost Mode Button + Widget Script Button Handler =====
+    // ===== KRPK-0421: Ghost Mode Button + Widget Script Button Handler + Slash Commands =====
     state.client.on('interactionCreate', async (interaction) => {
+      if (interaction.isChatInputCommand()) {
+        const { commandName } = interaction;
+
+        if (commandName === 'ping') {
+          return interaction.reply({ content: `🏓 **Pong!** Latensi WebSocket Sparxie: \`${state.client.ws.ping}ms\``, ephemeral: true });
+        }
+
+        if (commandName === 'clearcolors') {
+          await interaction.deferReply();
+          const guild = interaction.guild;
+          if (!guild) return interaction.editReply('⚠️ Command ini hanya dapat digunakan di dalam server.');
+
+          const me = await guild.members.fetchMe();
+          const botHighestRole = me.roles.highest;
+          const roles = await guild.roles.fetch();
+
+          let count = 0;
+          let failed = 0;
+
+          for (const [, role] of roles) {
+            if (
+              role.name !== '@everyone' &&
+              !role.managed &&
+              role.position < botHighestRole.position &&
+              role.color !== 0
+            ) {
+              try {
+                await role.setColor(0);
+                count++;
+              } catch (err) {
+                failed++;
+              }
+            }
+          }
+
+          return interaction.editReply(`✅ **Selesai!** Berhasil menghapus warna dari **${count}** role di bawah posisi Sparxie.${failed > 0 ? ` (${failed} role gagal diubah karena hirarki/izin)` : ''}`);
+        }
+
+        if (commandName === 'stt') {
+          const statusOpt = interaction.options.getString('status');
+          if (statusOpt === 'on') {
+            state.connectionState.sttEnabled = true;
+            return interaction.reply({ content: '🎙️ **Speech-to-Text diaktifkan!** Bot sekarang mendengarkan obrolan di voice channel.', ephemeral: false });
+          } else {
+            state.connectionState.sttEnabled = false;
+            return interaction.reply({ content: '🔇 **Speech-to-Text dinonaktifkan.**', ephemeral: false });
+          }
+        }
+
+        if (commandName === 'tiktok') {
+          const tt = state.tiktokState;
+          return interaction.reply({
+            content: `📱 **Status TikTok @${tt.username.replace('@','')}:**\n` +
+              `• **Status:** ${tt.isLive ? '🔴 Airing (Sedang Live!)' : '⚫ Intermission / Offline'}\n` +
+              `• **Pengikut:** ${tt.followers}\n` +
+              `• **Total Suka:** ${tt.likes}\n` +
+              `• **Total Video:** ${tt.videos}\n` +
+              `• **Negara:** ${tt.country}`,
+            ephemeral: false
+          });
+        }
+
+        if (commandName === 'widget') {
+          return interaction.reply({ content: '🎪 Gunakan pesan `!widget` di channel teks untuk mendapatkan panel setup widget profil!', ephemeral: true });
+        }
+      }
+
       if (interaction.isButton() && interaction.customId.startsWith('krpk_honeypot_unban_')) {
         const userId = interaction.customId.replace('krpk_honeypot_unban_', '');
         
