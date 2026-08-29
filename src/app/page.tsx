@@ -1906,79 +1906,60 @@ export default function CrunchyVerseStage() {
 
       {/* Cinematic Stage Transition Progress Overlay (1% - 100%) */}
       {isTransitioning && transitionTitle && (
-        <div className="fixed inset-0 z-[200] pointer-events-auto flex flex-col items-center justify-center bg-neutral-950/95 backdrop-blur-2xl transition-all duration-300">
+        <div className="fixed inset-0 z-[1000000] pointer-events-auto flex flex-col items-center justify-center bg-neutral-950/95 backdrop-blur-2xl transition-all duration-300">
           {/* Spotlight & Ambient Aura Orbs */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[550px] w-[550px] rounded-full bg-theater-gold/25 blur-[150px] pointer-events-none animate-pulse-glow" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full bg-theater-red-light/20 blur-[180px] pointer-events-none" />
-          
-          {/* Floating Fireflies / Glowing Ember Particles */}
-          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            {dustParticles.slice(0, 16).map((p, idx) => (
-              <div
-                key={`trans-firefly-${p.id || idx}`}
-                className="firefly-particle"
-                style={{
-                  left: p.left,
-                  bottom: '-20px',
-                  '--duration': '2.2s',
-                  '--delay': `${idx * 0.04}s`,
-                  '--drift-x': p.drift,
-                  width: `${Math.max(4, p.size * 1.5)}px`,
-                  height: `${Math.max(4, p.size * 1.5)}px`,
-                } as React.CSSProperties}
-              />
-            ))}
-          </div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-theater-gold/20 blur-[140px] pointer-events-none animate-pulse-glow" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[650px] w-[650px] rounded-full bg-theater-red-light/15 blur-[170px] pointer-events-none" />
 
           {/* Golden Stage Title Card & Progress Counter */}
-          <div className="relative z-10 flex flex-col items-center gap-5 px-8 sm:px-12 py-10 rounded-3xl border-2 border-theater-gold/50 bg-gradient-to-b from-neutral-950/95 via-neutral-900/90 to-neutral-950/95 shadow-[0_0_100px_rgba(212,175,55,0.45),_0_0_40px_rgba(229,26,45,0.25)] text-center max-w-xl mx-4 animate-shimmer backdrop-blur-md">
+          <div className="relative z-10 flex flex-col items-center gap-4 px-6 sm:px-10 py-8 sm:py-10 rounded-3xl border-2 border-theater-gold/45 bg-gradient-to-b from-neutral-950/98 via-neutral-900/95 to-neutral-950/98 shadow-[0_0_90px_rgba(212,175,55,0.35),_0_0_35px_rgba(229,26,45,0.2)] text-center max-w-md sm:max-w-lg mx-4 backdrop-blur-md">
             
             {/* Top Stage Header Pill */}
-            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-theater-gold/40 bg-theater-gold/10 text-xs sm:text-sm font-black uppercase tracking-[0.35em] text-theater-gold shadow-[0_0_20px_rgba(212,175,55,0.2)]">
-              <Sparkles size={16} className="animate-spin text-theater-gold" />
+            <div className="flex items-center gap-2 px-3.5 py-1 rounded-full border border-theater-gold/40 bg-theater-gold/10 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-theater-gold shadow-[0_0_15px_rgba(212,175,55,0.2)]">
+              <Sparkles size={13} className="animate-spin text-theater-gold" />
               <span>MEMUAT PANGGUNG TEATER</span>
-              <Sparkles size={16} className="animate-spin text-theater-gold" />
+              <Sparkles size={13} className="animate-spin text-theater-gold" />
             </div>
 
             {/* Frame Title */}
-            <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-theater-gold to-yellow-200 tracking-[0.12em] uppercase drop-shadow-[0_0_35px_rgba(212,175,55,0.85)] py-1 select-none">
+            <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-theater-gold to-yellow-200 tracking-wider uppercase drop-shadow-[0_0_25px_rgba(212,175,55,0.7)] py-1 select-none leading-tight">
               {transitionTitle}
             </h1>
 
             {/* Progress Bar & Percentage Counter */}
-            <div className="w-full max-w-md flex flex-col items-center gap-2.5 mt-1">
-              <div className="flex items-center justify-between w-full text-xs font-black uppercase tracking-widest px-1">
+            <div className="w-full max-w-sm flex flex-col items-center gap-2 mt-1">
+              <div className="flex items-center justify-between w-full text-[10px] sm:text-xs font-black uppercase tracking-widest px-1">
                 <span className="text-neutral-400 font-sans flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-theater-gold animate-ping" />
                   MEMPROSES PEMANDANGAN...
                 </span>
-                <span className="text-theater-gold font-mono text-base font-black px-2.5 py-0.5 rounded-md bg-theater-gold/10 border border-theater-gold/30">
+                <span className="text-theater-gold font-mono text-sm font-black px-2 py-0.5 rounded-md bg-theater-gold/10 border border-theater-gold/30">
                   {transitionProgress}%
                 </span>
               </div>
 
               {/* Progress Track */}
-              <div className="w-full h-3.5 rounded-full bg-neutral-900/90 border border-theater-gold/40 p-0.5 relative overflow-hidden shadow-inner">
+              <div className="w-full h-3 rounded-full bg-neutral-900 border border-theater-gold/30 p-0.5 relative overflow-hidden shadow-inner">
                 {/* Progress Fill */}
                 <div 
-                  className="h-full rounded-full bg-gradient-to-r from-theater-red-light via-theater-gold to-yellow-300 transition-all duration-75 relative shadow-[0_0_20px_#d4af37]"
+                  className="h-full rounded-full bg-gradient-to-r from-theater-red-light via-theater-gold to-yellow-300 transition-all duration-75 relative shadow-[0_0_15px_#d4af37]"
                   style={{ width: `${transitionProgress}%` }}
                 >
                   {/* Leading Spark Orb */}
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-[0_0_12px_#fff,0_0_24px_#ffd700]" />
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_10px_#fff,0_0_20px_#ffd700]" />
                 </div>
               </div>
             </div>
 
             {/* Stage Tips Ticker */}
-            <div className="mt-2 px-4 py-2 rounded-xl bg-neutral-900/60 border border-theater-gold/20 text-[11px] font-medium text-amber-200/80 tracking-wide flex items-center justify-center gap-2 max-w-md">
-              <Sparkles size={12} className="text-theater-gold shrink-0" />
+            <div className="mt-1 px-3.5 py-1.5 rounded-xl bg-neutral-900/80 border border-theater-gold/20 text-[10px] sm:text-[11px] font-medium text-amber-200/80 tracking-wide flex items-center justify-center gap-2 max-w-sm">
+              <Sparkles size={11} className="text-theater-gold shrink-0" />
               <span className="truncate">{STAGE_TIPS[tipIndex % STAGE_TIPS.length]}</span>
             </div>
 
-            <div className="h-0.5 w-48 bg-gradient-to-r from-transparent via-theater-gold/40 to-transparent my-0.5" />
+            <div className="h-0.5 w-36 bg-gradient-to-r from-transparent via-theater-gold/30 to-transparent my-0.5" />
             
-            <span className="text-[10px] sm:text-xs font-extrabold text-neutral-400 uppercase tracking-[0.25em] font-sans">
+            <span className="text-[9px] sm:text-[10px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] font-sans">
               CrunchyVerse Spectacular Stage
             </span>
           </div>
