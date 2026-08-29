@@ -256,19 +256,20 @@ function startRotatingPresence() {
 // Dynamic Gradient Color Rotator for Role ID: 1538853148213641236 (Every 3-6 Hours)
 const DYNAMIC_ROLE_ID = '1538853148213641236';
 
-function generateVibrantRandomHex() {
-  const h = Math.floor(Math.random() * 360);
-  const s = Math.floor(75 + Math.random() * 25);
-  const l = Math.floor(45 + Math.random() * 20);
-
-  const lNorm = l / 100;
-  const a = (s * Math.min(lNorm, 1 - lNorm)) / 100;
-  const f = n => {
-    const k = (n + h / 30) % 12;
-    const color = lNorm - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color).toString(16).padStart(2, '0');
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
+function generateOceanThemeHexPair() {
+  const oceanPairs = [
+    { hex1: '#00C9FF', hex2: '#92FE9D' }, // Aqua & Seafoam Green
+    { hex1: '#0083B0', hex2: '#00B4DB' }, // Deep Ocean Blue & Sky Cyan
+    { hex1: '#1CB5E0', hex2: '#000851' }, // Electric Cyan & Deep Navy
+    { hex1: '#1A2980', hex2: '#26D0CE' }, // Marine Blue & Turquoise
+    { hex1: '#00d2ff', hex2: '#3a7bd5' }, // Ocean Wave Blue
+    { hex1: '#005C97', hex2: '#363795' }, // Sapphire Ocean
+    { hex1: '#0575E6', hex2: '#00F260' }, // Deep Trench Emerald Teal
+    { hex1: '#4B6CB7', hex2: '#182848' }, // Dark Abyssal Sea
+    { hex1: '#2193b0', hex2: '#6dd5ed' }, // Soft Aqua Breeze
+    { hex1: '#11998e', hex2: '#38ef7d' }  // Coral Reef Teal
+  ];
+  return oceanPairs[Math.floor(Math.random() * oceanPairs.length)];
 }
 
 async function rotateDynamicRoleColors() {
@@ -278,46 +279,36 @@ async function rotateDynamicRoleColors() {
     const guild = await state.client.guilds.fetch(GUILD_ID).catch(() => null);
     if (!guild) return null;
 
-    const role = await guild.roles.fetch(DYNAMIC_ROLE_ID).catch(() => null);
+    let role = await guild.roles.fetch(DYNAMIC_ROLE_ID).catch(() => null);
+
+    // Fallback: search for Serial #1 role if exact Snowflake changed
     if (!role) {
-      console.warn(`⚠️ [DynamicRoleColor] Role ID ${DYNAMIC_ROLE_ID} tidak ditemukan di server.`);
+      const allRoles = await guild.roles.fetch().catch(() => null);
+      if (allRoles) {
+        role = allRoles.find(r => r.name.includes("Serial #1") || r.id === DYNAMIC_ROLE_ID);
+      }
+    }
+
+    if (!role) {
+      console.warn(`⚠️ [DynamicRoleColor] Target role tidak ditemukan di server.`);
       return null;
     }
 
-    const hex1 = generateVibrantRandomHex();
-    const hex2 = generateVibrantRandomHex();
+    const { hex1, hex2 } = generateOceanThemeHexPair();
     const colorInt1 = parseInt(hex1.replace('#', ''), 16);
     const colorInt2 = parseInt(hex2.replace('#', ''), 16);
 
-    const me = await guild.members.fetchMe().catch(() => null);
-    if (me && role.position >= me.roles.highest.position) {
-      console.warn(`⚠️ [DynamicRoleColor] Role Sparxie (${me.roles.highest.name}, pos: ${me.roles.highest.position}) berposisi di bawah Role ${role.name} (pos: ${role.position})!`);
-      return { error: `Posisi role Sparxie (\`${me.roles.highest.name}\`) harus berada di ATAS role \`${role.name}\` di Server Settings ➔ Roles.` };
-    }
+    const token = state.client.token || process.env.DISCORD_TOKEN;
+    const rest = new REST({ version: '10' }).setToken(token);
 
-    let updated = false;
-    try {
-      const token = state.client.token || process.env.DISCORD_TOKEN;
-      const rest = new REST({ version: '10' }).setToken(token);
+    // Send array of 2 colors for Gradient style
+    await rest.patch(Routes.guildRole(GUILD_ID, role.id), {
+      body: {
+        colors: [colorInt1, colorInt2]
+      }
+    });
 
-      // Send array of 2 colors for Gradient style
-      await rest.patch(Routes.guildRole(GUILD_ID, DYNAMIC_ROLE_ID), {
-        body: {
-          colors: [colorInt1, colorInt2]
-        }
-      });
-      updated = true;
-    } catch (apiErr) {
-      console.warn(`⚠️ [DynamicRoleColor] Raw REST patch error (${apiErr.message}), mencoba fallback setColor...`);
-    }
-
-    if (!updated) {
-      await role.setColor(colorInt1).catch(err => {
-        console.error(`❌ [DynamicRoleColor] Fallback setColor error:`, err.message);
-      });
-    }
-
-    console.log(`🎨 [DynamicRoleColor] Role "${role.name}" (${DYNAMIC_ROLE_ID}) berhasil diperbarui ke 2 Hex Random: ${hex1} & ${hex2}`);
+    console.log(`🎨 [DynamicRoleColor] Role "${role.name}" (${role.id}) berhasil diperbarui ke Gradien Warna Laut: ${hex1} & ${hex2}`);
     return { name: role.name, hex1, hex2 };
   } catch (err) {
     console.error(`❌ [DynamicRoleColor] Error saat merotasi warna role:`, err.message);
