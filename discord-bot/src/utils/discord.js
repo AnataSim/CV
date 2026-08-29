@@ -253,6 +253,80 @@ function startRotatingPresence() {
   setInterval(updatePresence, 15000); // Rotasi setiap 15 detik!
 }
 
+// Dynamic Gradient Color Rotator for Role ID: 1538853148213641236 (Every 3-6 Hours)
+const DYNAMIC_ROLE_ID = '1538853148213641236';
+
+function generateVibrantRandomHex() {
+  const h = Math.floor(Math.random() * 360);
+  const s = Math.floor(75 + Math.random() * 25);
+  const l = Math.floor(45 + Math.random() * 20);
+
+  const lNorm = l / 100;
+  const a = (s * Math.min(lNorm, 1 - lNorm)) / 100;
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    const color = lNorm - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+async function rotateDynamicRoleColors() {
+  if (!state.client || !state.isDiscordReady || !GUILD_ID) return null;
+
+  try {
+    const guild = await state.client.guilds.fetch(GUILD_ID).catch(() => null);
+    if (!guild) return null;
+
+    const role = await guild.roles.fetch(DYNAMIC_ROLE_ID).catch(() => null);
+    if (!role) {
+      console.warn(`⚠️ [DynamicRoleColor] Role ID ${DYNAMIC_ROLE_ID} tidak ditemukan di server.`);
+      return null;
+    }
+
+    const hex1 = generateVibrantRandomHex();
+    const hex2 = generateVibrantRandomHex();
+    const colorInt1 = parseInt(hex1.replace('#', ''), 16);
+    const colorInt2 = parseInt(hex2.replace('#', ''), 16);
+
+    await role.setColor(colorInt1).catch(err => console.error(`❌ [DynamicRoleColor] error setColor:`, err.message));
+
+    try {
+      const rest = new REST({ version: '10' }).setToken(state.client.token || process.env.DISCORD_TOKEN);
+      await rest.patch(Routes.guildRole(GUILD_ID, DYNAMIC_ROLE_ID), {
+        body: {
+          color: colorInt1,
+          colors: [colorInt1, colorInt2]
+        }
+      }).catch(() => {});
+    } catch (e) {}
+
+    console.log(`🎨 [DynamicRoleColor] Role "${role.name}" (${DYNAMIC_ROLE_ID}) berhasil diperbarui ke 2 Hex Random: ${hex1} & ${hex2}`);
+    return { name: role.name, hex1, hex2 };
+  } catch (err) {
+    console.error(`❌ [DynamicRoleColor] Error saat merotasi warna role:`, err.message);
+    return null;
+  }
+}
+
+let roleRotationTimer = null;
+function scheduleNextRoleColorRotation() {
+  if (roleRotationTimer) clearTimeout(roleRotationTimer);
+
+  // Random interval between 3 hours and 6 hours (in ms)
+  const minMs = 3 * 60 * 60 * 1000;
+  const maxMs = 6 * 60 * 60 * 1000;
+  const randomInterval = Math.floor(minMs + Math.random() * (maxMs - minMs));
+
+  const hours = (randomInterval / (1000 * 60 * 60)).toFixed(2);
+  console.log(`⏰ [DynamicRoleColor] Rotasi warna role (${DYNAMIC_ROLE_ID}) berikutnya dijadwalkan dalam ${hours} jam.`);
+
+  roleRotationTimer = setTimeout(async () => {
+    await rotateDynamicRoleColors();
+    scheduleNextRoleColorRotation();
+  }, randomInterval);
+}
+
 async function registerSlashCommands() {
   if (!state.client || !state.client.user) return;
   const token = state.client.token || process.env.DISCORD_TOKEN || process.env.DISCORD_BOT_TOKEN;
@@ -353,6 +427,10 @@ function initializeBot(token) {
 
       // Register Slash Commands (/) with Discord REST API
       registerSlashCommands();
+
+      // Start dynamic gradient color rotator for Role ID 1538853148213641236 (every 3-6 hours)
+      rotateDynamicRoleColors();
+      scheduleNextRoleColorRotation();
 
       tiktok.updateDiscordLiveStatusChannels();
       updateUptimeStatusChannel(true);
@@ -878,6 +956,11 @@ function initializeBot(token) {
               inline: false
             },
             {
+              name: '🌈 \'rotaterole',
+              value: 'Merotasi acak 2 warna Hex (gradien) untuk Role Special (`1538853148213641236`). Otomatis berjalan setiap 3-6 jam.',
+              inline: false
+            },
+            {
               name: '🎙️ \'stt on / \'stt off',
               value: 'Mengaktifkan atau mematikan fitur transkrip suara otomatis (Speech-to-Text) di voice channel.',
               inline: false
@@ -911,6 +994,15 @@ function initializeBot(token) {
 
       if (lowerContent === "'ping") {
         return message.reply(`🏓 **Pong!** Latensi WebSocket Sparxie: \`${state.client.ws.ping}ms\``);
+      }
+
+      if (lowerContent === "'rotaterole" || lowerContent === "'randomcolor") {
+        const res = await rotateDynamicRoleColors();
+        if (res) {
+          return message.reply(`🎨 **Warna Role "${res.name}" (ID: 1538853148213641236) berhasil diperbarui ke 2 Hex Random:** \`${res.hex1}\` & \`${res.hex2}\` ✨`);
+        } else {
+          return message.reply('⚠️ **Gagal merotasi warna role.** Pastikan bot memiliki izin Manage Roles & Role ID `1538853148213641236` tersedia.');
+        }
       }
 
       if (lowerContent === "'tiktok") {
