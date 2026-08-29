@@ -2166,6 +2166,139 @@ function registerRoutes(app) {
     res.json({ success: true, volunteerables: list });
   });
 
+  // ================== DATABASE CHAT CHANNELS & MESSAGES ENDPOINTS ==================
+  const DEFAULT_CHAT_CHANNELS = [
+    { id: "portal", name: "✨ ╎ portal", type: "text", desc: "Portal informasi utama Anomaly CrunchyVerse 🎪" },
+    { id: "command", name: "💬 ╎ command", type: "text", desc: "Kanal command bot Sparxie 🤖" },
+    { id: "share-meme", name: "🌟 ╎ share-meme", type: "text", desc: "Tempat berbagi meme lucu & gokil 🍿" },
+    { id: "talking", name: "💬 ╎ talking", type: "text", desc: "Kanal ngobrol santai sesama Anomaly 🗣️" },
+    { id: "share-leak", name: "🔒 ╎ share-leak", type: "text", desc: "Bocoran rahasia & konten eksklusif teater 🤫" },
+    { id: "share-info", name: "👁️ ╎ share-info", type: "text", desc: "Informasi dan update terhangat 👁️" },
+    { id: "share-garem", name: "🧂 ╎ share-garem", type: "text", desc: "Kanal berbagi garam / gacha pulls 🧂" },
+    { id: "stream", name: "‼️ ╎ stream", type: "text", desc: "Notifikasi siaran langsung & live teater 🔴" },
+    { id: "voice-afk", name: "📻 : AFK", type: "voice", desc: "Saluran AFK Anomaly 💤" },
+    { id: "voice-jtc", name: "➕ ╎ JOIN TO CREATE", type: "voice", desc: "Bergabung untuk membuat saluran suara baru ➕" },
+    { id: "voice-studyroom", name: "📻 : STUDY ROOM", type: "voice", desc: "Kanal belajar & diskusi serius 📚" }
+  ];
+
+  // GET ALL CHANNELS
+  app.get('/api/chat/channels', async (req, res) => {
+    let channels = db.loadCustomChannels();
+    if (!channels || !Array.isArray(channels) || channels.length === 0) {
+      channels = DEFAULT_CHAT_CHANNELS;
+      db.saveCustomChannels(channels);
+    }
+    res.json(channels);
+  });
+
+  // GET SINGLE CHANNEL BY ID
+  app.get('/api/chat/channels/:id', async (req, res) => {
+    const { id } = req.params;
+    const channels = db.loadCustomChannels() || [];
+    let chan = channels.find(c => c.id === id);
+    if (!chan) {
+      const type = id.startsWith("voice") ? "voice" : "text";
+      const name = type === "text" ? `✨ ╎ custom-${id.slice(-4)}` : `📻 : CUSTOM-${id.slice(-4)}`;
+      chan = {
+        id,
+        name,
+        type,
+        desc: `Saluran kustom terintegrasi database (ID: ${id}) 🎪`
+      };
+    }
+    res.json(chan);
+  });
+
+  // SAVE CHANNELS LIST (Add / Update / Reset)
+  app.post('/api/chat/channels', requireClientToken, async (req, res) => {
+    const { channels } = req.body;
+    if (channels && Array.isArray(channels)) {
+      db.saveCustomChannels(channels);
+      if (state.db) {
+        try {
+          await setDoc(doc(state.db, "settings", "chat_channels"), { channels }, { merge: true });
+        } catch (e) {}
+      }
+      global.broadcastWsUpdate('channels');
+      return res.json({ success: true, channels });
+    }
+    res.status(400).json({ error: "Format channels tidak valid." });
+  });
+
+  // DELETE SINGLE CHANNEL
+  app.delete('/api/chat/channels/:id', requireClientToken, async (req, res) => {
+    const { id } = req.params;
+    let channels = db.loadCustomChannels() || [];
+    channels = channels.filter(c => c.id !== id);
+    db.saveCustomChannels(channels);
+    if (state.db) {
+      try {
+        await setDoc(doc(state.db, "settings", "chat_channels"), { channels }, { merge: true });
+      } catch (e) {}
+    }
+    global.broadcastWsUpdate('channels');
+    res.json({ success: true, channels });
+  });
+
+  // GET MESSAGES FOR A CHANNEL
+  app.get('/api/chat/channels/:id/messages', async (req, res) => {
+    const { id } = req.params;
+    const allMessages = db.loadChatMessages() || {};
+    let channelMsgs = allMessages[id];
+
+    if (!channelMsgs || !Array.isArray(channelMsgs) || channelMsgs.length === 0) {
+      channelMsgs = [
+        {
+          id: `init-${id}-1`,
+          authorName: "Pimpinan Produksi",
+          authorAvatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=production",
+          content: `Halo para Anomaly! Selamat datang di saluran #${id} teater CrunchyVerse. ✨🎪`,
+          timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        }
+      ];
+      allMessages[id] = channelMsgs;
+      db.saveChatMessages(allMessages);
+    }
+    res.json(channelMsgs);
+  });
+
+  // POST MESSAGE TO A CHANNEL
+  app.post('/api/chat/channels/:id/messages', requireClientToken, async (req, res) => {
+    const { id } = req.params;
+    const { content, mediaUrl, replyToMsgId, authorName, authorAvatar } = req.body;
+
+    const allMessages = db.loadChatMessages() || {};
+    if (!allMessages[id]) {
+      allMessages[id] = [];
+    }
+
+    const newMsg = {
+      id: `msg-${Date.now()}-${Math.floor(Math.random()*1000)}`,
+      authorName: authorName || "Penonton Teater",
+      authorAvatar: authorAvatar || "https://api.dicebear.com/7.x/pixel-art/svg?seed=penonton",
+      content: content || "",
+      mediaUrl: mediaUrl || null,
+      replyToMsgId: replyToMsgId || null,
+      timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+    };
+
+    allMessages[id].push(newMsg);
+    if (allMessages[id].length > 100) {
+      allMessages[id] = allMessages[id].slice(-100);
+    }
+
+    db.saveChatMessages(allMessages);
+
+    if (state.db) {
+      try {
+        await setDoc(doc(state.db, "chat_messages", id), { messages: allMessages[id] }, { merge: true });
+      } catch (e) {}
+    }
+
+    global.broadcastWsUpdate('chat');
+    res.json({ success: true, message: newMsg, messages: allMessages[id] });
+  });
+
   // Setup cron cycles
   setInterval(runMetadataSyncCycle, 900000);
   setTimeout(runMetadataSyncCycle, 15000);
