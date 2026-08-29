@@ -1667,6 +1667,7 @@ export default function CrunchyVerseStage() {
   const [transitionProgress, setTransitionProgress] = useState<number>(0);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const transitionTimerRef = useRef<any>(null);
+  const visitedFramesRef = useRef<Set<string>>(new Set());
 
   // Publish Volunteer Override Settings to Bot Express Backend API
   const publishVolunteerSettings = async (overrideState: boolean, isLiveState: boolean, titleText: string) => {
@@ -1719,10 +1720,30 @@ export default function CrunchyVerseStage() {
     }
   };
 
-  // Safe helper to scroll with 1-100% theatrical stage loading progress
+  // Safe helper to scroll with 1-100% theatrical stage loading progress (ONCE PER FRAME PER SESSION)
   const safeScrollTo = (elementId: string) => {
     const item = sidebarItems.find(i => i.id === elementId);
     const label = item ? item.label : "PANGGUNG TEATER";
+
+    const snapContainer = containerRef.current;
+    const targetElement = document.getElementById(elementId);
+    if (!snapContainer || !targetElement) return;
+
+    const hasVisited = visitedFramesRef.current.has(elementId);
+
+    // If frame has ALREADY been loaded in this session, scroll directly without showing loading screen again
+    if (hasVisited) {
+      const originalSnapType = snapContainer.style.scrollSnapType || '';
+      snapContainer.style.scrollSnapType = "none";
+      targetElement.scrollIntoView({ behavior: "smooth" });
+      setTimeout(() => {
+        snapContainer.style.scrollSnapType = originalSnapType;
+      }, 500);
+      return;
+    }
+
+    // Mark frame as visited for this session
+    visitedFramesRef.current.add(elementId);
 
     if (transitionTimerRef.current) {
       clearInterval(transitionTimerRef.current);
@@ -1732,20 +1753,13 @@ export default function CrunchyVerseStage() {
     setTransitionProgress(1);
     setIsTransitioning(true);
 
-    const snapContainer = containerRef.current;
-    const targetElement = document.getElementById(elementId);
-    if (!snapContainer || !targetElement) {
-      setTimeout(() => setIsTransitioning(false), 850);
-      return;
-    }
-
     const originalSnapType = snapContainer.style.scrollSnapType || '';
     snapContainer.style.scrollSnapType = "none";
     targetElement.scrollIntoView({ behavior: "smooth" });
 
-    // Smooth 1% -> 100% progress counter over ~750ms
+    // Smooth 1% -> 100% progress counter over ~700ms
     const startTime = Date.now();
-    const duration = 750;
+    const duration = 700;
 
     transitionTimerRef.current = setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -1757,7 +1771,7 @@ export default function CrunchyVerseStage() {
         snapContainer.style.scrollSnapType = originalSnapType;
         setTimeout(() => {
           setIsTransitioning(false);
-        }, 120);
+        }, 100);
       }
     }, 16);
   };
@@ -2191,7 +2205,7 @@ export default function CrunchyVerseStage() {
         id="stage-dashboard"
         className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(180deg, rgba(6,1,2,0.85) 0%, rgba(20,2,6,0.75) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
+          backgroundImage: `linear-gradient(90deg, #060102 0%, rgba(6,1,2,0.92) 15%, transparent 28%, transparent 72%, rgba(6,1,2,0.92) 85%, #060102 100%), linear-gradient(180deg, rgba(6,1,2,0.85) 0%, rgba(20,2,6,0.75) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
@@ -2770,7 +2784,7 @@ export default function CrunchyVerseStage() {
         id="stage-roles"
         className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(20,12,2,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
+          backgroundImage: `linear-gradient(90deg, #060102 0%, rgba(6,1,2,0.92) 15%, transparent 28%, transparent 72%, rgba(6,1,2,0.92) 85%, #060102 100%), linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(20,12,2,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
@@ -2890,7 +2904,7 @@ export default function CrunchyVerseStage() {
         id="stage-leaderboard"
         className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(25,2,8,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
+          backgroundImage: `linear-gradient(90deg, #060102 0%, rgba(6,1,2,0.92) 15%, transparent 28%, transparent 72%, rgba(6,1,2,0.92) 85%, #060102 100%), linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(25,2,8,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
@@ -3003,7 +3017,7 @@ export default function CrunchyVerseStage() {
         id="stage-divergent"
         className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col min-h-screen overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(2,15,30,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/challenge_bg.png')`,
+          backgroundImage: `linear-gradient(90deg, #060102 0%, rgba(6,1,2,0.92) 15%, transparent 28%, transparent 72%, rgba(6,1,2,0.92) 85%, #060102 100%), linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(2,15,30,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/challenge_bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
@@ -3419,7 +3433,7 @@ export default function CrunchyVerseStage() {
           !isUserAdmin(userRole) ? "hidden" : ""
         }`}
         style={{
-          backgroundImage: `linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(2,16,28,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/challenge_bg.png')`,
+          backgroundImage: `linear-gradient(90deg, #060102 0%, rgba(6,1,2,0.92) 15%, transparent 28%, transparent 72%, rgba(6,1,2,0.92) 85%, #060102 100%), linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(2,16,28,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/challenge_bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
