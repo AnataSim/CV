@@ -1919,12 +1919,15 @@ export default function CrunchyVerseStage() {
             />
           </div>
 
+          {/* Semi-transparent dark curtain mask over top area to prevent text behind from overlapping */}
+          <div className="fixed top-0 inset-x-0 h-28 bg-gradient-to-b from-neutral-950/90 via-neutral-950/60 to-transparent pointer-events-none z-[1000000]" />
+
           {/* Floating Frosted Pill Badge */}
-          <div className="relative z-10 flex items-center gap-3 px-4 sm:px-6 py-2.5 rounded-full border border-theater-gold/40 bg-neutral-950/85 backdrop-blur-xl shadow-[0_10px_35px_rgba(0,0,0,0.85),_0_0_25px_rgba(212,175,55,0.2)] text-white select-none pointer-events-auto">
+          <div className="relative z-[1000002] flex items-center gap-3 px-5 sm:px-7 py-2.5 rounded-full border border-theater-gold/50 bg-neutral-950/95 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.95),_0_0_30px_rgba(212,175,55,0.3)] text-white select-none pointer-events-auto">
             <Sparkles size={14} className="animate-spin text-theater-gold shrink-0" />
             
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black text-theater-gold/80 uppercase tracking-widest hidden sm:inline">MEMUAT</span>
+              <span className="text-[10px] font-black text-theater-gold uppercase tracking-widest hidden sm:inline">MEMUAT</span>
               <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-theater-gold">
                 {transitionTitle}
               </span>
@@ -1932,7 +1935,7 @@ export default function CrunchyVerseStage() {
 
             <div className="h-3.5 w-px bg-neutral-800" />
 
-            <span className="text-[11px] font-mono font-black text-theater-gold bg-theater-gold/15 px-2.5 py-0.5 rounded-full border border-theater-gold/30">
+            <span className="text-[11px] font-mono font-black text-theater-gold bg-theater-gold/15 px-2.5 py-0.5 rounded-full border border-theater-gold/40">
               {transitionProgress}%
             </span>
           </div>

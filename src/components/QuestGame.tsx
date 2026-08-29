@@ -874,6 +874,8 @@ export default function QuestGame({
   const completedQuestIds = React.useMemo(() => {
     if (!currentUser?.uid) return new Set<string>();
     const ids = new Set<string>();
+
+    // 1. From allSubmissions (approved status)
     allSubmissions
       .filter((s: any) => s.userId === currentUser.uid && s.status === "approved")
       .forEach((s: any) => {
@@ -885,8 +887,21 @@ export default function QuestGame({
           }
         });
       });
+
+    // 2. From cardStatuses (Completed status)
+    Object.entries(cardStatuses).forEach(([k, v]) => {
+      if (v === "Completed") {
+        ids.add(k);
+        quests.forEach(q => {
+          if (q.id === k || (q.originalQuestId && q.originalQuestId === k) || k.includes(q.id)) {
+            ids.add(q.id);
+          }
+        });
+      }
+    });
+
     return ids;
-  }, [allSubmissions, currentUser, quests]);
+  }, [allSubmissions, currentUser, quests, cardStatuses]);
 
   if (!hasMounted) return null;
 
