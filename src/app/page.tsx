@@ -2210,7 +2210,8 @@ export default function CrunchyVerseStage() {
           backgroundImage: `linear-gradient(90deg, #060102 0%, rgba(6,1,2,0.92) 15%, transparent 28%, transparent 72%, rgba(6,1,2,0.92) 85%, #060102 100%), linear-gradient(180deg, rgba(6,1,2,0.85) 0%, rgba(20,2,6,0.75) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundAttachment: 'scroll'
+          backgroundAttachment: 'scroll',
+          boxShadow: 'inset 80px 0 80px #060102, inset -80px 0 80px #060102'
         }}
       >
         {/* 1. Ambient Glowing Spotlights */}
@@ -2789,7 +2790,8 @@ export default function CrunchyVerseStage() {
           backgroundImage: `linear-gradient(90deg, #060102 0%, rgba(6,1,2,0.92) 15%, transparent 28%, transparent 72%, rgba(6,1,2,0.92) 85%, #060102 100%), linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(20,12,2,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundAttachment: 'scroll'
+          backgroundAttachment: 'scroll',
+          boxShadow: 'inset 80px 0 80px #060102, inset -80px 0 80px #060102'
         }}
       >
         {/* Animated Background Environment Layers */}
@@ -2909,7 +2911,8 @@ export default function CrunchyVerseStage() {
           backgroundImage: `linear-gradient(90deg, #060102 0%, rgba(6,1,2,0.92) 15%, transparent 28%, transparent 72%, rgba(6,1,2,0.92) 85%, #060102 100%), linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(25,2,8,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundAttachment: 'scroll'
+          backgroundAttachment: 'scroll',
+          boxShadow: 'inset 80px 0 80px #060102, inset -80px 0 80px #060102'
         }}
       >
         {/* Animated Background Environment Layers */}
@@ -3022,7 +3025,8 @@ export default function CrunchyVerseStage() {
           backgroundImage: `linear-gradient(90deg, #060102 0%, rgba(6,1,2,0.92) 15%, transparent 28%, transparent 72%, rgba(6,1,2,0.92) 85%, #060102 100%), linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(2,15,30,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/challenge_bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundAttachment: 'scroll'
+          backgroundAttachment: 'scroll',
+          boxShadow: 'inset 80px 0 80px #060102, inset -80px 0 80px #060102'
         }}
       >
         {/* Animated Background Environment Layers */}
@@ -3438,7 +3442,8 @@ export default function CrunchyVerseStage() {
           backgroundImage: `linear-gradient(90deg, #060102 0%, rgba(6,1,2,0.92) 15%, transparent 28%, transparent 72%, rgba(6,1,2,0.92) 85%, #060102 100%), linear-gradient(180deg, rgba(6,1,2,0.88) 0%, rgba(2,16,28,0.78) 50%, rgba(6,1,2,0.92) 100%), url('/challenge_bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundAttachment: 'scroll'
+          backgroundAttachment: 'scroll',
+          boxShadow: 'inset 80px 0 80px #060102, inset -80px 0 80px #060102'
         }}
       >
         {/* Animated Background Environment Layers */}
@@ -4344,4 +4349,5 @@ export default function CrunchyVerseStage() {
     </CosmeticProvider>
   );
 }
+
 
