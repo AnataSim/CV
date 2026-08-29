@@ -1,4 +1,4 @@
-const { joinVoiceChannel, VoiceConnectionStatus, entersState } = require('@discordjs/voice');
+const { joinVoiceChannel, getVoiceConnection, VoiceConnectionStatus, entersState } = require('@discordjs/voice');
 const state = require('./state');
 const db = require('./db');
 
@@ -18,12 +18,20 @@ async function connectToVoiceChannel(guildId, channelId) {
   }
 
   state.connectionState.status = 'connecting_voice';
-  addVoiceAfkLog(`Menghubungkan ke Voice Channel: Server ${guildId}, Channel ${channelId}...`, 'info');
+  addVoiceAfkLog(`Menghubungkan ke Voice Channel 24/7: Server ${guildId}, Channel ${channelId}...`, 'info');
 
   const guild = state.client.guilds.cache.get(guildId);
   if (!guild) {
     throw new Error(`Guild ${guildId} tidak ditemukan.`);
   }
+
+  // Force destroy any old dead connection handle first to prevent WebRTC stale socket issues
+  try {
+    const oldConnection = getVoiceConnection(guildId);
+    if (oldConnection) {
+      oldConnection.destroy();
+    }
+  } catch (e) {}
 
   const voiceConnection = joinVoiceChannel({
     channelId: channelId,

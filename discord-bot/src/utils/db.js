@@ -104,12 +104,17 @@ function saveLocalUsers(users) {
 function loadVoiceAfkConfig() {
   try {
     if (fs.existsSync(VOICE_AFK_CONFIG_FILE)) {
-      return JSON.parse(fs.readFileSync(VOICE_AFK_CONFIG_FILE, 'utf8'));
+      const cfg = JSON.parse(fs.readFileSync(VOICE_AFK_CONFIG_FILE, 'utf8'));
+      if (cfg && cfg.channelId) return cfg;
     }
   } catch (e) {
     console.error("Gagal membaca voice-afk-config.json:", e.message);
   }
-  return null;
+  return {
+    guildId: process.env.DISCORD_GUILD_ID || "661135501226672129",
+    channelId: process.env.DISCORD_VOICE_CHANNEL_ID || "1435053596742914160",
+    isConnected: true
+  };
 }
 
 function saveVoiceAfkConfig(config) {

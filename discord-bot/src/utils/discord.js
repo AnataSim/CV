@@ -196,17 +196,21 @@ function initializeBot(token) {
           });
       }
 
-      const VOICE_WATCHDOG_INTERVAL_MS = 30 * 1000;
+      const VOICE_WATCHDOG_INTERVAL_MS = 10 * 1000;
       setInterval(async () => {
         const savedCfg = db.loadVoiceAfkConfig();
         if (savedCfg && savedCfg.isConnected && savedCfg.guildId && savedCfg.channelId) {
-          if (!state.connectionState.isConnectedToVoice) {
-            voice.addVoiceAfkLog(`[Watchdog] Main bot terputus. Mencoba reconnect ke channel ${savedCfg.channelId}...`, 'warning');
+          const { getVoiceConnection } = require('@discordjs/voice');
+          const conn = getVoiceConnection(savedCfg.guildId);
+          const isDisconnected = !state.connectionState.isConnectedToVoice || !conn || conn.state.status === 'disconnected' || conn.state.status === 'destroyed';
+
+          if (isDisconnected) {
+            voice.addVoiceAfkLog(`[Watchdog 24/7] Main bot Sparxie terputus/keluar. Auto-reconnecting ke channel ${savedCfg.channelId}...`, 'warning');
             try {
               await voice.connectToVoiceChannel(savedCfg.guildId, savedCfg.channelId);
-              voice.addVoiceAfkLog(`[Watchdog] ✅ Berhasil reconnect main bot ke voice channel ${savedCfg.channelId}!`, 'success');
+              voice.addVoiceAfkLog(`[Watchdog 24/7] ✅ Berhasil reconnect main bot Sparxie ke voice channel ${savedCfg.channelId}!`, 'success');
             } catch (err) {
-              voice.addVoiceAfkLog(`[Watchdog] ❌ Gagal reconnect main bot: ${err.message}. Mencoba lagi dalam 30 detik.`, 'error');
+              voice.addVoiceAfkLog(`[Watchdog 24/7] ❌ Gagal reconnect main bot Sparxie: ${err.message}. Mencoba lagi dalam 10 detik.`, 'error');
             }
           }
         }
@@ -349,12 +353,12 @@ function initializeBot(token) {
           state.connectionState.status = 'ready';
           const savedCfg = db.loadVoiceAfkConfig();
           if (savedCfg && savedCfg.isConnected && savedCfg.guildId && savedCfg.channelId) {
-            voice.addVoiceAfkLog(`[VoiceState] Bot terdeteksi keluar dari voice channel. Reconnect instan dalam 3 detik...`, 'warning');
+            voice.addVoiceAfkLog(`[VoiceState 24/7] Bot Sparxie terdeteksi keluar/dikick dari voice channel. Reconnect instan dalam 1 detik...`, 'warning');
             setTimeout(() => {
               voice.connectToVoiceChannel(savedCfg.guildId, savedCfg.channelId).catch(err => {
-                voice.addVoiceAfkLog(`[VoiceState] Gagal instant reconnect: ${err.message}`, 'error');
+                voice.addVoiceAfkLog(`[VoiceState 24/7] Gagal instant reconnect: ${err.message}`, 'error');
               });
-            }, 3000);
+            }, 1000);
           }
         }
       }
