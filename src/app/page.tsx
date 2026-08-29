@@ -434,7 +434,10 @@ export default function CrunchyVerseStage() {
     isLive: false,
     avatarUrl: "https://api.dicebear.com/7.x/adventurer/svg?seed=crunchy-tiktok",
     liveTitle: null,
-    manualOverride: false
+    manualOverride: false,
+    followers: 870,
+    likes: 47993,
+    videos: 6
   });
 
   // Shared state for Quest Game sync data to pass as props
@@ -2609,7 +2612,7 @@ export default function CrunchyVerseStage() {
                     <div className="flex flex-col text-left overflow-hidden">
                       <span className="text-[7.5px] font-black uppercase text-neutral-400 tracking-widest">PENGIKUT</span>
                       <span className="text-[11px] font-extrabold text-sky-300 font-mono">
-                        {tiktok.followers ? (tiktok.followers >= 1000 ? `${(tiktok.followers / 1000).toFixed(1)}K` : tiktok.followers) : "12.5K"}
+                        {tiktok.followers ? (tiktok.followers >= 1000 ? `${(tiktok.followers / 1000).toFixed(1)}K` : tiktok.followers) : 870}
                       </span>
                     </div>
                   </div>
@@ -2620,7 +2623,7 @@ export default function CrunchyVerseStage() {
                     <div className="flex flex-col text-left overflow-hidden">
                       <span className="text-[7.5px] font-black uppercase text-neutral-400 tracking-widest">TOTAL SUKA</span>
                       <span className="text-[11px] font-extrabold text-rose-300 font-mono">
-                        {tiktok.likes ? (tiktok.likes >= 1000 ? `${(tiktok.likes / 1000).toFixed(1)}K` : tiktok.likes) : "340.2K"}
+                        {tiktok.likes ? (tiktok.likes >= 1000 ? `${(tiktok.likes / 1000).toFixed(1)}K` : tiktok.likes) : "48.0K"}
                       </span>
                     </div>
                   </div>
@@ -2631,7 +2634,7 @@ export default function CrunchyVerseStage() {
                     <div className="flex flex-col text-left overflow-hidden">
                       <span className="text-[7.5px] font-black uppercase text-neutral-400 tracking-widest">TOTAL VIDEO</span>
                       <span className="text-[11px] font-extrabold text-emerald-300 font-mono">
-                        {tiktok.videos || 142} Video
+                        {tiktok.videos || 6} Video
                       </span>
                     </div>
                   </div>

@@ -251,6 +251,11 @@ async function checkTikTokLiveStatus() {
         if (userInfo && userInfo.user) {
           isLiveDetected = userInfo.user.isLive || (userInfo.user.roomId && userInfo.user.roomId !== "0" && userInfo.user.roomId !== "");
         }
+        if (userInfo && userInfo.stats) {
+          if (userInfo.stats.followerCount !== undefined) state.tiktokState.followers = userInfo.stats.followerCount;
+          if (userInfo.stats.heartCount !== undefined || userInfo.stats.heart !== undefined) state.tiktokState.likes = userInfo.stats.heartCount || userInfo.stats.heart;
+          if (userInfo.stats.videoCount !== undefined) state.tiktokState.videos = userInfo.stats.videoCount;
+        }
 
         const liveRoom = userDetail?.liveRoom || data?.__DEFAULT_SCOPE__?.['webapp.live-detail']?.liveRoom;
         if (liveRoom && liveRoom.title) {
@@ -311,9 +316,9 @@ async function fetchCountikTikTokStats(cleanUsername) {
     if (res.ok) {
       const data = await res.json();
       if (data && (data.status === 'success' || data.follower_count !== undefined || data.followers !== undefined)) {
-        state.tiktokState.followers = data.follower_count || data.followers || data.followerCount || state.tiktokState.followers || 12500;
-        state.tiktokState.likes = data.heart_count || data.hearts || data.likeCount || data.heart || state.tiktokState.likes || 340200;
-        state.tiktokState.videos = data.video_count || data.videos || data.videoCount || state.tiktokState.videos || 142;
+        state.tiktokState.followers = data.follower_count || data.followers || data.followerCount || state.tiktokState.followers || 870;
+        state.tiktokState.likes = data.heart_count || data.hearts || data.likeCount || data.heart || state.tiktokState.likes || 47993;
+        state.tiktokState.videos = data.video_count || data.videos || data.videoCount || state.tiktokState.videos || 6;
         if (data.country) {
           state.tiktokState.countryCode = data.country;
           state.tiktokState.country = getCountryNameWithFlag(data.country);
