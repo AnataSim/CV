@@ -198,6 +198,49 @@ html, body {
   }
 }
 
+/* Environment Stage Animations */
+@keyframes spotlight-sweep {
+  0%, 100% {
+    transform: rotate(-16deg) scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: rotate(16deg) scale(1.2);
+    opacity: 0.75;
+  }
+}
+
+@keyframes firefly-rise {
+  0% {
+    transform: translateY(105vh) translateX(0px) scale(0.5);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.95;
+  }
+  85% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(-10vh) translateX(var(--drift-x, 40px)) scale(1.3);
+    opacity: 0;
+  }
+}
+
+.animate-spotlight-sweep {
+  animation: spotlight-sweep 16s infinite ease-in-out;
+}
+
+.firefly-particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, #ffffff 15%, #ffd700 45%, #d4af37 80%, transparent 100%);
+  box-shadow: 0 0 8px #ffd700, 0 0 16px #e51a2d;
+  animation: firefly-rise var(--duration, 10s) infinite ease-in-out;
+  animation-delay: var(--delay, 0s);
+}
+
 /* ==============================================================================
    ======================= FRAME 7: CARD QUEST GAME ANIMATIONS ==================
    ============================================================================== */

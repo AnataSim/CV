@@ -2093,16 +2093,43 @@ export default function CrunchyVerseStage() {
         id="stage-dashboard"
         className="scroll-frame-inner bg-theater-black relative z-20 flex flex-col overflow-hidden"
         style={{
-          background: 'radial-gradient(ellipse at 50% -10%, #3d020a 0%, #150105 45%, #060102 95%)'
+          backgroundImage: `linear-gradient(180deg, rgba(6,1,2,0.85) 0%, rgba(20,2,6,0.75) 50%, rgba(6,1,2,0.92) 100%), url('/theater_stage_bg.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
         }}
       >
-        {/* Animated Background Aura & Spotlight Effects */}
-        <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-theater-gold/15 via-theater-red-light/10 to-transparent blur-[100px] pointer-events-none z-0 animate-pulse-glow" />
-        <div className="absolute top-1/4 -left-32 w-[450px] h-[450px] bg-theater-red-light/10 rounded-full blur-[130px] pointer-events-none z-0 animate-spotlight-drift" />
-        <div className="absolute bottom-10 -right-32 w-[500px] h-[500px] bg-theater-gold/10 rounded-full blur-[140px] pointer-events-none z-0" />
+        {/* Animated Background Environment Layers */}
+        {/* 1. Sweeping Dual Spotlight Beams */}
+        <div className="absolute -top-40 left-1/4 w-[320px] h-[900px] bg-gradient-to-b from-theater-gold/25 via-theater-red-light/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep opacity-70" />
+        <div className="absolute -top-40 right-1/4 w-[320px] h-[900px] bg-gradient-to-b from-amber-400/20 via-theater-red/10 to-transparent blur-[70px] pointer-events-none z-0 transform origin-top animate-spotlight-sweep [animation-delay:-8s] opacity-70" />
+
+        {/* 2. Top & Bottom Glowing Aura Orbs */}
+        <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-theater-gold/20 via-theater-red-light/15 to-transparent blur-[110px] pointer-events-none z-0 animate-pulse-glow" />
+        <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] bg-theater-red-light/15 rounded-full blur-[140px] pointer-events-none z-0 animate-spotlight-drift" />
+        <div className="absolute bottom-10 -right-40 w-[550px] h-[550px] bg-theater-gold/15 rounded-full blur-[150px] pointer-events-none z-0" />
+
+        {/* 3. Floating Fireflies / Glowing Ember Particles */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          {dustParticles.map((p, idx) => (
+            <div
+              key={`dash-firefly-${p.id || idx}`}
+              className="firefly-particle"
+              style={{
+                left: p.left,
+                bottom: '-20px',
+                '--duration': `${parseFloat(p.duration) * 1.3}s`,
+                '--delay': p.delay,
+                '--drift-x': p.drift,
+                width: `${Math.max(3, p.size * 1.2)}px`,
+                height: `${Math.max(3, p.size * 1.2)}px`,
+              } as React.CSSProperties}
+            />
+          ))}
+        </div>
         
-        {/* Stage Grid Overlay Pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.06] pointer-events-none z-0" />
+        {/* 4. Stage Grid Overlay Pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1.2px,transparent_1.2px)] [background-size:36px_36px] opacity-[0.08] pointer-events-none z-0" />
 
         {/* Theatrical Curtain Header Trim */}
         <div className="w-full h-4 bg-gradient-to-r from-theater-red-dark via-theater-red-light to-theater-red-dark border-b border-theater-gold/50 shadow-md flex items-center justify-center relative z-10" />
