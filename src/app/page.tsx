@@ -1904,63 +1904,32 @@ export default function CrunchyVerseStage() {
     <CosmeticProvider>
       <CursorTrail />
 
-      {/* Cinematic Stage Transition Progress Overlay (1% - 100%) */}
+      {/* Sleek Minimalist Stage Transition Bar & Floating Pill */}
       {isTransitioning && transitionTitle && (
-        <div className="fixed inset-0 z-[1000000] pointer-events-auto flex flex-col items-center justify-center bg-neutral-950/95 backdrop-blur-2xl transition-all duration-300">
-          {/* Spotlight & Ambient Aura Orbs */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-theater-gold/20 blur-[140px] pointer-events-none animate-pulse-glow" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[650px] w-[650px] rounded-full bg-theater-red-light/15 blur-[170px] pointer-events-none" />
+        <div className="fixed inset-0 z-[1000000] pointer-events-none flex flex-col items-center justify-start pt-6 sm:pt-8 transition-all duration-300">
+          {/* Top Edge Glowing Progress Bar */}
+          <div className="fixed top-0 left-0 right-0 h-1 bg-neutral-900 overflow-hidden shadow-[0_0_15px_rgba(212,175,55,0.5)] z-[1000001]">
+            <div 
+              className="h-full bg-gradient-to-r from-theater-red-light via-theater-gold to-yellow-300 transition-all duration-75 shadow-[0_0_20px_#d4af37]"
+              style={{ width: `${transitionProgress}%` }}
+            />
+          </div>
 
-          {/* Golden Stage Title Card & Progress Counter */}
-          <div className="relative z-10 flex flex-col items-center gap-4 px-6 sm:px-10 py-8 sm:py-10 rounded-3xl border-2 border-theater-gold/45 bg-gradient-to-b from-neutral-950/98 via-neutral-900/95 to-neutral-950/98 shadow-[0_0_90px_rgba(212,175,55,0.35),_0_0_35px_rgba(229,26,45,0.2)] text-center max-w-md sm:max-w-lg mx-4 backdrop-blur-md">
+          {/* Floating Frosted Pill Badge */}
+          <div className="relative z-10 flex items-center gap-3 px-4 sm:px-6 py-2.5 rounded-full border border-theater-gold/40 bg-neutral-950/85 backdrop-blur-xl shadow-[0_10px_35px_rgba(0,0,0,0.85),_0_0_25px_rgba(212,175,55,0.2)] text-white select-none pointer-events-auto">
+            <Sparkles size={14} className="animate-spin text-theater-gold shrink-0" />
             
-            {/* Top Stage Header Pill */}
-            <div className="flex items-center gap-2 px-3.5 py-1 rounded-full border border-theater-gold/40 bg-theater-gold/10 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-theater-gold shadow-[0_0_15px_rgba(212,175,55,0.2)]">
-              <Sparkles size={13} className="animate-spin text-theater-gold" />
-              <span>MEMUAT PANGGUNG TEATER</span>
-              <Sparkles size={13} className="animate-spin text-theater-gold" />
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black text-theater-gold/80 uppercase tracking-widest hidden sm:inline">MEMUAT</span>
+              <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-theater-gold">
+                {transitionTitle}
+              </span>
             </div>
 
-            {/* Frame Title */}
-            <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-theater-gold to-yellow-200 tracking-wider uppercase drop-shadow-[0_0_25px_rgba(212,175,55,0.7)] py-1 select-none leading-tight">
-              {transitionTitle}
-            </h1>
+            <div className="h-3.5 w-px bg-neutral-800" />
 
-            {/* Progress Bar & Percentage Counter */}
-            <div className="w-full max-w-sm flex flex-col items-center gap-2 mt-1">
-              <div className="flex items-center justify-between w-full text-[10px] sm:text-xs font-black uppercase tracking-widest px-1">
-                <span className="text-neutral-400 font-sans flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-theater-gold animate-ping" />
-                  MEMPROSES PEMANDANGAN...
-                </span>
-                <span className="text-theater-gold font-mono text-sm font-black px-2 py-0.5 rounded-md bg-theater-gold/10 border border-theater-gold/30">
-                  {transitionProgress}%
-                </span>
-              </div>
-
-              {/* Progress Track */}
-              <div className="w-full h-3 rounded-full bg-neutral-900 border border-theater-gold/30 p-0.5 relative overflow-hidden shadow-inner">
-                {/* Progress Fill */}
-                <div 
-                  className="h-full rounded-full bg-gradient-to-r from-theater-red-light via-theater-gold to-yellow-300 transition-all duration-75 relative shadow-[0_0_15px_#d4af37]"
-                  style={{ width: `${transitionProgress}%` }}
-                >
-                  {/* Leading Spark Orb */}
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_10px_#fff,0_0_20px_#ffd700]" />
-                </div>
-              </div>
-            </div>
-
-            {/* Stage Tips Ticker */}
-            <div className="mt-1 px-3.5 py-1.5 rounded-xl bg-neutral-900/80 border border-theater-gold/20 text-[10px] sm:text-[11px] font-medium text-amber-200/80 tracking-wide flex items-center justify-center gap-2 max-w-sm">
-              <Sparkles size={11} className="text-theater-gold shrink-0" />
-              <span className="truncate">{STAGE_TIPS[tipIndex % STAGE_TIPS.length]}</span>
-            </div>
-
-            <div className="h-0.5 w-36 bg-gradient-to-r from-transparent via-theater-gold/30 to-transparent my-0.5" />
-            
-            <span className="text-[9px] sm:text-[10px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] font-sans">
-              CrunchyVerse Spectacular Stage
+            <span className="text-[11px] font-mono font-black text-theater-gold bg-theater-gold/15 px-2.5 py-0.5 rounded-full border border-theater-gold/30">
+              {transitionProgress}%
             </span>
           </div>
         </div>
