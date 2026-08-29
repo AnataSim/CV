@@ -63,7 +63,35 @@ export default function CardHand({
   });
 
   const getStatus = (q: Quest) => cardStatuses[q.id] || (q.originalQuestId ? cardStatuses[q.originalQuestId] : undefined) || "active";
-  const visibleQuests = uniqueQuests.filter(q => getStatus(q) !== "Completed");
+
+  // Retain recently completed cards for 2.5s to play approval celebration animation!
+  const [recentCompleted, setRecentCompleted] = React.useState<Set<string>>(new Set());
+
+  React.useEffect(() => {
+    const newlyCompleted = new Set<string>();
+    uniqueQuests.forEach(q => {
+      if (getStatus(q) === "Completed") {
+        newlyCompleted.add(q.id);
+        if (q.originalQuestId) newlyCompleted.add(q.originalQuestId);
+      }
+    });
+
+    if (newlyCompleted.size > 0) {
+      setRecentCompleted(prev => new Set([...prev, ...newlyCompleted]));
+      const timer = setTimeout(() => {
+        setRecentCompleted(new Set());
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [cardStatuses]);
+
+  const visibleQuests = uniqueQuests.filter(q => {
+    const st = getStatus(q);
+    if (st === "Completed") {
+      return recentCompleted.has(q.id) || (q.originalQuestId ? recentCompleted.has(q.originalQuestId) : false);
+    }
+    return true;
+  });
   const count = visibleQuests.length;
   const isAnyActive = activeQuestId !== null;
 
@@ -282,6 +310,16 @@ export default function CardHand({
                                     <span className="text-[5.5px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded border border-rose-500/50 bg-rose-950/90 text-rose-300 flex items-center gap-1 shadow-sm shadow-rose-500/20">
                                       <span>❌ DITOLAK</span>
                                       <span className="inline-flex items-center gap-[1px] font-mono text-rose-300 text-[6px]">
+                                        <span className="animate-dot-1">.</span>
+                                        <span className="animate-dot-2">.</span>
+                                        <span className="animate-dot-3">.</span>
+                                      </span>
+                                    </span>
+                                  )}
+                                  {status === "Completed" && (
+                                    <span className="text-[5.5px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded border border-emerald-400/50 bg-emerald-950/90 text-emerald-300 flex items-center gap-1 shadow-sm shadow-emerald-500/30 animate-pulse">
+                                      <span>✅ DISETUJUI</span>
+                                      <span className="inline-flex items-center gap-[1px] font-mono text-emerald-300 text-[6px]">
                                         <span className="animate-dot-1">.</span>
                                         <span className="animate-dot-2">.</span>
                                         <span className="animate-dot-3">.</span>

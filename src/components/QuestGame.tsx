@@ -871,6 +871,22 @@ export default function QuestGame({
     return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${seed}`;
   };
 
+  const effectiveCardStatuses = React.useMemo(() => {
+    const merged: Record<string, "active" | "pending" | "Completed" | "Denied"> = { ...cardStatuses };
+
+    if (currentUser?.uid && Array.isArray(allSubmissions)) {
+      allSubmissions.forEach((s: any) => {
+        if (s.userId === currentUser.uid) {
+          const mappedStatus = s.status === "approved" ? "Completed" : s.status === "rejected" ? "Denied" : "pending";
+          if (s.questId) merged[s.questId] = mappedStatus;
+          if (s.originalQuestId) merged[s.originalQuestId] = mappedStatus;
+        }
+      });
+    }
+
+    return merged;
+  }, [cardStatuses, allSubmissions, currentUser]);
+
   const completedQuestIds = React.useMemo(() => {
     if (!currentUser?.uid) return new Set<string>();
     const ids = new Set<string>();
@@ -1114,7 +1130,7 @@ export default function QuestGame({
             <CardHand
               dealt={dealt}
               dealtQuests={dealtQuests}
-              cardStatuses={cardStatuses}
+              cardStatuses={effectiveCardStatuses}
               cardFlipped={cardFlipped}
               activeQuestId={activeQuestId}
               setActiveQuestId={setActiveQuestId}
