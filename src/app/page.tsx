@@ -1662,6 +1662,10 @@ export default function CrunchyVerseStage() {
     setUserAvatar(null);
   };
 
+  // State for Stage Transition Title Splash Screen
+  const [transitionTitle, setTransitionTitle] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+
   // Publish Volunteer Override Settings to Bot Express Backend API
   const publishVolunteerSettings = async (overrideState: boolean, isLiveState: boolean, titleText: string) => {
     setLoading(true);
@@ -1713,11 +1717,20 @@ export default function CrunchyVerseStage() {
     }
   };
 
-  // Safe helper to scroll without scroll-snap glitching
+  // Safe helper to scroll with cinematic stage title transition splash screen
   const safeScrollTo = (elementId: string) => {
+    const item = sidebarItems.find(i => i.id === elementId);
+    const label = item ? item.label : "PANGGUNG TEATER";
+
+    setTransitionTitle(label);
+    setIsTransitioning(true);
+
     const snapContainer = containerRef.current;
     const targetElement = document.getElementById(elementId);
-    if (!snapContainer || !targetElement) return;
+    if (!snapContainer || !targetElement) {
+      setTimeout(() => setIsTransitioning(false), 950);
+      return;
+    }
 
     const originalSnapType = snapContainer.style.scrollSnapType || '';
     snapContainer.style.scrollSnapType = "none";
@@ -1727,6 +1740,10 @@ export default function CrunchyVerseStage() {
     setTimeout(() => {
       snapContainer.style.scrollSnapType = originalSnapType;
     }, 500);
+
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 950);
   };
 
   // Scroll to Frame 2
@@ -1777,6 +1794,54 @@ export default function CrunchyVerseStage() {
   return (
     <CosmeticProvider>
       <CursorTrail />
+
+      {/* Cinematic Stage Transition Title Splash Overlay */}
+      {isTransitioning && transitionTitle && (
+        <div className="fixed inset-0 z-[200] pointer-events-none flex flex-col items-center justify-center bg-neutral-950/90 backdrop-blur-2xl transition-all duration-500">
+          {/* Spotlight & Ambient Aura Orbs */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-theater-gold/25 blur-[140px] pointer-events-none animate-pulse-glow" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[650px] w-[650px] rounded-full bg-theater-red-light/20 blur-[170px] pointer-events-none" />
+          
+          {/* Floating Fireflies / Glowing Ember Particles */}
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            {dustParticles.slice(0, 14).map((p, idx) => (
+              <div
+                key={`trans-firefly-${p.id || idx}`}
+                className="firefly-particle"
+                style={{
+                  left: p.left,
+                  bottom: '-20px',
+                  '--duration': '2.8s',
+                  '--delay': `${idx * 0.08}s`,
+                  '--drift-x': p.drift,
+                  width: `${Math.max(4, p.size * 1.5)}px`,
+                  height: `${Math.max(4, p.size * 1.5)}px`,
+                } as React.CSSProperties}
+              />
+            ))}
+          </div>
+
+          {/* Large Animated Golden Title Card */}
+          <div className="relative z-10 flex flex-col items-center gap-3.5 px-10 py-9 rounded-3xl border-2 border-theater-gold/45 bg-neutral-950/85 shadow-[0_0_100px_rgba(212,175,55,0.45),_0_0_40px_rgba(229,26,45,0.2)] animate-stage-title-pop text-center max-w-2xl mx-4">
+            <div className="flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.35em] text-theater-gold">
+              <Sparkles size={16} className="animate-spin text-theater-gold" />
+              <span>MEMBUKA PANGGUNG</span>
+              <Sparkles size={16} className="animate-spin text-theater-gold" />
+            </div>
+
+            <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-theater-gold to-white tracking-[0.12em] uppercase drop-shadow-[0_0_35px_rgba(212,175,55,0.85)] py-2 select-none">
+              {transitionTitle}
+            </h1>
+
+            <div className="h-0.5 w-48 bg-gradient-to-r from-transparent via-theater-gold to-transparent my-1" />
+            
+            <span className="text-[10px] sm:text-xs font-extrabold text-neutral-300 uppercase tracking-[0.25em] font-sans">
+              CrunchyVerse Spectacular Stage
+            </span>
+          </div>
+        </div>
+      )}
+
       <div 
         ref={containerRef} 
         className="scroll-container bg-theater-black text-foreground antialiased selection:bg-theater-red-light selection:text-white"
