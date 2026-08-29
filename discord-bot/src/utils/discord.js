@@ -793,6 +793,43 @@ function initializeBot(token) {
           return message.reply('ℹ️ **Speech-to-Text dinonaktifkan.** Bot saat ini tidak terhubung ke voice channel.');
         }
       }
+
+      if (['\'clearcolors', '\'clearrolecolors', '\'resetcolors', '\'resetrolecolors'].includes(content.toLowerCase())) {
+        const guild = message.guild;
+        if (!guild) return message.reply('⚠️ Command ini hanya dapat digunakan di dalam server Discord.');
+
+        try {
+          const loadingMsg = await message.reply('⏳ **Memproses... Menghapus warna dari semua role di bawah hirarki role Sparxie...**');
+          const me = await guild.members.fetchMe();
+          const botHighestRole = me.roles.highest;
+          const roles = await guild.roles.fetch();
+
+          let count = 0;
+          let failed = 0;
+
+          for (const [, role] of roles) {
+            if (
+              role.name !== '@everyone' &&
+              !role.managed &&
+              role.position < botHighestRole.position &&
+              role.color !== 0
+            ) {
+              try {
+                await role.setColor(0);
+                count++;
+              } catch (err) {
+                console.error(`❌ Gagal mereset warna role ${role.name}:`, err.message);
+                failed++;
+              }
+            }
+          }
+
+          return loadingMsg.edit(`✅ **Selesai!** Berhasil menghapus warna dari **${count}** role di bawah posisi Sparxie.${failed > 0 ? ` (${failed} role gagal karena hirarki/izin)` : ''}`);
+        } catch (err) {
+          console.error("❌ Gagal mereset warna role:", err.message);
+          return message.reply(`❌ **Gagal mereset warna role:** ${err.message}`);
+        }
+      }
     });
 
     // ===== MUSIC BOT TRACK DETECTOR & AUTO-REACT (Elaina, Jockie, etc.) =====

@@ -624,6 +624,45 @@ function registerRoutes(app) {
     }
   });
 
+  // POST Clear role colors below bot's highest role
+  app.post('/api/roles/clear-colors', async (req, res) => {
+    if (!state.isDiscordReady || !state.client || !GUILD_ID) {
+      return res.status(503).json({ error: "Discord client is not ready" });
+    }
+    try {
+      const guild = await state.client.guilds.fetch(GUILD_ID);
+      if (!guild) return res.status(404).json({ error: "Guild tidak ditemukan" });
+
+      const me = await guild.members.fetchMe();
+      const botHighestRole = me.roles.highest;
+      const roles = await guild.roles.fetch();
+
+      let count = 0;
+      let failed = 0;
+
+      for (const [, role] of roles) {
+        if (
+          role.name !== '@everyone' &&
+          !role.managed &&
+          role.position < botHighestRole.position &&
+          role.color !== 0
+        ) {
+          try {
+            await role.setColor(0);
+            count++;
+          } catch (err) {
+            console.error(`❌ Gagal reset warna role ${role.name}:`, err.message);
+            failed++;
+          }
+        }
+      }
+
+      res.json({ success: true, count, failed, message: `Berhasil menghapus warna dari ${count} role.` });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // GET Leaderboards
   const mockLeaderboard = {
     leveling: [
