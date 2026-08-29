@@ -98,43 +98,28 @@ export default function ActiveQuestCard({
             <>
               {isPendingStatus && (
                 <div className="p-2 border border-amber-400/40 bg-gradient-to-r from-amber-950/60 via-amber-900/40 to-amber-950/60 text-amber-300 rounded-xl text-[9px] font-extrabold text-center shadow-lg flex items-center justify-center gap-2 select-none">
-                  <Loader2 size={12} className="animate-spin text-amber-400 shrink-0" />
-                  <span>MEMUAT / DITINJAU ADMIN</span>
-                  <span className="inline-flex items-center gap-[2px] font-mono text-amber-300 text-xs">
-                    <span className="animate-dot-1">.</span>
-                    <span className="animate-dot-2">.</span>
-                    <span className="animate-dot-3">.</span>
-                  </span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
+                  <span>⏳ DITINJAU ADMIN (SUBMITTED)</span>
                 </div>
               )}
 
               {questStatus === "Denied" && (
                 <div className="p-2 border border-rose-500/50 bg-gradient-to-r from-rose-950/60 via-red-900/40 to-rose-950/60 text-rose-300 rounded-xl text-[9px] font-extrabold text-center shadow-lg flex items-center justify-center gap-2 select-none">
-                  <XCircle size={13} className="text-rose-400 shrink-0 animate-pulse" />
+                  <XCircle size={13} className="text-rose-400 shrink-0" />
                   <span>❌ BUKTI DITOLAK ADMIN</span>
-                  <span className="inline-flex items-center gap-[2px] font-mono text-rose-300 text-xs">
-                    <span className="animate-dot-1">.</span>
-                    <span className="animate-dot-2">.</span>
-                    <span className="animate-dot-3">.</span>
-                  </span>
                 </div>
               )}
 
               {questStatus === "Completed" && (
-                <div className="p-2 border border-emerald-500/50 bg-gradient-to-r from-emerald-950/60 via-teal-900/40 to-emerald-950/60 text-emerald-300 rounded-xl text-[9px] font-extrabold text-center shadow-lg flex items-center justify-center gap-2 select-none animate-pulse">
-                  <CheckCircle2 size={13} className="text-emerald-400 shrink-0 animate-bounce" />
+                <div className="p-2 border border-emerald-500/50 bg-gradient-to-r from-emerald-950/60 via-teal-900/40 to-emerald-950/60 text-emerald-300 rounded-xl text-[9px] font-extrabold text-center shadow-lg flex items-center justify-center gap-2 select-none">
+                  <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
                   <span>✓ BUKTI DISETUJUI ADMIN!</span>
                 </div>
               )}
 
               {isPendingStatus ? (
-                <div className="bg-neutral-950/90 border border-neutral-900 rounded-lg p-2.5 text-center text-[9px] text-amber-300/90 font-sans italic flex items-center justify-center gap-1.5">
-                  <span>Bukti pengerjaan sedang diverifikasi</span>
-                  <span className="inline-flex items-center gap-[1px] font-mono text-amber-300 text-[10px]">
-                    <span className="animate-dot-1">.</span>
-                    <span className="animate-dot-2">.</span>
-                    <span className="animate-dot-3">.</span>
-                  </span>
+                <div className="bg-neutral-950/90 border border-neutral-900 rounded-lg p-2.5 text-center text-[9px] text-amber-300/90 font-sans italic">
+                  Bukti pengerjaan telah dikirim dan sedang diverifikasi oleh Volunteer Teater.
                 </div>
               ) : questStatus === "Completed" ? (
                 <div className="bg-neutral-950/90 border border-neutral-900 rounded-lg p-2.5 text-center text-[9px] text-emerald-400/90 font-sans italic">
