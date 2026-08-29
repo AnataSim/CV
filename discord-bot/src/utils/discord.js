@@ -289,21 +289,15 @@ async function rotateDynamicRoleColors() {
     const colorInt1 = parseInt(hex1.replace('#', ''), 16);
     const colorInt2 = parseInt(hex2.replace('#', ''), 16);
 
-    await role.setColor(colorInt1).catch(err => console.error(`❌ [DynamicRoleColor] error setColor:`, err.message));
+    const token = state.client.token || process.env.DISCORD_TOKEN;
+    const rest = new REST({ version: '10' }).setToken(token);
 
-    try {
-      const rest = new REST({ version: '10' }).setToken(state.client.token || process.env.DISCORD_TOKEN);
-      await rest.patch(Routes.guildRole(GUILD_ID, DYNAMIC_ROLE_ID), {
-        body: {
-          color: colorInt1,
-          colors: [colorInt1, colorInt2],
-          role_style: 1,
-          style: 1
-        }
-      }).catch(err => {
-        console.warn(`⚠️ [DynamicRoleColor] Direct REST patch error:`, err.message);
-      });
-    } catch (e) {}
+    // Send array of 2 colors to trigger Discord's Gradient Role Style
+    await rest.patch(Routes.guildRole(GUILD_ID, DYNAMIC_ROLE_ID), {
+      body: {
+        colors: [colorInt1, colorInt2]
+      }
+    });
 
     console.log(`🎨 [DynamicRoleColor] Role "${role.name}" (${DYNAMIC_ROLE_ID}) berhasil diperbarui ke 2 Hex Random: ${hex1} & ${hex2}`);
     return { name: role.name, hex1, hex2 };
