@@ -309,12 +309,12 @@ export default function CrunchyVerseStage() {
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   
-  // Countdown Timer states for Tirai Tantangan
-  const [isCountdownActive, setIsCountdownActive] = useState(true);
+  // Countdown Timer states for Tirai Tantangan (Tirai telah dirilis resmi)
+  const [isCountdownActive, setIsCountdownActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    const TARGET_DATE = new Date("2026-09-01T00:00:00+07:00");
+    const TARGET_DATE = new Date("2026-08-01T00:00:00+07:00");
     const checkTime = () => {
       const now = new Date();
       const diff = TARGET_DATE.getTime() - now.getTime();
