@@ -386,10 +386,23 @@ export default function QuestGame({
       const res = await signedFetch(`${BACKEND_URL}/api/users/${currentUser.uid}`);
       if (res.ok) {
         const data = await res.json();
-        setUserCv(data.cv || data.points || 0);
+        const cv = data.cv || data.points || 0;
+        if (cv > 0) { setUserCv(cv); return; }
       }
     } catch (err) {
-      console.warn("⚠️ Failed to sync user CV points from backend API:", err);
+      console.warn("⚠️ Failed to sync user CV from backend API:", err);
+    }
+    // Fallback: read directly from Firestore users collection
+    if (isFirebaseConfigured && db) {
+      try {
+        const { doc, getDoc } = await import("firebase/firestore");
+        const snap = await getDoc(doc(db, "users", currentUser.uid));
+        if (snap.exists()) {
+          const data = snap.data();
+          const cv = data?.cv || data?.points || 0;
+          if (cv > 0) setUserCv(cv);
+        }
+      } catch {}
     }
   };
 
