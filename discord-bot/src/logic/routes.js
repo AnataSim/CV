@@ -1839,8 +1839,34 @@ function registerRoutes(app) {
     res.json({ success: true, submission: newSub });
   });
 
-  app.get('/api/submissions', (req, res) => {
-    res.json(db.loadLocalSubmissions());
+  app.get('/api/submissions', async (req, res) => {
+    let localSubs = db.loadLocalSubmissions();
+    if (state.db) {
+      try {
+        const { collection, getDocs } = require('firebase/firestore');
+        const querySnapshot = await state.withTimeout(getDocs(collection(state.db, "submissions")), 5000);
+        const fsSubs = [];
+        querySnapshot.forEach(docSnap => {
+          const d = docSnap.data();
+          if (d && (d.id || d.userId)) fsSubs.push(d);
+        });
+
+        if (fsSubs.length > 0) {
+          const map = new Map();
+          fsSubs.forEach(s => map.set(s.id || `${s.userId}-${s.questId}`, s));
+          localSubs.forEach(s => {
+            const k = s.id || `${s.userId}-${s.questId}`;
+            if (!map.has(k)) map.set(k, s);
+          });
+          const merged = Array.from(map.values());
+          db.saveLocalSubmissions(merged);
+          return res.json(merged);
+        }
+      } catch (err) {
+        console.warn("⚠️ [API/submissions] Gagal fetch submissions dari Firestore:", err.message);
+      }
+    }
+    res.json(localSubs);
   });
 
   app.post('/api/submissions/reset-specific', requireClientToken, async (req, res) => {

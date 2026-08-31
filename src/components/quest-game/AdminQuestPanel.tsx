@@ -327,6 +327,7 @@ export default function AdminQuestPanel({
   const playersProgress = useMemo(() => {
     const groups: Record<string, {
       userId: string;
+      cleanUserKey: string;
       username: string;
       userEmail: string;
       avatarUrl: string;
@@ -335,38 +336,51 @@ export default function AdminQuestPanel({
     }> = {};
 
     allSubmissions.forEach((sub: any) => {
-      if (!sub.userId) return;
-      
-      if (!groups[sub.userId]) {
-        const userObj = allUsers.find(u => u.uid === sub.userId);
-        
+      if (!sub) return;
+      const rawUserKey = String(sub.userId || sub.discordId || sub.userEmail || "").trim();
+      if (!rawUserKey) return;
+
+      const snowMatch = rawUserKey.match(/\d{17,20}/)?.[0];
+      const cleanUserKey = snowMatch || rawUserKey.replace(/^sim-discord-/, "").replace(/^oidc:discord:/, "");
+
+      if (!groups[cleanUserKey]) {
+        const userObj = allUsers.find(u => {
+          if (!u) return false;
+          const uUid = String(u.uid || u.discordId || u.userId || "").trim();
+          if (uUid === rawUserKey || uUid === cleanUserKey || uUid.includes(cleanUserKey)) return true;
+          if (u.email && sub.userEmail && u.email.toLowerCase() === sub.userEmail.toLowerCase()) return true;
+          if (u.name && sub.username && u.name.toLowerCase() === sub.username.toLowerCase()) return true;
+          return false;
+        });
+
         let avatarUrl = "";
         if (userObj) {
           avatarUrl = getAvatarUrl(userObj);
         } else {
-          avatarUrl = getAvatarUrl({ uid: sub.userId, name: sub.username, email: sub.userEmail });
+          avatarUrl = getAvatarUrl({ uid: rawUserKey, discordId: snowMatch, name: sub.username, email: sub.userEmail });
         }
 
-        groups[sub.userId] = {
-          userId: sub.userId,
-          username: sub.username || userObj?.name || userObj?.displayName || "Pemain",
+        groups[cleanUserKey] = {
+          userId: rawUserKey,
+          cleanUserKey,
+          username: sub.username || userObj?.displayName || userObj?.name || "Pemain",
           userEmail: sub.userEmail || userObj?.email || "",
           avatarUrl,
           submissions: [],
           userObject: userObj
         };
       }
-      
-      groups[sub.userId].submissions.push(sub);
+
+      groups[cleanUserKey].submissions.push(sub);
     });
 
     const playersWithCompletionTime = Object.values(groups).map((player: any) => {
       const activeApproved = player.submissions
         .filter((s: any) => (s.status === "approved" || s.status === "Completed" || s.status === "completed") && (quests.length === 0 || quests.some(q => q.id === s.questId || q.id === s.originalQuestId || (s.questId && s.questId.includes(q.id)) || q.title === s.questName) || !!s.questId))
         .sort((a: any, b: any) => new Date(a.createdAt || a.submittedAt || Date.now()).getTime() - new Date(b.createdAt || b.submittedAt || Date.now()).getTime());
-      
-      const completionTime = activeApproved.length >= 5 ? new Date(activeApproved[4].createdAt).getTime() : Infinity;
-      
+
+      const completionTime = activeApproved.length >= 5 ? new Date(activeApproved[4].createdAt || activeApproved[4].submittedAt || Date.now()).getTime() : Infinity;
+
       return {
         ...player,
         activeApprovedCount: activeApproved.length,
@@ -381,7 +395,7 @@ export default function AdminQuestPanel({
     return playersWithCompletionTime.map(player => {
       let serialBadge = "";
       if (player.activeApprovedCount >= 5) {
-        const rankIndex = completersSorted.findIndex(c => c.userId === player.userId);
+        const rankIndex = completersSorted.findIndex(c => c.cleanUserKey === player.cleanUserKey);
         if (rankIndex === 0) serialBadge = "Serial #1";
         else if (rankIndex === 1) serialBadge = "Serial #2";
         else if (rankIndex === 2) serialBadge = "Serial #3";
