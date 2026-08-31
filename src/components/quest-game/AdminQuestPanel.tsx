@@ -31,16 +31,27 @@ const isUserAdmin = (role: string | null) => {
 
 // Helper to resolve avatar URL
 const getAvatarUrl = (user: any) => {
-  if (user.avatar) {
-    if (user.avatar.startsWith("http")) return user.avatar;
-    if (user.discordId) {
-      return `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`;
-    }
+  // 1. Full URL avatar (already resolved)
+  if (user.avatar && user.avatar.startsWith("http")) return user.avatar;
+
+  // 2. Discord avatar hash — build CDN URL
+  const discordId = user.discordId || (() => {
+    const m = String(user.uid || user.userId || "").match(/(\d{17,20})/);
+    return m ? m[1] : null;
+  })();
+
+  if (user.avatar && discordId) {
+    const ext = user.avatar.startsWith("a_") ? "gif" : "webp";
+    return `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.${ext}?size=128`;
   }
-  const uidStr = String(user.uid || user.userId || "");
-  if (uidStr.includes("661135501226672129")) {
-    return "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png";
+
+  // 3. No avatar hash but has Discord ID — use default discriminator avatar
+  if (discordId) {
+    const defaultIndex = Number(BigInt(discordId) >> BigInt(22)) % 6;
+    return `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
   }
+
+  // 4. Fallback: DiceBear pixel art for non-Discord users
   const seed = encodeURIComponent(user.name || user.displayName || user.username || user.email || "visitor");
   return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${seed}`;
 };

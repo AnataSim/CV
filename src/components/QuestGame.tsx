@@ -524,6 +524,11 @@ export default function QuestGame({
         setAllSubmissions(sd.submissions);
       }
 
+      // Only update userCv if the synced value is > 0 (avoid overwriting Firestore value with 0)
+      if (syncData.userCv && syncData.userCv > 0) {
+        setUserCv(syncData.userCv);
+      }
+
       // Avoid overwriting local optimistic deal state with stale server state
       const timeSinceLastDeal = Date.now() - lastDealTimeRef.current;
       const isRecentDeal = timeSinceLastDeal < 5000; // 5 seconds cooldown
@@ -566,6 +571,28 @@ export default function QuestGame({
       });
     }
   }, [syncData, currentUser]);
+
+  // Subscribe to current user's Firestore doc for live CV — always reflects real value
+  useEffect(() => {
+    if (!currentUser?.uid || !isFirebaseConfigured || !db) return;
+    const { doc: fsDoc, onSnapshot: fsOnSnapshot } = require("firebase/firestore");
+    const tryIds = [currentUser.uid];
+    const discordMatch = currentUser.uid.match(/(\d{17,20})/);
+    if (discordMatch && discordMatch[1] !== currentUser.uid) tryIds.push(discordMatch[1]);
+
+    let unsubFns: (() => void)[] = [];
+    tryIds.forEach((id: string) => {
+      const unsub = fsOnSnapshot(fsDoc(db, "users", id), (snap: any) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          const cv = data?.cv || data?.points || 0;
+          if (cv > 0) setUserCv(cv);
+        }
+      }, () => {});
+      unsubFns.push(unsub);
+    });
+    return () => unsubFns.forEach(u => u());
+  }, [currentUser?.uid]);
 
   useEffect(() => {
     if (!currentUser?.uid || syncData) return;
@@ -943,16 +970,27 @@ export default function QuestGame({
   };
   
   const getAvatarUrl = (user: any) => {
-    if (user.avatar) {
-      if (user.avatar.startsWith("http")) return user.avatar;
-      if (user.discordId) {
-        return `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`;
-      }
+    // 1. Full URL avatar (already resolved)
+    if (user.avatar && user.avatar.startsWith("http")) return user.avatar;
+
+    // 2. Discord avatar hash — build CDN URL
+    const discordId = user.discordId || (() => {
+      const m = String(user.uid || user.userId || "").match(/(\d{17,20})/);
+      return m ? m[1] : null;
+    })();
+
+    if (user.avatar && discordId) {
+      const ext = user.avatar.startsWith("a_") ? "gif" : "webp";
+      return `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.${ext}?size=128`;
     }
-    const uidStr = String(user.uid || user.userId || "");
-    if (uidStr.includes("661135501226672129")) {
-      return "https://cdn.discordapp.com/avatars/661135501226672129/bd7645199e728f2edce98bdf1a7f4671.png";
+
+    // 3. No avatar hash but has Discord ID — use default discriminator avatar
+    if (discordId) {
+      const defaultIndex = Number(BigInt(discordId) >> BigInt(22)) % 6;
+      return `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
     }
+
+    // 4. Fallback: DiceBear pixel art for non-Discord users
     const seed = encodeURIComponent(user.name || user.displayName || user.username || user.email || "visitor");
     return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${seed}`;
   };

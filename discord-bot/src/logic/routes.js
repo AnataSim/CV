@@ -444,12 +444,16 @@ function registerRoutes(app) {
 
     let liveCv = 0;
     let hasLiveCv = false;
+    let discordAvatar = null;
 
     if (state.isDiscordReady && state.client && discordId) {
       try {
         const guild = await state.client.guilds.fetch(GUILD_ID);
         const member = await guild.members.fetch(discordId).catch(() => null);
         if (member) {
+          // Get avatar URL
+          discordAvatar = member.user.displayAvatarURL({ extension: 'webp', size: 128 });
+
           const roles = await guild.roles.fetch();
           const roleCvMap = new Map();
           roles.forEach(role => {
@@ -474,14 +478,55 @@ function registerRoutes(app) {
     }
 
     const localUsers = db.loadLocalUsers();
-    const userData = localUsers[uid] || { uid, name: "Pemain Teater", cv: 0, points: 0 };
+    let userData = localUsers[uid] || localUsers[discordId] || null;
+
+    // Firestore fallback — if local is empty, pull from Firestore
+    if (!userData && state.db) {
+      try {
+        const { doc, getDoc } = require('firebase/firestore');
+        const snap = await getDoc(doc(state.db, 'users', uid));
+        if (snap.exists()) {
+          userData = snap.data();
+        } else if (discordId) {
+          const snap2 = await getDoc(doc(state.db, 'users', discordId));
+          if (snap2.exists()) userData = snap2.data();
+        }
+        if (userData) {
+          // Cache to local so next call is fast
+          localUsers[uid] = userData;
+          db.saveLocalUsers(localUsers);
+        }
+      } catch (fsErr) {
+        console.warn("⚠️ Firestore fallback gagal:", fsErr.message);
+      }
+    }
+
+    if (!userData) {
+      userData = { uid, name: "Pemain Teater", cv: 0, points: 0 };
+    }
 
     if (hasLiveCv) {
       userData.cv = liveCv;
       userData.points = liveCv;
+    }
+    if (discordAvatar) {
+      userData.avatar = discordAvatar;
+    }
+
+    // Persist updated data
+    if (hasLiveCv || discordAvatar) {
       localUsers[uid] = userData;
       db.saveLocalUsers(localUsers);
+      // Also update Firestore
+      if (state.db) {
+        const { doc, setDoc } = require('firebase/firestore');
+        setDoc(doc(state.db, 'users', uid), userData, { merge: true }).catch(() => {});
+        if (discordId && discordId !== uid) {
+          setDoc(doc(state.db, 'users', discordId), userData, { merge: true }).catch(() => {});
+        }
+      }
     }
+
     res.json(userData);
   });
 
