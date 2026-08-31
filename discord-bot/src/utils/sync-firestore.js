@@ -31,32 +31,68 @@ async function syncLocalToFirestore() {
     }
     console.log(`✅ [Sync] Successfully synced ${quests.length} quests.`);
 
-    // 2. Sync User Decks
+    // 2. Sync User Decks (Bidirectional)
+    const fsDecksSnap = await getDocs(collection(firestore, "user_decks")).catch(() => null);
     const decks = db.loadLocalDecks();
+    if (fsDecksSnap && !fsDecksSnap.empty) {
+      fsDecksSnap.forEach(dSnap => {
+        const d = dSnap.data();
+        if (d && d.uid) {
+          decks[d.uid] = { ...d, ...(decks[d.uid] || {}) };
+        }
+      });
+    }
+    db.saveLocalDecks(decks);
     const deckUids = Object.keys(decks);
     if (deckUids.length > 0) {
-      console.log(`📡 [Sync] Uploading ${deckUids.length} user decks to Firestore 'user_decks' collection...`);
+      console.log(`📡 [Sync] Syncing ${deckUids.length} user decks with Firestore 'user_decks' collection...`);
       for (const uid of deckUids) {
         await setDoc(doc(firestore, "user_decks", uid), decks[uid], { merge: true });
       }
       console.log(`✅ [Sync] Successfully synced user decks.`);
     }
 
-    // 3. Sync Users Points / CV
+    // 3. Sync Users Points / CV (Bidirectional)
+    const fsUsersSnap = await getDocs(collection(firestore, "users")).catch(() => null);
     const users = db.loadLocalUsers();
+    if (fsUsersSnap && !fsUsersSnap.empty) {
+      fsUsersSnap.forEach(dSnap => {
+        const d = dSnap.data();
+        if (d && d.uid) {
+          users[d.uid] = { ...d, ...(users[d.uid] || {}) };
+        }
+      });
+    }
+    db.saveLocalUsers(users);
     const userUids = Object.keys(users);
     if (userUids.length > 0) {
-      console.log(`📡 [Sync] Uploading ${userUids.length} user profiles to Firestore 'users' collection...`);
+      console.log(`📡 [Sync] Syncing ${userUids.length} user profiles with Firestore 'users' collection...`);
       for (const uid of userUids) {
         await setDoc(doc(firestore, "users", uid), users[uid], { merge: true });
       }
       console.log(`✅ [Sync] Successfully synced users.`);
     }
 
-    // 4. Sync Submissions
-    const subs = db.loadLocalSubmissions();
+    // 4. Sync Submissions (Bidirectional)
+    const fsSubsSnap = await getDocs(collection(firestore, "submissions")).catch(() => null);
+    const localSubsMap = new Map();
+    db.loadLocalSubmissions().forEach(s => { if (s && s.id) localSubsMap.set(s.id, s); });
+
+    if (fsSubsSnap && !fsSubsSnap.empty) {
+      fsSubsSnap.forEach(dSnap => {
+        const d = dSnap.data();
+        if (d && d.id) {
+          if (!localSubsMap.has(d.id)) {
+            localSubsMap.set(d.id, d);
+          }
+        }
+      });
+    }
+
+    const subs = Array.from(localSubsMap.values());
+    db.saveLocalSubmissions(subs);
     if (subs.length > 0) {
-      console.log(`📡 [Sync] Uploading ${subs.length} submissions to Firestore 'submissions' collection...`);
+      console.log(`📡 [Sync] Syncing ${subs.length} submissions with Firestore 'submissions' collection...`);
       for (const s of subs) {
         if (s.id) {
           await setDoc(doc(firestore, "submissions", s.id), s, { merge: true });

@@ -43,3 +43,7 @@ next-env.d.ts
 # local scratch and logs
 /scratch/
 /discord-bot/src/server.log
+
+# local database runtime storage
+/discord-bot/database/*.json
+!/discord-bot/database/quests.json

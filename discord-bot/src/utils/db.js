@@ -307,6 +307,75 @@ async function getUserDeck(uid) {
   return finalDeck;
 }
 
+async function syncLocalDataWithFirestore() {
+  if (!state.db) return;
+  const { collection, getDocs, doc, setDoc } = require('firebase/firestore');
+  try {
+    // 1. Submissions
+    const localSubs = loadLocalSubmissions();
+    const subsSnap = await state.withTimeout(getDocs(collection(state.db, "submissions")), 5000).catch(() => null);
+    const map = new Map();
+    if (subsSnap && !subsSnap.empty) {
+      subsSnap.forEach(d => {
+        const data = d.data();
+        if (data && data.id) map.set(data.id, data);
+      });
+    }
+    for (const sub of localSubs) {
+      if (sub && sub.id) {
+        if (!map.has(sub.id)) {
+          map.set(sub.id, sub);
+          await state.withTimeout(setDoc(doc(state.db, "submissions", sub.id), sub), 3000).catch(() => {});
+        }
+      }
+    }
+    const mergedSubs = Array.from(map.values());
+    saveLocalSubmissions(mergedSubs);
+
+    // 2. User Decks
+    const localDecks = loadLocalDecks();
+    const decksSnap = await state.withTimeout(getDocs(collection(state.db, "user_decks")), 5000).catch(() => null);
+    const deckMap = { ...localDecks };
+    if (decksSnap && !decksSnap.empty) {
+      decksSnap.forEach(d => {
+        const data = d.data();
+        if (data && data.uid) {
+          deckMap[data.uid] = { ...deckMap[data.uid], ...data };
+        }
+      });
+    }
+    for (const [k, deck] of Object.entries(localDecks)) {
+      if (deck && deck.uid) {
+        await state.withTimeout(setDoc(doc(state.db, "user_decks", k), deck), 3000).catch(() => {});
+      }
+    }
+    saveLocalDecks(deckMap);
+
+    // 3. Users
+    const localUsers = loadLocalUsers();
+    const usersSnap = await state.withTimeout(getDocs(collection(state.db, "users")), 5000).catch(() => null);
+    const userMap = { ...localUsers };
+    if (usersSnap && !usersSnap.empty) {
+      usersSnap.forEach(d => {
+        const data = d.data();
+        if (data && data.uid) {
+          userMap[data.uid] = { ...userMap[data.uid], ...data };
+        }
+      });
+    }
+    for (const [k, uData] of Object.entries(localUsers)) {
+      if (uData && uData.uid) {
+        await state.withTimeout(setDoc(doc(state.db, "users", k), uData), 3000).catch(() => {});
+      }
+    }
+    saveLocalUsers(userMap);
+
+    console.log("🔥 [FirestoreSync] Sync otomatis submissions, user_decks & users ke/dari Firestore sukses!");
+  } catch (err) {
+    console.warn("⚠️ [FirestoreSync] Error sync local data dengan Firestore:", err.message);
+  }
+}
+
 module.exports = {
   loadLocalSubmissions,
   saveLocalSubmissions,
@@ -332,5 +401,6 @@ module.exports = {
   saveLocalVolunteerables,
   getUserDeck,
   getLiveAnnouncement,
-  saveLiveAnnouncement
+  saveLiveAnnouncement,
+  syncLocalDataWithFirestore
 };
