@@ -860,18 +860,24 @@ router.get('/api/quests', (req, res) => {
 });
 
 router.post('/api/quests', requireClientToken, async (req, res) => {
-  const { akt, title, description, difficulty, points, roleId, roleName, roleColor, roleCv } = req.body;
-  if (!title || !description) {
+  const { id, akt, title, name, description, desc, difficulty, points, roleId, roleName, roleColor, roleCv } = req.body;
+  const finalTitle = title || name;
+  const finalDesc = description || desc;
+
+  if (!finalTitle || !finalDesc) {
     return res.status(400).json({ error: "Judul dan objektif quest wajib diisi." });
   }
 
   try {
     const quests = ctx.loadLocalQuests();
+    const questId = id || `quest-${Date.now()}`;
     const newQuest = {
-      id: `quest-${Date.now()}`,
+      id: questId,
       akt: akt || "Akt I",
-      title,
-      description,
+      name: finalTitle,
+      title: finalTitle,
+      desc: finalDesc,
+      description: finalDesc,
       difficulty: difficulty || "Mudah",
       points: Number(points) || 0,
       roleId: roleId || null,
@@ -883,7 +889,7 @@ router.post('/api/quests', requireClientToken, async (req, res) => {
     quests.push(newQuest);
     ctx.saveLocalQuests(quests);
 
-    res.json({ success: true, quest: newQuest });
+    res.json({ success: true, quest: newQuest, quests });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

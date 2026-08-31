@@ -127,10 +127,14 @@ export default function AdminQuestPanel({
       return;
     }
 
+    const generatedId = `quest-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const questData = {
-      akt: newAkt.trim() || "Akt I",
+      id: generatedId,
+      name: newTitle.trim(),
       title: newTitle.trim(),
+      desc: newDesc.trim(),
       description: newDesc.trim(),
+      akt: newAkt.trim() || "Akt I",
       difficulty: newDiff,
       points: hasRoleReward ? Number(newPoints) : 0,
       roleId: hasRoleReward ? (roleId.trim() || null) : null,

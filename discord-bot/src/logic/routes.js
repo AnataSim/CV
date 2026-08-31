@@ -1934,8 +1934,25 @@ function registerRoutes(app) {
   });
 
   app.post('/api/quests', requireClientToken, async (req, res) => {
-    const quest = req.body;
-    if (!quest.id || !quest.name) return res.status(400).json({ error: "id dan name quest wajib diisi" });
+    const quest = req.body || {};
+
+    if (!quest.id) {
+      quest.id = `quest-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    }
+    const finalTitle = quest.title || quest.name || quest.judul;
+    const finalDesc = quest.description || quest.desc || quest.objektif;
+
+    if (!finalTitle || !finalDesc) {
+      return res.status(400).json({ error: "Judul dan objektif quest wajib diisi" });
+    }
+
+    quest.title = finalTitle;
+    quest.name = finalTitle;
+    quest.description = finalDesc;
+    quest.desc = finalDesc;
+    quest.akt = quest.akt || "Akt I";
+    quest.difficulty = quest.difficulty || "Mudah";
+    quest.points = Number(quest.points) || 0;
 
     const quests = db.loadLocalQuests();
     const existingIdx = quests.findIndex(q => q.id === quest.id);
@@ -1953,7 +1970,7 @@ function registerRoutes(app) {
     }
 
     global.broadcastWsUpdate('global');
-    res.json({ success: true, quests });
+    res.json({ success: true, quest, quests });
   });
 
   app.delete('/api/quests/:id', requireClientToken, async (req, res) => {
