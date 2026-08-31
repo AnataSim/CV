@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Play, Shield, Sparkle, X, Database, Loader2, CheckCircle2 } from "lucide-react";
 import { db, isFirebaseConfigured } from "../lib/firebase";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, doc, getDoc } from "firebase/firestore";
 import { signedFetch } from "../lib/api";
 
 import SkyBackground from "./quest-game/SkyBackground";
@@ -395,7 +395,6 @@ export default function QuestGame({
     // Fallback: read directly from Firestore users collection
     if (isFirebaseConfigured && db) {
       try {
-        const { doc, getDoc } = await import("firebase/firestore");
         const snap = await getDoc(doc(db, "users", currentUser.uid));
         if (snap.exists()) {
           const data = snap.data();
@@ -575,14 +574,14 @@ export default function QuestGame({
   // Subscribe to current user's Firestore doc for live CV — always reflects real value
   useEffect(() => {
     if (!currentUser?.uid || !isFirebaseConfigured || !db) return;
-    const { doc: fsDoc, onSnapshot: fsOnSnapshot } = require("firebase/firestore");
+
     const tryIds = [currentUser.uid];
     const discordMatch = currentUser.uid.match(/(\d{17,20})/);
     if (discordMatch && discordMatch[1] !== currentUser.uid) tryIds.push(discordMatch[1]);
 
-    let unsubFns: (() => void)[] = [];
+    const unsubFns: (() => void)[] = [];
     tryIds.forEach((id: string) => {
-      const unsub = fsOnSnapshot(fsDoc(db, "users", id), (snap: any) => {
+      const unsub = onSnapshot(doc(db!, "users", id), (snap) => {
         if (snap.exists()) {
           const data = snap.data();
           const cv = data?.cv || data?.points || 0;
