@@ -612,7 +612,7 @@ export default function AdminQuestPanel({
               </button>
             </div>
 
-            <div className="flex flex-col gap-3 overflow-y-auto max-h-[360px] pr-1 scrollbar-thin scrollbar-thumb-neutral-800">
+            <div className="flex flex-col gap-3 overflow-y-auto max-h-[380px] md:max-h-[440px] pr-2 scrollbar-thin scrollbar-thumb-theater-gold/30 hover:scrollbar-thumb-theater-gold/60 overscroll-contain">
               {quests.map((q) => (
                 <div 
                   key={q.id}
@@ -661,7 +661,7 @@ export default function AdminQuestPanel({
             </span>
           </div>
 
-          <div className="flex flex-col gap-3.5 overflow-y-auto max-h-[460px] pr-1.5 scrollbar-thin scrollbar-thumb-neutral-800">
+          <div className="flex flex-col gap-3.5 overflow-y-auto max-h-[460px] md:max-h-[500px] pr-2 scrollbar-thin scrollbar-thumb-theater-gold/30 hover:scrollbar-thumb-theater-gold/60 overscroll-contain">
             {playersProgress.map((player) => {
               const approvedCount = player.submissions.filter((s: any) => s.status === "approved" && quests.some((q: any) => q.id === s.questId)).length;
               const totalQuests = quests.length;
@@ -778,7 +778,7 @@ export default function AdminQuestPanel({
                         Checklist Quest ({totalQuests})
                       </span>
                       
-                      <div className="grid grid-cols-1 gap-2.5">
+                      <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[320px] sm:max-h-[380px] pr-2 scrollbar-thin scrollbar-thumb-theater-gold/30 hover:scrollbar-thumb-theater-gold/60 overscroll-contain">
                         {quests.map((quest) => {
                           const questSubmissions = player.submissions.filter((s: any) => s.questId === quest.id || s.originalQuestId === quest.id || (s.questId && s.questId.includes(quest.id)) || s.questName === quest.title);
                           const approvedSub = questSubmissions.find((s: any) => s.status === "approved");
