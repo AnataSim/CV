@@ -106,7 +106,7 @@ export default function TiraiCountdown({ timeLeft, onScrollToLobby }: TiraiCount
         <div className="flex items-center gap-3 bg-neutral-950/40 border border-neutral-900 px-4 py-3 rounded-2xl max-w-sm mb-8 animate-fade-in text-left">
           <Calendar size={18} className="text-theater-gold shrink-0" />
           <p className="text-[11px] text-neutral-500 font-medium">
-            Jadwal rilis publik: <span className="text-neutral-300 font-bold">1 September 2026</span> (Waktu Indonesia Barat).
+            Jadwal rilis publik: <span className="text-neutral-300 font-bold">31 Agustus 2026</span> (Waktu Indonesia Barat).
           </p>
         </div>
 
