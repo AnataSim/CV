@@ -679,6 +679,9 @@ function registerRoutes(app) {
     ],
     cvWealth: [
       { rank: 1, id: "661135501226672129", username: "sim.tsx", displayName: "[Raiid] Sim | 46 ⭐", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=sim", cvAmount: "13.672.500", roleName: "Serial #1 — Crescent Eclipse", roles: [{ name: "Serial #1 — Crescent Eclipse", value: 12982500, str: "12.982.500", color: "#ffc107" }] }
+    ],
+    tiraiFinisher: [
+      { rank: 1, id: "661135501226672129", username: "sim.tsx", displayName: "[Raiid] Sim | 46 ⭐", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=sim", completedCount: 3, totalQuests: 24, progressPercent: 13, cvAmount: "30", roleName: "3/24 Selesai" }
     ]
   };
 
@@ -918,12 +921,121 @@ function registerRoutes(app) {
         finalCvWealth = mockLeaderboard.cvWealth;
       }
 
+      // Calculate Tirai Finisher leaderboard dynamically from submissions & user_decks
+      let finalTiraiFinisher = [];
+      try {
+        const masterQuests = db.loadLocalQuests();
+        const totalQuests = masterQuests.length || 24;
+        const submissions = db.loadLocalSubmissions();
+        const localUsers = db.loadLocalUsers();
+
+        let allSubs = [...submissions];
+        if (state.db) {
+          try {
+            const querySnapshot = await state.withTimeout(getDocs(collection(state.db, "submissions")), 1500);
+            querySnapshot.forEach(docSnap => {
+              const d = docSnap.data();
+              if (!allSubs.some(s => s.id === d.id || (s.discordMessageId && s.discordMessageId === d.discordMessageId))) {
+                allSubs.push(d);
+              }
+            });
+          } catch (e) {}
+        }
+
+        const approvedSubs = allSubs.filter(s => {
+          if (!s || !s.status) return false;
+          const st = String(s.status).toLowerCase();
+          return st === "approved" || st === "completed" || st === "done";
+        });
+
+        const userGroups = {};
+
+        approvedSubs.forEach(sub => {
+          const rawId = String(sub.userId || sub.discordId || "").trim();
+          if (!rawId) return;
+
+          const cleanId = rawId.replace(/^sim-discord-/, "").replace(/^oidc:discord:/, "");
+          const snowMatch = cleanId.match(/\d{17,20}/)?.[0];
+          const userKey = snowMatch || cleanId || rawId;
+
+          if (!userGroups[userKey]) {
+            const localUser = localUsers[rawId] || localUsers[userKey] || localUsers[`sim-discord-${userKey}`] || {};
+            userGroups[userKey] = {
+              id: userKey,
+              rawId: rawId,
+              username: sub.username || localUser.name || localUser.username || "Pemain Teater",
+              displayName: localUser.displayName || localUser.name || sub.username || "Pemain Teater",
+              avatar: localUser.avatar || sub.avatarUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(sub.username || userKey)}`,
+              completedQuestSet: new Set(),
+              totalPoints: 0,
+              timestamps: []
+            };
+          }
+
+          const qId = sub.questId || sub.originalQuestId;
+          if (qId) userGroups[userKey].completedQuestSet.add(qId);
+          if (sub.originalQuestId) userGroups[userKey].completedQuestSet.add(sub.originalQuestId);
+
+          const pts = Number(sub.points || sub.cv || 0);
+          userGroups[userKey].totalPoints += pts;
+
+          const ts = new Date(sub.createdAt || sub.submittedAt || Date.now()).getTime();
+          if (!isNaN(ts)) userGroups[userKey].timestamps.push(ts);
+        });
+
+        const sortedUsers = Object.values(userGroups).map(u => {
+          u.timestamps.sort((a, b) => a - b);
+          const completedCount = u.completedQuestSet.size;
+          const completionTime = u.timestamps.length >= 5 ? u.timestamps[4] : (u.timestamps[u.timestamps.length - 1] || Infinity);
+          return {
+            ...u,
+            completedCount,
+            completionTime
+          };
+        }).sort((a, b) => {
+          if (b.completedCount !== a.completedCount) return b.completedCount - a.completedCount;
+          if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+          return a.completionTime - b.completionTime;
+        });
+
+        finalTiraiFinisher = sortedUsers.slice(0, 10).map((u, idx) => {
+          let serialBadge = "";
+          if (u.completedCount >= 5) {
+            if (idx === 0) serialBadge = "Serial #1";
+            else if (idx === 1) serialBadge = "Serial #2";
+            else if (idx === 2) serialBadge = "Serial #3";
+            else serialBadge = "Last Chapter";
+          }
+          const cvAmountStr = u.totalPoints.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+          return {
+            rank: idx + 1,
+            id: u.id,
+            username: u.username,
+            displayName: u.displayName,
+            avatar: u.avatar,
+            completedCount: u.completedCount,
+            totalQuests: totalQuests,
+            progressPercent: Math.round((u.completedCount / totalQuests) * 100),
+            cvAmount: cvAmountStr,
+            roleName: serialBadge || `${u.completedCount}/${totalQuests} Selesai`
+          };
+        });
+
+        if (finalTiraiFinisher.length === 0) {
+          finalTiraiFinisher = mockLeaderboard.tiraiFinisher;
+        }
+      } catch (tiraiErr) {
+        console.warn("⚠️ [API/leaderboard] Gagal menyusun leaderboard Tirai Finisher:", tiraiErr.message);
+        finalTiraiFinisher = mockLeaderboard.tiraiFinisher;
+      }
+
       if (resolvedCakey) {
         const finalResult = {
           leveling: resolvedCakey.leveling,
           streak: resolvedCakey.streak,
           voice: resolvedCakey.voice,
-          cvWealth: finalCvWealth
+          cvWealth: finalCvWealth,
+          tiraiFinisher: finalTiraiFinisher
         };
         state.cache.set(cacheKey, finalResult, 30);
         res.json(finalResult);
@@ -994,7 +1106,13 @@ function registerRoutes(app) {
         if (finalStreak.length === 0) finalStreak = mockLeaderboard.streak;
         if (finalVoice.length === 0) finalVoice = mockLeaderboard.voice;
 
-        const finalResult = { leveling: finalLeveling, streak: finalStreak, voice: finalVoice, cvWealth: finalCvWealth };
+        const finalResult = {
+          leveling: finalLeveling,
+          streak: finalStreak,
+          voice: finalVoice,
+          cvWealth: finalCvWealth,
+          tiraiFinisher: finalTiraiFinisher
+        };
         state.cache.set(cacheKey, finalResult, 30);
         res.json(finalResult);
       }

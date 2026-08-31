@@ -50,6 +50,11 @@ const RANK_ROLES = {
     // Contoh hasil: "🏆 Rank 1 Value Account: CV$ 12.982.500"
     buildName: (top1) => `🏆 Rank 1 Value Account: CV$ ${top1.cvAmount}`,
   },
+  tiraiFinisher: {
+    roleId: '1543837901694046329',
+    // Contoh hasil: "🏆 Rank 1 Tirai Finisher: 24/24 Selesai"
+    buildName: (top1) => `🏆 Rank 1 Tirai Finisher: ${top1.completedCount || 0}/${top1.totalQuests || 24} Selesai`,
+  },
 };
 
 // Interval update otomatis (default: setiap 1 jam = 3.600.000 ms)
@@ -77,7 +82,7 @@ async function fetchLeaderboard() {
   if (!res.ok) throw new Error(`HTTP ${res.status} dari ${url}`);
 
   const data = await res.json();
-  return data; // { leveling: [], streak: [], voice: [], cvWealth: [] }
+  return data; // { leveling: [], streak: [], voice: [], cvWealth: [], tiraiFinisher: [] }
 }
 
 // ─── Helper: Update satu role Discord ─────────────────────────────────────────
@@ -137,6 +142,7 @@ async function runUpdateCycle() {
     { key: 'streak', list: leaderboard.streak },
     { key: 'voice', list: leaderboard.voice },
     { key: 'cvWealth', list: leaderboard.cvWealth },
+    { key: 'tiraiFinisher', list: leaderboard.tiraiFinisher },
   ];
 
   let successCount = 0;
@@ -158,7 +164,8 @@ async function runUpdateCycle() {
       key === 'leveling' ? `Level ${top1.level}` :
         key === 'streak' ? `${top1.streak} Hari` :
           key === 'voice' ? `${top1.hours} Jam` :
-      /* cvWealth */       `$${top1.cvAmount}`;
+            key === 'cvWealth' ? `$${top1.cvAmount}` :
+      /* tiraiFinisher */  `${top1.completedCount || 0}/${top1.totalQuests || 24} Selesai`;
 
     console.log(`\n🏆 [${key.toUpperCase()}] Juara 1: ${top1.displayName || top1.username} (ID: ${top1.id}) — ${scoreDesc}`);
 
@@ -174,7 +181,7 @@ async function runUpdateCycle() {
     await new Promise(r => setTimeout(r, 1500));
   }
 
-  console.log(`\n✅ [RankUpdater] Siklus selesai. ${successCount}/4 role berhasil diperbarui.`);
+  console.log(`\n✅ [RankUpdater] Siklus selesai. ${successCount}/5 role berhasil diperbarui.`);
   console.log(`⏰ Update berikutnya dalam ${UPDATE_INTERVAL_MS / 60000} menit.\n`);
 }
 

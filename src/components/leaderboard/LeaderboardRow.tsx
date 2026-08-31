@@ -14,10 +14,13 @@ interface LeaderboardUser {
   hours?: number;
   cvAmount?: string;
   roleName?: string;
+  completedCount?: number;
+  totalQuests?: number;
+  progressPercent?: number;
   roles?: Array<{ name: string; value: number; str: string; color: string }>;
 }
 
-type TabType = "leveling" | "streak" | "voice" | "cvWealth";
+type TabType = "leveling" | "streak" | "voice" | "cvWealth" | "tiraiFinisher";
 
 interface LeaderboardRowProps {
   user: LeaderboardUser;
@@ -100,6 +103,41 @@ export default function LeaderboardRow({ user, activeTab, expandedUser, setExpan
               {u.roleName}
             </span>
           )}
+        </div>
+      );
+    }
+    if (activeTab === "tiraiFinisher") {
+      const completed = u.completedCount || 0;
+      const total = u.totalQuests || 24;
+      const pct = u.progressPercent || Math.round((completed / total) * 100);
+      return (
+        <div className="flex flex-col items-end gap-1 font-sans text-right">
+          <div className="flex items-center gap-1.5">
+            {u.roleName && (
+              <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider border leading-none mr-1 ${
+                u.roleName === "Serial #1" ? "border-amber-400 bg-amber-950/60 text-amber-300 animate-pulse shadow-sm shadow-amber-400/20" :
+                u.roleName === "Serial #2" ? "border-slate-300 bg-slate-900/60 text-slate-200" :
+                u.roleName === "Serial #3" ? "border-amber-700 bg-amber-950/60 text-amber-600" :
+                u.roleName === "Last Chapter" ? "border-purple-500/30 bg-purple-950/40 text-purple-400" :
+                "border-neutral-800 bg-neutral-900 text-neutral-400"
+              }`}>
+                🏆 {u.roleName}
+              </span>
+            )}
+            <span className="text-sm font-black text-theater-gold">{completed}/{total}</span>
+            <span className="text-[8px] font-black text-neutral-500 uppercase tracking-widest">SELESAI</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {u.cvAmount && (
+              <span className="text-[8px] text-theater-gold/80 font-mono font-bold">+ {u.cvAmount} CV</span>
+            )}
+            <div className="h-1.5 w-16 bg-neutral-900 border border-neutral-800 rounded-full overflow-hidden shrink-0">
+              <div 
+                className="h-full bg-gradient-to-r from-theater-gold to-yellow-500 rounded-full" 
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
         </div>
       );
     }

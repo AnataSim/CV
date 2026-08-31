@@ -5,6 +5,7 @@ const RANK_ROLE_IDS = {
   streak: '1511318492664561755',
   voice: '1511319103938232431',
   cvWealth: '1511319284616265798',
+  tiraiFinisher: '1543837901694046329',
 };
 
 const RANK_AUTO_CHECK_INTERVAL_MS = parseInt(process.env.RANK_AUTO_CHECK_INTERVAL_MS || '600000', 10);
@@ -14,6 +15,7 @@ let lastTop1Snapshot = {
   streak: null,
   voice: null,
   cvWealth: null,
+  tiraiFinisher: null,
 };
 
 function getTop1Key(category, top1) {
@@ -24,6 +26,7 @@ function getTop1Key(category, top1) {
     case 'streak': return `${userIdent}|${top1.streak}`;
     case 'voice': return `${userIdent}|${top1.hours}`;
     case 'cvWealth': return `${userIdent}|${top1.cvAmount}`;
+    case 'tiraiFinisher': return `${userIdent}|${top1.completedCount || 0}|${top1.cvAmount || '0'}`;
     default: return null;
   }
 }
@@ -34,6 +37,7 @@ function buildRoleName(category, top1) {
     case 'streak': return `🏆 Rank 1 Streak: ☀️ ${top1.streak} Hari`;
     case 'voice': return `🏆 Rank 1 Voice: ${top1.hours} Hours`;
     case 'cvWealth': return `🏆 Rank 1 Value Account: CV$ ${top1.cvAmount}`;
+    case 'tiraiFinisher': return `🏆 Rank 1 Tirai Finisher: ${top1.completedCount || 0}/${top1.totalQuests || 24} Selesai`;
     default: return null;
   }
 }
@@ -81,7 +85,7 @@ async function executeRankRoleUpdate({ silent = false, changedOnly = false } = {
     ) || null;
   }
 
-  const categories = ['leveling', 'streak', 'voice', 'cvWealth'];
+  const categories = ['leveling', 'streak', 'voice', 'cvWealth', 'tiraiFinisher'];
   const results = [];
   let anyChanged = false;
 
@@ -166,7 +170,7 @@ async function executeRankRoleUpdate({ silent = false, changedOnly = false } = {
   return {
     success: successCount > 0 || !anyChanged,
     message: anyChanged
-      ? `${successCount}/4 role diperbarui · ${assignedCount}/4 berhasil di-assign ke juara`
+      ? `${successCount}/5 role diperbarui · ${assignedCount}/5 berhasil di-assign ke juara`
       : 'Tidak ada perubahan skor — semua role masih relevan ✅',
     results,
     anyChanged

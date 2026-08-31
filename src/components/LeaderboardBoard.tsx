@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Award, Search, RefreshCw, Trophy, Flame, Mic, Coins, Zap, CheckCircle, AlertCircle } from "lucide-react";
+import { Award, Search, RefreshCw, Trophy, Flame, Mic, Coins, Zap, CheckCircle, AlertCircle, Gamepad2 } from "lucide-react";
 import { signedFetch } from "../lib/api";
 import LeaderboardRow from "./leaderboard/LeaderboardRow";
 
@@ -18,6 +18,9 @@ interface LeaderboardUser {
   hours?: number;
   cvAmount?: string;
   roleName?: string;
+  completedCount?: number;
+  totalQuests?: number;
+  progressPercent?: number;
   roles?: Array<{ name: string; value: number; str: string; color: string }>;
 }
 
@@ -26,6 +29,7 @@ interface LeaderboardData {
   streak: LeaderboardUser[];
   voice: LeaderboardUser[];
   cvWealth: LeaderboardUser[];
+  tiraiFinisher?: LeaderboardUser[];
 }
 
 interface LeaderboardBoardProps {
@@ -33,7 +37,7 @@ interface LeaderboardBoardProps {
   userRole?: string | null;
 }
 
-type TabType = "leveling" | "streak" | "voice" | "cvWealth";
+type TabType = "leveling" | "streak" | "voice" | "cvWealth" | "tiraiFinisher";
 
 const isUserAdmin = (role: string | null) => {
   return role === "Volunteer Theater" || role === "Ketua Kerupuk" || role === "Ketua Keripik";
@@ -100,6 +104,9 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
           { rank: 1, id: "588988763204616214", username: "crunchyweeb", displayName: "CrunchyWeeb", avatar: "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/3fd4c5f18a9e195d20c0f80f73309d01~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=60507a9f&x-expires=1788109200&x-signature=tqgQJ6nYigs4nF8ZyrA4Pv0KLaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my", cvAmount: "12.982.500", roleName: "Serial #1 — Crescent Eclipse" },
           { rank: 2, id: "820154491654504458", username: "fuzusovereign", displayName: "[AFK] [aFuzu IX]", avatar: "https://cdn.discordapp.com/avatars/820154491654504458/fe01ce2652b29d57502d0f8be2a633c2.png?size=256", cvAmount: "8.450.000", roleName: "Role Kerupuk Gurih" },
           { rank: 3, id: "1051027211160928276", username: "palecursedvessel", displayName: "Sadie Grey | Badmood", avatar: "https://cdn.discordapp.com/avatars/1051027211160928276/6742f358ec926f7dcce287c8fbb50a4a.png?size=256", cvAmount: "6.900.000", roleName: "Role Keripik Renyah" }
+        ],
+        tiraiFinisher: [
+          { rank: 1, id: "661135501226672129", username: "sim.tsx", displayName: "[Raiid] Sim | 46 ⭐", avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=sim", completedCount: 3, totalQuests: 24, progressPercent: 13, cvAmount: "30", roleName: "3/24 Selesai" }
         ]
       };
       setData(mockLeaderboard);
@@ -142,6 +149,7 @@ export default function LeaderboardBoard({ backendUrl, userRole = null }: Leader
     { key: "streak" as const, label: "Daily Streak", icon: <Flame size={14} /> },
     { key: "voice" as const, label: "Voice Hours", icon: <Mic size={14} /> },
     { key: "cvWealth" as const, label: "Value Role", icon: <Coins size={14} /> },
+    { key: "tiraiFinisher" as const, label: "Tirai Finisher", icon: <Gamepad2 size={14} /> },
   ];
 
   // Get current list based on active tab

@@ -52,6 +52,7 @@ module.exports = {
     '1511318492664561755', // streak rank role
     '1511319103938232431', // voice rank role
     '1511319284616265798', // cvWealth rank role
+    '1543837901694046329', // tiraiFinisher rank role
   ],
 
   chatChannels: [
