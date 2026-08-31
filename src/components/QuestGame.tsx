@@ -453,8 +453,12 @@ export default function QuestGame({
   // Sync state with parent props
   useEffect(() => {
     if (syncData) {
-      setUserCv(syncData.userCv);
-      setAllSubmissions(syncData.allSubmissions);
+      const sd = syncData as any;
+      if (Array.isArray(sd.allSubmissions) && sd.allSubmissions.length > 0) {
+        setAllSubmissions(sd.allSubmissions);
+      } else if (Array.isArray(sd.submissions) && sd.submissions.length > 0) {
+        setAllSubmissions(sd.submissions);
+      }
 
       // Avoid overwriting local optimistic deal state with stale server state
       const timeSinceLastDeal = Date.now() - lastDealTimeRef.current;

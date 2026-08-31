@@ -391,18 +391,31 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
       }
     })());
 
-    // 8. Submissions
-    if (actualIsAdmin) {
-      promises.push((async () => {
-        const cacheKey = `api:submissions:all`;
-        let subs = state.cache.get(cacheKey);
-        if (!subs) {
-          subs = db.loadLocalSubmissions();
-          state.cache.set(cacheKey, subs, 15);
-        }
-        response.submissions = subs;
-      })());
-    }
+    // 8. Submissions (Always return merged submissions to client)
+    promises.push((async () => {
+      let subs = db.loadLocalSubmissions();
+      if (state.db) {
+        try {
+          const { collection, getDocs } = require('firebase/firestore');
+          const querySnapshot = await state.withTimeout(getDocs(collection(state.db, "submissions")), 4000).catch(() => null);
+          if (querySnapshot && !querySnapshot.empty) {
+            const map = new Map();
+            querySnapshot.forEach(docSnap => {
+              const d = docSnap.data();
+              if (d && (d.id || d.userId)) map.set(d.id || `${d.userId}-${d.questId}`, d);
+            });
+            subs.forEach(s => {
+              const k = s.id || `${s.userId}-${s.questId}`;
+              if (!map.has(k)) map.set(k, s);
+            });
+            subs = Array.from(map.values());
+            db.saveLocalSubmissions(subs);
+          }
+        } catch (e) {}
+      }
+      response.allSubmissions = subs;
+      response.submissions = subs;
+    })());
 
     await Promise.all(promises);
     return response;
