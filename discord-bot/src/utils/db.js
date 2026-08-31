@@ -261,14 +261,19 @@ function saveLiveAnnouncement(data) {
 async function getUserDeck(uid) {
   if (!uid) return { uid, dealt: false, cards: [], statuses: {} };
 
-  const cacheKey = `user_deck:${uid}`;
+  const cleanUid = String(uid).trim();
+  const altUid = cleanUid.startsWith('sim-discord-')
+    ? cleanUid.replace('sim-discord-', '')
+    : `sim-discord-${cleanUid}`;
+
+  const cacheKey = `user_deck:${cleanUid}`;
   const cachedDeck = state.cache ? state.cache.get(cacheKey) : null;
   if (cachedDeck) {
     return cachedDeck;
   }
 
   const decks = loadLocalDecks();
-  const localDeck = decks[uid];
+  let localDeck = decks[cleanUid] || decks[altUid];
   
   if (localDeck && localDeck.dealt) {
     if (state.cache) state.cache.set(cacheKey, localDeck, 30);
@@ -278,21 +283,26 @@ async function getUserDeck(uid) {
   if (state.db) {
     const { doc, getDoc } = require('firebase/firestore');
     try {
-      const deckRef = doc(state.db, "user_decks", uid);
-      const deckDoc = await state.withTimeout(getDoc(deckRef), 500);
+      let deckRef = doc(state.db, "user_decks", cleanUid);
+      let deckDoc = await state.withTimeout(getDoc(deckRef), 500);
+      if ((!deckDoc || !deckDoc.exists()) && altUid) {
+        deckRef = doc(state.db, "user_decks", altUid);
+        deckDoc = await state.withTimeout(getDoc(deckRef), 500);
+      }
       if (deckDoc && deckDoc.exists()) {
         const deckData = deckDoc.data();
-        decks[uid] = deckData;
+        decks[cleanUid] = deckData;
+        decks[altUid] = deckData;
         saveLocalDecks(decks);
         if (state.cache) state.cache.set(cacheKey, deckData, 30);
         return deckData;
       }
     } catch (e) {
-      console.warn(`⚠️ [Firebase] Gagal fetch deck untuk ${uid} dari Firestore:`, e.message);
+      console.warn(`⚠️ [Firebase] Gagal fetch deck untuk ${cleanUid} dari Firestore:`, e.message);
     }
   }
 
-  const finalDeck = localDeck || { uid, dealt: false, cards: [], statuses: {} };
+  const finalDeck = localDeck || { uid: cleanUid, dealt: false, cards: [], statuses: {} };
   if (state.cache) state.cache.set(cacheKey, finalDeck, 10);
   return finalDeck;
 }

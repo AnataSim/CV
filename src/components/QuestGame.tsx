@@ -675,15 +675,33 @@ export default function QuestGame({
       const hardQuests = quests.filter(q => q.difficulty === "Sulit");
       const legendaryQuests = quests.filter(q => q.difficulty === "Legendaris");
 
+      const isUserMatch = (s: any, user: any) => {
+        if (!user || !s) return false;
+        const idA = String(user.uid || user.userId || user.discordId || "").trim();
+        const idB = String(s.userId || s.discordId || "").trim();
+        if (idA && idB && (idA === idB || idA.replace("sim-discord-", "") === idB.replace("sim-discord-", ""))) return true;
+        const snowA = idA.match(/\d{17,20}/)?.[0];
+        const snowB = idB.match(/\d{17,20}/)?.[0];
+        if (snowA && snowB && snowA === snowB) return true;
+        if (user.email && s.userEmail && user.email.toLowerCase() === s.userEmail.toLowerCase()) return true;
+        return false;
+      };
+
+      const isCompletedStatus = (status: any) => {
+        if (!status) return false;
+        const st = String(status).trim().toLowerCase();
+        return st === "approved" || st === "completed" || st === "done" || st === "success";
+      };
+
       const completedQuestIds = new Set<string>();
       allSubmissions.forEach((s: any) => {
-        if (s.userId === currentUser.uid && s.status === "approved") {
+        if (isUserMatch(s, currentUser) && isCompletedStatus(s.status)) {
           if (s.questId) completedQuestIds.add(s.questId);
           if (s.originalQuestId) completedQuestIds.add(s.originalQuestId);
         }
       });
       Object.entries(cardStatuses).forEach(([k, v]) => {
-        if (v === "Completed") completedQuestIds.add(k);
+        if (isCompletedStatus(v)) completedQuestIds.add(k);
       });
 
       const completedCount = completedQuestIds.size;
@@ -871,13 +889,51 @@ export default function QuestGame({
     return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${seed}`;
   };
 
+  const isUserMatch = React.useCallback((userA: any, userB: any) => {
+    if (!userA || !userB) return false;
+    const idA = typeof userA === "string" ? userA : userA.uid || userA.userId || userA.discordId || "";
+    const idB = typeof userB === "string" ? userB : userB.uid || userB.userId || userB.discordId || "";
+    if (!idA || !idB) return false;
+
+    const cleanA = String(idA).trim();
+    const cleanB = String(idB).trim();
+    if (cleanA === cleanB) return true;
+
+    const rawA = cleanA.replace(/^sim-discord-/, "").replace(/^oidc:discord:/, "");
+    const rawB = cleanB.replace(/^sim-discord-/, "").replace(/^oidc:discord:/, "");
+    if (rawA && rawB && rawA === rawB) return true;
+
+    const snowA = cleanA.match(/\d{17,20}/)?.[0];
+    const snowB = cleanB.match(/\d{17,20}/)?.[0];
+    if (snowA && snowB && snowA === snowB) return true;
+
+    if (typeof userA === "object" && typeof userB === "object") {
+      if (userA.discordId && userB.discordId && userA.discordId === userB.discordId) return true;
+      if (userA.email && userB.email && userA.email.toLowerCase() === userB.email.toLowerCase()) return true;
+    }
+    if (typeof userA === "object" && userA.discordId && rawB && (userA.discordId === rawB || rawB.includes(userA.discordId))) return true;
+    if (typeof userB === "object" && userB.discordId && rawA && (userB.discordId === rawA || rawA.includes(userB.discordId))) return true;
+
+    return false;
+  }, []);
+
+  const isCompletedStatus = React.useCallback((status: any) => {
+    if (!status) return false;
+    const st = String(status).trim().toLowerCase();
+    return st === "approved" || st === "completed" || st === "done" || st === "success";
+  }, []);
+
   const effectiveCardStatuses = React.useMemo(() => {
     const merged: Record<string, "active" | "pending" | "Completed" | "Denied"> = { ...cardStatuses };
 
-    if (currentUser?.uid && Array.isArray(allSubmissions)) {
+    if (currentUser && Array.isArray(allSubmissions)) {
       allSubmissions.forEach((s: any) => {
-        if (s.userId === currentUser.uid) {
-          const mappedStatus = s.status === "approved" ? "Completed" : s.status === "rejected" ? "Denied" : "pending";
+        if (isUserMatch(s, currentUser)) {
+          const mappedStatus = isCompletedStatus(s.status)
+            ? "Completed"
+            : s.status === "rejected" || s.status === "Denied"
+            ? "Denied"
+            : "pending";
           if (s.questId) merged[s.questId] = mappedStatus;
           if (s.originalQuestId) merged[s.originalQuestId] = mappedStatus;
         }
@@ -885,28 +941,36 @@ export default function QuestGame({
     }
 
     return merged;
-  }, [cardStatuses, allSubmissions, currentUser]);
+  }, [cardStatuses, allSubmissions, currentUser, isUserMatch, isCompletedStatus]);
 
   const completedQuestIds = React.useMemo(() => {
-    if (!currentUser?.uid) return new Set<string>();
+    if (!currentUser) return new Set<string>();
     const ids = new Set<string>();
 
-    // 1. From allSubmissions (approved status)
-    allSubmissions
-      .filter((s: any) => s.userId === currentUser.uid && s.status === "approved")
-      .forEach((s: any) => {
-        if (s.questId) ids.add(s.questId);
-        if (s.originalQuestId) ids.add(s.originalQuestId);
-        quests.forEach(q => {
-          if (q.id === s.questId || q.id === s.originalQuestId || (s.questId && s.questId.includes(q.id)) || q.title === s.questName) {
-            ids.add(q.id);
-          }
-        });
+    // 1. From allSubmissions (approved / completed status)
+    if (Array.isArray(allSubmissions)) {
+      allSubmissions.forEach((s: any) => {
+        if (isUserMatch(s, currentUser) && isCompletedStatus(s.status)) {
+          if (s.questId) ids.add(s.questId);
+          if (s.originalQuestId) ids.add(s.originalQuestId);
+          quests.forEach(q => {
+            if (
+              q.id === s.questId ||
+              q.id === s.originalQuestId ||
+              (s.questId && s.questId.includes(q.id)) ||
+              (s.originalQuestId && s.originalQuestId.includes(q.id)) ||
+              (q.title && s.questName && q.title.toLowerCase() === s.questName.toLowerCase())
+            ) {
+              ids.add(q.id);
+            }
+          });
+        }
       });
+    }
 
-    // 2. From cardStatuses (Completed status)
-    Object.entries(cardStatuses).forEach(([k, v]) => {
-      if (v === "Completed") {
+    // 2. From cardStatuses & effectiveCardStatuses (Completed / approved status)
+    Object.entries(effectiveCardStatuses).forEach(([k, v]) => {
+      if (isCompletedStatus(v)) {
         ids.add(k);
         quests.forEach(q => {
           if (q.id === k || (q.originalQuestId && q.originalQuestId === k) || k.includes(q.id)) {
@@ -917,7 +981,7 @@ export default function QuestGame({
     });
 
     return ids;
-  }, [allSubmissions, currentUser, quests, cardStatuses]);
+  }, [allSubmissions, currentUser, quests, effectiveCardStatuses, isUserMatch, isCompletedStatus]);
 
   if (!hasMounted) return null;
 

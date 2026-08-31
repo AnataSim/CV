@@ -362,8 +362,8 @@ export default function AdminQuestPanel({
 
     const playersWithCompletionTime = Object.values(groups).map((player: any) => {
       const activeApproved = player.submissions
-        .filter((s: any) => s.status === "approved" && (quests.length === 0 || quests.some(q => q.id === s.questId || q.id === s.originalQuestId || (s.questId && s.questId.includes(q.id)) || q.title === s.questName) || !!s.questId))
-        .sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        .filter((s: any) => (s.status === "approved" || s.status === "Completed" || s.status === "completed") && (quests.length === 0 || quests.some(q => q.id === s.questId || q.id === s.originalQuestId || (s.questId && s.questId.includes(q.id)) || q.title === s.questName) || !!s.questId))
+        .sort((a: any, b: any) => new Date(a.createdAt || a.submittedAt || Date.now()).getTime() - new Date(b.createdAt || b.submittedAt || Date.now()).getTime());
       
       const completionTime = activeApproved.length >= 5 ? new Date(activeApproved[4].createdAt).getTime() : Infinity;
       
@@ -663,7 +663,7 @@ export default function AdminQuestPanel({
 
           <div className="flex flex-col gap-3.5 overflow-y-auto max-h-[460px] md:max-h-[500px] pr-2 scrollbar-thin scrollbar-thumb-theater-gold/30 hover:scrollbar-thumb-theater-gold/60 overscroll-contain">
             {playersProgress.map((player) => {
-              const approvedCount = player.submissions.filter((s: any) => s.status === "approved" && quests.some((q: any) => q.id === s.questId)).length;
+              const approvedCount = player.submissions.filter((s: any) => (s.status === "approved" || s.status === "Completed" || s.status === "completed") && quests.some((q: any) => q.id === s.questId || q.id === s.originalQuestId || (s.questId && s.questId.includes(q.id)))).length;
               const totalQuests = quests.length;
               const progressPercent = totalQuests > 0 ? (approvedCount / totalQuests) * 100 : 0;
               const isExpanded = expandedProgressUserId === player.userId;
@@ -781,7 +781,7 @@ export default function AdminQuestPanel({
                       <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[320px] sm:max-h-[380px] pr-2 scrollbar-thin scrollbar-thumb-theater-gold/30 hover:scrollbar-thumb-theater-gold/60 overscroll-contain">
                         {quests.map((quest) => {
                           const questSubmissions = player.submissions.filter((s: any) => s.questId === quest.id || s.originalQuestId === quest.id || (s.questId && s.questId.includes(quest.id)) || s.questName === quest.title);
-                          const approvedSub = questSubmissions.find((s: any) => s.status === "approved");
+                          const approvedSub = questSubmissions.find((s: any) => s.status === "approved" || s.status === "Completed" || s.status === "completed");
                           const pendingSub = questSubmissions.find((s: any) => s.status === "pending");
                           
                           let status: "Completed" | "Pending" | "NotStarted" = "NotStarted";
