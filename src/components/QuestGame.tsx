@@ -301,6 +301,57 @@ export default function QuestGame({
     }
   }, []);
 
+  // Subscribe to all submissions in Firestore (Source of Truth)
+  useEffect(() => {
+    if (isFirebaseConfigured && db) {
+      const q = collection(db, "submissions");
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        if (!snapshot.empty) {
+          const subsList: any[] = [];
+          snapshot.forEach((doc) => {
+            subsList.push(doc.data());
+          });
+          // Merge with any cached local submissions so nothing is lost
+          const cached = localStorage.getItem("crunchy_all_submissions");
+          if (cached) {
+            try {
+              const local: any[] = JSON.parse(cached);
+              const map = new Map<string, any>();
+              subsList.forEach(s => map.set(s.id || `${s.userId}-${s.questId}`, s));
+              local.forEach(s => {
+                const k = s.id || `${s.userId}-${s.questId}`;
+                if (!map.has(k)) map.set(k, s);
+              });
+              const merged = Array.from(map.values());
+              setAllSubmissions(merged);
+              localStorage.setItem("crunchy_all_submissions", JSON.stringify(merged));
+            } catch {
+              setAllSubmissions(subsList);
+              localStorage.setItem("crunchy_all_submissions", JSON.stringify(subsList));
+            }
+          } else {
+            setAllSubmissions(subsList);
+            localStorage.setItem("crunchy_all_submissions", JSON.stringify(subsList));
+          }
+        }
+      }, (err) => {
+        console.warn("⚠️ Gagal sinkronisasi submissions dari Firestore:", err);
+        // Fallback ke cache lokal
+        const stored = localStorage.getItem("crunchy_all_submissions");
+        if (stored) {
+          try { setAllSubmissions(JSON.parse(stored)); } catch {}
+        }
+      });
+      return () => unsubscribe();
+    } else {
+      // No Firebase: load from localStorage cache
+      const stored = localStorage.getItem("crunchy_all_submissions");
+      if (stored) {
+        try { setAllSubmissions(JSON.parse(stored)); } catch {}
+      }
+    }
+  }, []);
+
   // Update GMT+7 clock
   useEffect(() => {
     const updateTime = () => {
