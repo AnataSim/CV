@@ -40,10 +40,15 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
               statsData = { ...mockStats, mode: "Simulation (Guild Not Found)" };
             } else {
               const totalMembers = guild.memberCount;
-              const roleKerupukKey = process.env.ROLE_KERUPUK || 'Kerupuk';
-              const roleKeripikKey = process.env.ROLE_KERIPIK || 'Keripik';
-              const roleKerupuk = guild.roles.cache.find(r => r.id === roleKerupukKey || r.name.toLowerCase() === roleKerupukKey.toLowerCase());
-              const roleKeripik = guild.roles.cache.find(r => r.id === roleKeripikKey || r.name.toLowerCase() === roleKeripikKey.toLowerCase());
+              const roles = await guild.roles.fetch().catch(() => guild.roles.cache);
+              if (guild.members.cache.size < 10) {
+                await guild.members.fetch().catch(() => {});
+              }
+
+              const roleKerupukKey = process.env.ROLE_KERUPUK || '1403300491214983178';
+              const roleKeripikKey = process.env.ROLE_KERIPIK || '1411319287720837230';
+              const roleKerupuk = roles ? roles.find(r => r.id === roleKerupukKey || r.name.toLowerCase().includes('kerupuk')) : null;
+              const roleKeripik = roles ? roles.find(r => r.id === roleKeripikKey || r.name.toLowerCase().includes('keripik')) : null;
               const totalKerupuk = roleKerupuk ? roleKerupuk.members.size : 0;
               const totalKeripik = roleKeripik ? roleKeripik.members.size : 0;
               let online = 0, idle = 0, dnd = 0, offline = 0;
@@ -68,8 +73,8 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
               }
               statsData = {
                 totalMembers,
-                totalKerupuk: totalKerupuk || Math.floor(totalMembers * 0.31),
-                totalKeripik: totalKeripik || Math.floor(totalMembers * 0.52),
+                totalKerupuk,
+                totalKeripik,
                 online,
                 idle,
                 dnd,
