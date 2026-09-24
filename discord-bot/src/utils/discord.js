@@ -499,7 +499,7 @@ function initializeBot(token) {
 
         const ghostCfg = db.loadGhostConfig();
         if (ghostCfg && ghostCfg.isEnabled && ghostCfg.guildId && ghostCfg.channelId) {
-          if (GHOST_USER_TOKEN && (!state.ghostManager || !state.ghostManager.isReady)) {
+          if (GHOST_USER_TOKEN && (!state.ghostManager || (!state.ghostManager.isReady && !state.ghostManager._destroyed))) {
             console.log('[Watchdog Ghost] Ghost manager tidak ready/terputus. Mencoba inisialisasi/reconnect...');
             try {
               if (!state.ghostManager) {

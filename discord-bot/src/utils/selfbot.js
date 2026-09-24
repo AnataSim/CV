@@ -70,6 +70,7 @@ class SelfbotManager {
           this._reconnectTimer = setTimeout(() => this._doReconnect(), this._reconnectDelay);
           this._reconnectDelay = Math.min(this._reconnectDelay * 2, 60000);
         } else if (code === 4004) {
+          this._destroyed = true;
           console.error('[KRPK-0421] Koneksi ditolak oleh Discord karena Token tidak valid (code=4004). Auto-reconnect dinonaktifkan.');
         }
       });

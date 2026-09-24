@@ -25,4 +25,24 @@ services:
     startCommand: node src/index.js
     healthCheckPath: /health
     autoDeploy: true
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: GUILD_ID
+        value: "1403255548698300416"
+      - key: BROADCAST_CHANNEL
+        value: "1483040246739239065"
+      - key: ROLE_KERUPUK
+        value: "1403300491214983178"
+      - key: ROLE_KERIPIK
+        value: "1411319287720837230"
+      - key: TIKTOK_USERNAME
+        value: "@jobetmaritoas"
+      - key: TIKTOK_DISPLAY_NAME
+        value: "CrunchyWeeb"
+      - key: DISCORD_CLIENT_ID
+        value: "1410583272173600819"
+      - key: CV_API_SECRET
+        value: "CrunchyVerse-Stage-HMAC-2026-$3cur3!"
+
 
