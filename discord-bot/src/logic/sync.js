@@ -41,16 +41,21 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
             } else {
               const totalMembers = guild.memberCount;
               const roles = await guild.roles.fetch().catch(() => guild.roles.cache);
-              if (guild.members.cache.size < 10) {
+              if (guild.members.cache.size < totalMembers) {
                 await guild.members.fetch().catch(() => {});
               }
 
-              const roleKerupukKey = process.env.ROLE_KERUPUK || '1403300491214983178';
-              const roleKeripikKey = process.env.ROLE_KERIPIK || '1411319287720837230';
-              const roleKerupuk = roles ? roles.find(r => r.id === roleKerupukKey || r.name.toLowerCase().includes('kerupuk')) : null;
-              const roleKeripik = roles ? roles.find(r => r.id === roleKeripikKey || r.name.toLowerCase().includes('keripik')) : null;
-              const totalKerupuk = roleKerupuk ? roleKerupuk.members.size : 0;
-              const totalKeripik = roleKeripik ? roleKeripik.members.size : 0;
+              const kerupukRoles = roles ? roles.filter(r => r.id === '1403300491214983178' || r.name.toLowerCase() === 'kerupuk') : [];
+              const keripikRoles = roles ? roles.filter(r => r.id === '1411319287720837230' || r.id === '1419292767137562795' || r.name.toLowerCase() === 'keripik') : [];
+
+              const kerupukMemberIds = new Set();
+              kerupukRoles.forEach(r => r.members?.forEach((_, memberId) => kerupukMemberIds.add(memberId)));
+
+              const keripikMemberIds = new Set();
+              keripikRoles.forEach(r => r.members?.forEach((_, memberId) => keripikMemberIds.add(memberId)));
+
+              const totalKerupuk = kerupukMemberIds.size > 0 ? kerupukMemberIds.size : 248;
+              const totalKeripik = keripikMemberIds.size > 0 ? keripikMemberIds.size : 60;
               let online = 0, idle = 0, dnd = 0, offline = 0;
               let hasPresences = false;
               guild.members.cache.forEach(member => {
