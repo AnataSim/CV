@@ -22,6 +22,7 @@ state.cache = new helpers.MemoryCache();
 
 // Initialize Express App
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(cors({
   origin: '*',
