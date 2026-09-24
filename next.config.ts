@@ -32,10 +32,11 @@ const nextConfig: NextConfig = {
   // Image optimization caching
   images: {
     minimumCacheTTL: 3600,
-    domains: [
-      "api.dicebear.com",
-      "cdn.discordapp.com",
-      "p16-webcast.tiktokcdn.com",
+    remotePatterns: [
+      { protocol: "https", hostname: "api.dicebear.com" },
+      { protocol: "https", hostname: "cdn.discordapp.com" },
+      { protocol: "https", hostname: "*.tiktokcdn.com" },
+      { protocol: "https", hostname: "*.minecraft.wiki" },
     ],
   },
 
