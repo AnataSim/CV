@@ -207,6 +207,26 @@ function FramePlaceholder({ title, icon: Icon, description }: { title: string; i
   );
 }
 
+const formatDiscordAvatar = (rawAvatar: string | null, discordId: string | null) => {
+  if (!rawAvatar) {
+    if (discordId) {
+      try {
+        const defaultIndex = Number(BigInt(discordId) >> BigInt(22)) % 6;
+        return `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+  if (rawAvatar.startsWith("http://") || rawAvatar.startsWith("https://")) return rawAvatar;
+  if (discordId) {
+    const ext = rawAvatar.startsWith("a_") ? "gif" : "webp";
+    return `https://cdn.discordapp.com/avatars/${discordId}/${rawAvatar}.${ext}?size=128`;
+  }
+  return null;
+};
+
 export default function CrunchyVerseStage() {
   function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 1500): Promise<T> {
     return Promise.race([
@@ -825,18 +845,20 @@ export default function CrunchyVerseStage() {
             }
           }
 
+
+
           // If cached profile exists, instantly set UI states to avoid loading screen or latency
           if (cachedProfile) {
             console.log("⚡ Instant profile load from localStorage cache:", cachedProfile.name);
             setCurrentUser(firebaseUser);
             setDisplayName(cachedProfile.name);
             setUserRole(cachedProfile.role);
-            setUserAvatar(cachedProfile.avatar || null);
+            setUserAvatar(formatDiscordAvatar(cachedProfile.avatar, cachedProfile.discordId || firebaseUser.uid));
           } else {
             // Provide immediate defaults if no cache yet
             setCurrentUser(firebaseUser);
             setDisplayName(firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : "Discord Penonton"));
-            setUserAvatar(firebaseUser.photoURL || null);
+            setUserAvatar(formatDiscordAvatar(firebaseUser.photoURL, firebaseUser.uid));
             setUserRole("Penonton Teater"); // Safe default role
           }
 
@@ -987,20 +1009,19 @@ export default function CrunchyVerseStage() {
             // Update state and cache in background if there's any mismatch
             if (
               !cachedProfile ||
-              cachedProfile.name !== resolvedName ||
-              cachedProfile.role !== resolvedRole ||
               cachedProfile.avatar !== resolvedAvatar
             ) {
-              console.log("🔥„ Background verification complete, updating user profile states & cache.");
+              console.log("🔥 Background verification complete, updating user profile states & cache.");
+              const finalFormattedAvatar = formatDiscordAvatar(resolvedAvatar, discordId || firebaseUser.uid);
               setDisplayName(resolvedName);
               setUserRole(resolvedRole);
-              setUserAvatar(resolvedAvatar);
+              setUserAvatar(finalFormattedAvatar);
 
               const newCachedProfile = {
                 uid: firebaseUser.uid,
                 name: resolvedName,
                 role: resolvedRole,
-                avatar: resolvedAvatar,
+                avatar: finalFormattedAvatar,
                 discordId: discordId,
                 cachedAt: Date.now()
               };
@@ -1014,7 +1035,7 @@ export default function CrunchyVerseStage() {
 
           // Kick off background updates without awaiting (non-blocking)
           resolveProfileBackground().catch(err => {
-            console.error("⚠️ï¸ Error in background profile resolver:", err);
+            console.error("⚠️ Error in background profile resolver:", err);
           });
 
         } else {
@@ -1030,7 +1051,7 @@ export default function CrunchyVerseStage() {
                 setCurrentUser(sessionUser);
                 setDisplayName(sessionUser.name);
                 setUserRole(sessionUser.role);
-                setUserAvatar(sessionUser.avatar || null);
+                setUserAvatar(formatDiscordAvatar(sessionUser.avatar, sessionUser.discordId || sessionUser.uid));
                 
                 // Load simulated user specific channels
                 const savedForUser = localStorage.getItem(`crunchyverse_custom_channels_${sessionUser.uid}`);

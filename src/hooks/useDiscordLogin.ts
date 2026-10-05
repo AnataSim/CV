@@ -19,8 +19,29 @@ export function useDiscordLogin({ onSuccess, onClose }: UseDiscordLoginProps) {
     // Set up message listener for popup communication
     const handleMessage = async (event: MessageEvent) => {
       if (event.data && event.data.type === "DISCORD_LOGIN_SUCCESS") {
-        window.removeEventListener("message", handleMessage);
         const { id, username, global_name, avatar } = event.data.profile;
+
+        const formatDiscordAvatar = (rawAvatar: string | null, discordId: string | null) => {
+          if (!rawAvatar) {
+            if (discordId) {
+              try {
+                const defaultIndex = Number(BigInt(discordId) >> BigInt(22)) % 6;
+                return `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
+              } catch {
+                return null;
+              }
+            }
+            return null;
+          }
+          if (rawAvatar.startsWith("http://") || rawAvatar.startsWith("https://")) return rawAvatar;
+          if (discordId) {
+            const ext = rawAvatar.startsWith("a_") ? "gif" : "webp";
+            return `https://cdn.discordapp.com/avatars/${discordId}/${rawAvatar}.${ext}?size=128`;
+          }
+          return null;
+        };
+
+        const resolvedAvatarUrl = formatDiscordAvatar(avatar, id);
         
         try {
           const discordName = global_name || username;
@@ -77,7 +98,7 @@ export function useDiscordLogin({ onSuccess, onClose }: UseDiscordLoginProps) {
                 uid: firebaseUser.uid,
                 name: resolvedName,
                 role: resolvedRole,
-                avatar: avatar,
+                avatar: resolvedAvatarUrl,
                 discordId: id,
                 cachedAt: Date.now()
               };
@@ -91,7 +112,7 @@ export function useDiscordLogin({ onSuccess, onClose }: UseDiscordLoginProps) {
                   email: firebaseUser.email || `discord-${username}@crunchyverse.com`,
                   name: resolvedName,
                   role: resolvedRole,
-                  avatar: avatar,
+                  avatar: resolvedAvatarUrl,
                   discordId: id
                 }).catch(fsErr => {
                   console.warn("⚠️ Firestore write failed in background:", fsErr);
@@ -118,7 +139,7 @@ export function useDiscordLogin({ onSuccess, onClose }: UseDiscordLoginProps) {
                 email: `discord-${username}@crunchyverse.com`,
                 name: resolvedName,
                 role: resolvedRole,
-                avatar: avatar,
+                avatar: resolvedAvatarUrl,
                 discordId: id
               };
               
@@ -127,7 +148,7 @@ export function useDiscordLogin({ onSuccess, onClose }: UseDiscordLoginProps) {
                 uid: mockUser.uid,
                 name: resolvedName,
                 role: resolvedRole,
-                avatar: avatar,
+                avatar: resolvedAvatarUrl,
                 discordId: id,
                 cachedAt: Date.now()
               }));
@@ -163,7 +184,7 @@ export function useDiscordLogin({ onSuccess, onClose }: UseDiscordLoginProps) {
               email: `discord-${username}@crunchyverse.com`,
               name: resolvedName,
               role: resolvedRole,
-              avatar: avatar,
+              avatar: resolvedAvatarUrl,
               discordId: id
             };
 
@@ -172,7 +193,7 @@ export function useDiscordLogin({ onSuccess, onClose }: UseDiscordLoginProps) {
               uid: mockUser.uid,
               name: resolvedName,
               role: resolvedRole,
-              avatar: avatar,
+              avatar: resolvedAvatarUrl,
               discordId: id,
               cachedAt: Date.now()
             }));
