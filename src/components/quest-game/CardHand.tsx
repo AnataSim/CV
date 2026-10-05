@@ -62,7 +62,14 @@ export default function CardHand({
     }
   });
 
-  const getStatus = (q: Quest) => cardStatuses[q.id] || (q.originalQuestId ? cardStatuses[q.originalQuestId] : undefined) || "active";
+  const getStatus = (q: Quest) => {
+    const idSt = cardStatuses[q.id];
+    const origSt = q.originalQuestId ? cardStatuses[q.originalQuestId] : undefined;
+    if (origSt && (origSt === "Completed" || origSt === "pending" || origSt === "Denied" || origSt === "Review")) {
+      return origSt;
+    }
+    return idSt || origSt || "active";
+  };
   const visibleQuests = uniqueQuests.filter(q => getStatus(q) !== "Completed");
   const count = visibleQuests.length;
   const isAnyActive = activeQuestId !== null;

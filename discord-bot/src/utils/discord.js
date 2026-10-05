@@ -1084,21 +1084,55 @@ function initializeBot(token) {
     // ===== MUSIC BOT TRACK DETECTOR & AUTO-REACT (Elaina, Jockie, etc.) =====
     state.client.on('messageCreate', async (message) => {
       let trackText = null;
+      let trackTitle = null;
+      let trackArtist = null;
 
       // 1. Check Embeds (Elaina, Jockie Music, FredBoat, etc.)
       if (message.embeds && message.embeds.length > 0) {
         for (const embed of message.embeds) {
-          const text = [embed.title, embed.description, embed.footer?.text].filter(Boolean).join(' ');
-          if (/(Started playing|Now playing|Playing|Up next|Playing next|Started)/i.test(text)) {
-            trackText = text;
-            break;
+          // Jockie v2 / modern bots: embed.author.name = "Now Playing 🎵" and embed.title = "Song Title"
+          if (embed.author && /(Now playing|Started playing|Playing now|🎵|🎶|🎧)/i.test(embed.author.name || '') && embed.title) {
+            trackTitle = embed.title.replace(/\*\*/g, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').trim();
+            const artistField = embed.fields && embed.fields.find(f => /(artist|artis|by|performed)/i.test(f.name));
+            if (artistField) trackArtist = artistField.value.replace(/\*\*/g, '').trim();
+            if (trackTitle && trackTitle.length > 1) {
+              trackText = trackArtist ? `${trackTitle} by ${trackArtist}` : trackTitle;
+              break;
+            }
+          }
+
+          // Classic pattern: title or description contains playing keywords
+          const parts = [embed.title, embed.description, embed.author && embed.author.name, embed.footer && embed.footer.text].filter(Boolean);
+          const fullText = parts.join(' ');
+          if (/(Started playing|Now playing|Playing|Up next|Playing next|Started|Sedang Memutar|Diputar Sekarang)/i.test(fullText)) {
+            if (embed.description && embed.description.includes(' by ')) {
+              trackText = embed.description;
+            } else if (embed.title) {
+              trackText = embed.title;
+              if (embed.description) trackText += ' ' + embed.description;
+            } else {
+              trackText = fullText;
+            }
+            if (!trackText || trackText.length < 3) {
+              const trackField = embed.fields && embed.fields.find(f => /(track|lagu|song|title)/i.test(f.name));
+              if (trackField) trackText = trackField.value;
+            }
+            if (trackText && trackText.length > 1) break;
+          }
+
+          // Jockie Music footer pattern: footer has loop/queue/volume and title is the song
+          if (embed.footer && embed.footer.text && /(loop|queue|volume|elapsed|🔁|🔂)/i.test(embed.footer.text) && embed.title) {
+            trackTitle = embed.title.replace(/\*\*/g, '').trim();
+            const descLine = (embed.description || '').split('\n')[0].replace(/\*\*/g, '').trim();
+            trackText = (descLine && /(by|—|-|\|)/i.test(descLine)) ? `${trackTitle} ${descLine}` : trackTitle;
+            if (trackText && trackText.length > 1) break;
           }
         }
       }
 
       // 2. Check Plain Message Content (e.g. "Started playing anything 4 u by LANY")
       if (!trackText && message.content) {
-        if (/(Started playing|Now playing|Playing|Up next|Playing next)/i.test(message.content)) {
+        if (/(Started playing|Now playing|Playing|Up next|Playing next|Sedang memutar|Memutar sekarang)/i.test(message.content)) {
           trackText = message.content;
         }
       }
@@ -1107,25 +1141,36 @@ function initializeBot(token) {
         // Clean markdown bold (**), custom emojis, links, markdown links [Title](URL), etc.
         let cleanText = trackText.replace(/\*\*/g, '');
         cleanText = cleanText.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
-        cleanText = cleanText.replace(/(Started playing|Now playing|Playing next|Up next|Playing)\s+/gi, '').trim();
-        cleanText = cleanText.replace(/<a?:[\w_]+:\d+>/g, '').replace(/🟢|💚|🎵|🎶|🎧|📻|📊/g, '').trim();
+        cleanText = cleanText.replace(/(Started playing|Now playing|Playing next|Up next|Playing|Sedang memutar|Memutar sekarang)\s+/gi, '').trim();
+        cleanText = cleanText.replace(/<a?:[\w_]+:\d+>/g, '').replace(/🟢|💚|🎵|🎶|🎧|📻|📊|▶️|⏸️|⏭️/g, '').trim();
+        cleanText = cleanText.replace(/https?:\/\/\S+/g, '').trim();
 
-        const byIndex = cleanText.lastIndexOf(' by ');
         let formattedTrack = cleanText;
-        if (byIndex !== -1) {
-          const trackName = cleanText.substring(0, byIndex).trim();
-          const artistName = cleanText.substring(byIndex + 4).trim();
-          formattedTrack = `${trackName} - ${artistName}`;
+
+        if (trackTitle && trackArtist) {
+          formattedTrack = `${trackTitle} - ${trackArtist}`;
+        } else {
+          const byIndex = cleanText.lastIndexOf(' by ');
+          if (byIndex !== -1) {
+            const trackName = cleanText.substring(0, byIndex).trim();
+            const artistName = cleanText.substring(byIndex + 4).trim();
+            if (trackName.length > 0 && artistName.length > 0) {
+              formattedTrack = `${trackName} - ${artistName}`;
+            }
+          } else if (cleanText.includes(' — ') || cleanText.includes(' – ')) {
+            formattedTrack = cleanText.replace(/\s+[—–]\s+/, ' - ');
+          }
         }
 
-        if (formattedTrack && formattedTrack.length > 1) {
+        formattedTrack = formattedTrack.replace(/^["'\-–—]+|["'\-–—]+$/g, '').trim();
+
+        if (formattedTrack && formattedTrack.length > 1 && formattedTrack.length < 300) {
           state.jockieMusicStatus = `[00:00] • ${formattedTrack}`;
           state.lastJockieTrackTime = Date.now();
           state.lastJockieMessage = message;
 
-          console.log(`🎵 [Sparxie Music Detector] Track terdeteksi dari pesan (${message.author?.tag || 'App'}): "${formattedTrack}"`);
+          console.log(`🎵 [Sparxie Music Detector] Track terdeteksi dari pesan (${message.author && (message.author.tag || message.author.username) || 'App'}): "${formattedTrack}"`);
 
-          // React with checkmark ✅ to acknowledge detection!
           try {
             await message.react('✅');
             console.log(`✅ [Sparxie Music Detector] Berhasil memberikan reaksi centang (✅) pada pesan music!`);
@@ -1136,7 +1181,10 @@ function initializeBot(token) {
       }
     });
 
+
+
     // Listen to admin approvals via reactions
+
     state.client.on('messageReactionAdd', async (reaction, user) => {
       if (user.bot) return;
 

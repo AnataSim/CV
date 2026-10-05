@@ -45,14 +45,26 @@ async function gatherSyncData({ uid, chatChannelId, voiceChannelId, isAdmin }) {
                 await guild.members.fetch().catch(() => {});
               }
 
-              const kerupukRoles = roles ? roles.filter(r => r.id === '1403300491214983178' || r.name.toLowerCase() === 'kerupuk') : [];
-              const keripikRoles = roles ? roles.filter(r => r.id === '1411319287720837230' || r.id === '1419292767137562795' || r.name.toLowerCase() === 'keripik') : [];
+              const kerupukRoles = roles ? roles.filter(r => r.id === '1403300491214983178' || r.name.toLowerCase().includes('kerupuk')) : [];
+              const keripikRoles = roles ? roles.filter(r => r.id === '1411319287720837230' || r.id === '1419292767137562795' || r.name.toLowerCase().includes('keripik')) : [];
 
               const kerupukMemberIds = new Set();
-              kerupukRoles.forEach(r => r.members?.forEach((_, memberId) => kerupukMemberIds.add(memberId)));
-
               const keripikMemberIds = new Set();
+
+              const kerupukRoleIds = new Set(kerupukRoles.map(r => r.id));
+              const keripikRoleIds = new Set(keripikRoles.map(r => r.id));
+
+              kerupukRoles.forEach(r => r.members?.forEach((_, memberId) => kerupukMemberIds.add(memberId)));
               keripikRoles.forEach(r => r.members?.forEach((_, memberId) => keripikMemberIds.add(memberId)));
+
+              guild.members.cache.forEach(member => {
+                if (member.roles.cache.some(r => kerupukRoleIds.has(r.id) || r.name.toLowerCase().includes('kerupuk'))) {
+                  kerupukMemberIds.add(member.id);
+                }
+                if (member.roles.cache.some(r => keripikRoleIds.has(r.id) || r.name.toLowerCase().includes('keripik'))) {
+                  keripikMemberIds.add(member.id);
+                }
+              });
 
               const totalKerupuk = kerupukMemberIds.size > 0 ? kerupukMemberIds.size : 248;
               const totalKeripik = keripikMemberIds.size > 0 ? keripikMemberIds.size : 60;

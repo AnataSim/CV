@@ -2185,7 +2185,15 @@ export default function CrunchyVerseStage() {
               <div className="flex items-center gap-1.5 sm:gap-2.5">
                 <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full overflow-hidden border border-theater-gold/45 bg-neutral-950 flex items-center justify-center shrink-0 shadow-md shadow-theater-black">
                   {userAvatar ? (
-                    <img src={userAvatar} alt="Avatar" className="h-full w-full object-cover" />
+                    <img
+                      src={userAvatar}
+                      alt="Avatar"
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        setUserAvatar(null);
+                      }}
+                    />
                   ) : (
                     <User size={12} className="text-theater-gold/80" />
                   )}
@@ -2474,7 +2482,15 @@ export default function CrunchyVerseStage() {
                   {/* User Profile Avatar */}
                   <div className="h-6 w-6 rounded-full overflow-hidden border border-theater-gold/60 bg-neutral-950 flex items-center justify-center shrink-0 shadow-sm">
                     {userAvatar ? (
-                      <img src={userAvatar} alt="Avatar" className="h-full w-full object-cover" />
+                      <img
+                        src={userAvatar}
+                        alt="Avatar"
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          setUserAvatar(null);
+                        }}
+                      />
                     ) : (
                       <User size={12} className="text-theater-gold" />
                     )}

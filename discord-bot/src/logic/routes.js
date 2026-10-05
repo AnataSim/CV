@@ -744,21 +744,24 @@ function registerRoutes(app) {
       try {
         const cakeyUrl = `https://cakey.bot/leaderboard/id/${guildId}?tab=leveling`;
         const browserHeaders = {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-          'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8',
+          'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
           'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
         };
 
         const VERCEL_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kranciweb.vercel.app';
         const fetchAttempts = [
-          () => fetch(cakeyUrl, { headers: browserHeaders, signal: AbortSignal.timeout(6000) })
+          () => fetch(cakeyUrl, { headers: browserHeaders, signal: AbortSignal.timeout(12000) })
             .then(r => r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`))),
-          () => fetch(`${VERCEL_URL}/api/cakey-proxy?guildId=${guildId}`, { signal: AbortSignal.timeout(10000) })
+          () => fetch(`${VERCEL_URL}/api/cakey-proxy?guildId=${guildId}`, { signal: AbortSignal.timeout(15000) })
             .then(r => r.ok ? r.text() : Promise.reject(new Error(`vercel-proxy HTTP ${r.status}`))),
-          () => fetch(`https://corsproxy.io/?url=${encodeURIComponent(cakeyUrl)}`, { headers: browserHeaders, signal: AbortSignal.timeout(8000) })
+          () => fetch(`https://corsproxy.io/?url=${encodeURIComponent(cakeyUrl)}`, { headers: browserHeaders, signal: AbortSignal.timeout(10000) })
             .then(r => r.ok ? r.text() : Promise.reject(new Error(`proxy2 HTTP ${r.status}`))),
-          () => fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(cakeyUrl)}`, { signal: AbortSignal.timeout(8000) })
+          () => fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(cakeyUrl)}`, { signal: AbortSignal.timeout(10000) })
             .then(r => r.ok ? r.json() : Promise.reject(new Error(`proxy3 HTTP ${r.status}`)))
             .then(data => data.contents),
         ];
@@ -768,51 +771,93 @@ function registerRoutes(app) {
           try {
             console.log(`📡 [API/leaderboard] Mencoba fetch Cakey Bot (attempt ${i + 1}/4)...`);
             html = await fetchAttempts[i]();
-            console.log(`✅ [API/leaderboard] Berhasil fetch Cakey Bot via attempt ${i + 1}`);
-            break;
+            if (html && html.length > 500) {
+              console.log(`✅ [API/leaderboard] Berhasil fetch Cakey Bot via attempt ${i + 1} (${html.length} chars)`);
+              break;
+            } else {
+              console.warn(`⚠️ [API/leaderboard] Attempt ${i + 1} mengembalikan konten terlalu pendek (${html?.length || 0} chars), lanjut ke berikutnya.`);
+              html = null;
+            }
           } catch (attemptErr) {
             console.warn(`⚠️ [API/leaderboard] Attempt ${i + 1} gagal: ${attemptErr.message}`);
           }
         }
 
-        if (!html) throw new Error('Semua proxy gagal');
+        if (!html) throw new Error('Semua proxy gagal atau konten tidak valid');
+
+        // Case-insensitive table split
         const tables = html.split(/<table/gi);
-        if (tables.length < 3) throw new Error("Tidak ada cukup tabel di HTML Cakey Bot");
+        if (tables.length < 3) throw new Error(`Tidak ada cukup tabel di HTML Cakey Bot (ditemukan ${tables.length} tabel, minimal 3)`);
 
         const getTdText = (tdStr) => tdStr.substring(tdStr.indexOf('>') + 1).replace(/<[^>]*>/g, '').trim();
 
+        // Helper: find tbody content case-insensitively
+        const getTbodyContent = (tableStr) => {
+          const lowerStr = tableStr.toLowerCase();
+          const tbodyStart = lowerStr.indexOf('<tbody>');
+          const tbodyEnd = lowerStr.indexOf('</tbody>', tbodyStart);
+          if (tbodyStart === -1 || tbodyEnd === -1) return null;
+          return tableStr.substring(tbodyStart + 7, tbodyEnd);
+        };
+
         // 1. LEVELING
         const table1 = tables[1];
-        const t1Start = table1.indexOf('<tbody>');
-        const t1End = table1.indexOf('</tbody>', t1Start);
-        if (t1Start === -1 || t1End === -1) throw new Error("Tbody tidak ditemukan di Table 1");
-        const t1Rows = table1.substring(t1Start + 7, t1End).split(/<tr/gi).filter(r => r.includes('<td'));
+        const t1Body = getTbodyContent(table1);
+        if (!t1Body) throw new Error("Tbody tidak ditemukan di Table 1");
+        const t1Rows = t1Body.split(/<tr/gi).filter(r => r.toLowerCase().includes('<td'));
 
         const levelingList = [];
         t1Rows.forEach((row, idx) => {
           try {
-            const tds = row.split(/<td/gi).filter(td => td.includes('</td>'));
-            if (tds.length < 5) return;
+            const tds = row.split(/<td/gi).filter(td => td.toLowerCase().includes('</td>'));
+            if (tds.length < 4) return;
             let rank = idx + 1;
             const starMatch = tds[0].match(/\/assets\/images\/(\d+)\.svg/);
             if (starMatch) rank = parseInt(starMatch[1], 10);
             const avatarMatch = tds[1].match(/src="([^"]+)"/);
             const avatar = avatarMatch ? avatarMatch[1] : null;
-            const usernameMatch = tds[1].match(/<span class="text-sm font-semibold">([^<]+)<\/span>/) || tds[1].match(/<span class="text-theme font-medium">([^<]+)<\/span>/) || tds[1].match(/>\s*([a-zA-Z0-9_.-]+)\s*</);
+            // More robust username extraction with multiple fallback patterns
+            const usernameMatch = tds[1].match(/<span[^>]*class="[^"]*(?:font-semibold|font-medium|text-sm)[^"]*"[^>]*>([^<]+)<\/span>/i)
+              || tds[1].match(/<span[^>]*>([a-zA-Z0-9_.\-]+)<\/span>/i)
+              || tds[1].match(/>\s*([a-zA-Z0-9_.+\-]{2,32})\s*</);
             const username = usernameMatch ? usernameMatch[1].trim() : 'Unknown';
-            const voiceMinutes = parseInt(getTdText(tds[3]).replace(/,/g, ''), 10) || 0;
-            const levelMatch = tds[4].match(/Level\s*<span[^>]*>(\d+)<\/span>/i) || tds[4].match(/Level\s*(\d+)/i) || tds[4].match(/(\d+)/);
-            const level = levelMatch ? parseInt(levelMatch[1], 10) : 0;
-            const xpMatch = tds[4].match(/>\s*([\d.MK]+)\s*XP/i);
+            // Voice minutes — try td[2] first, then td[3]
+            let voiceMinutes = 0;
+            for (const tdIdx of [2, 3]) {
+              if (tds[tdIdx]) {
+                const text = getTdText(tds[tdIdx]).replace(/,/g, '').replace(/\s/g, '');
+                const num = parseInt(text, 10);
+                if (!isNaN(num) && num > 0) { voiceMinutes = num; break; }
+              }
+            }
+            // Level — try multiple tds
+            let level = 0;
+            for (const tdIdx of [4, 3, 2]) {
+              if (tds[tdIdx]) {
+                const levelMatch = tds[tdIdx].match(/Level\s*<span[^>]*>(\d+)<\/span>/i)
+                  || tds[tdIdx].match(/Level\s+(\d+)/i)
+                  || tds[tdIdx].match(/\blvl[:\s]+(\d+)/i);
+                if (levelMatch) { level = parseInt(levelMatch[1], 10); break; }
+                // Fallback: any standalone number in last td
+                const numMatch = tds[tdIdx].match(/\b(\d{1,4})\b/);
+                if (numMatch && parseInt(numMatch[1], 10) > 0) { level = parseInt(numMatch[1], 10); break; }
+              }
+            }
+            const xpMatch = tds[4] ? tds[4].match(/>\s*([\d.MK]+)\s*XP/i) : null;
             const xpStr = xpMatch ? xpMatch[1].trim() : '0';
             let xpVal = xpStr.endsWith('M') ? parseFloat(xpStr) * 1e6 : xpStr.endsWith('K') ? parseFloat(xpStr) * 1e3 : parseFloat(xpStr) || 0;
-            const pctMatch = tds[4].match(/style="width:\s*([\d.]+)%/i);
+            const pctMatch = tds[4] ? tds[4].match(/style="width:\s*([\d.]+)%/i) : null;
             const pct = pctMatch ? parseFloat(pctMatch[1]) : 0;
             let userIdVal = `cakey-lvl-${rank}`;
             if (avatar) { const m = avatar.match(/\/avatars\/(\d+)\//); if (m) userIdVal = m[1]; }
-            levelingList.push({ rank, id: userIdVal, username, displayName: username, avatar, level, xp: xpVal, nextXp: pct > 0 ? Math.round((xpVal / pct) * 100) : Math.round(xpVal * 1.5), voiceMinutes });
-          } catch (e) {}
+            if (username && username !== 'Unknown') {
+              levelingList.push({ rank, id: userIdVal, username, displayName: username, avatar, level, xp: xpVal, nextXp: pct > 0 ? Math.round((xpVal / pct) * 100) : Math.round(xpVal * 1.5), voiceMinutes });
+            }
+          } catch (e) { console.warn(`[Cakey Parser] Baris ${idx} gagal diparse:`, e.message); }
         });
+
+        if (levelingList.length === 0) throw new Error('Tidak ada data leveling yang berhasil diparse dari Cakey Bot');
+        console.log(`✅ [API/leaderboard] Berhasil parse ${levelingList.length} member dari Cakey Bot leveling table`);
 
         const streakMap = {
           'fuzusovereign': 281,
@@ -865,6 +910,7 @@ function registerRoutes(app) {
       } catch (cakeyErr) {
         console.warn(`⚠️ [API/leaderboard] Cakey Bot tidak tersedia: ${cakeyErr.message}. Menggunakan fallback Discord member.`);
       }
+
 
       let finalCvWealth = [];
       try {
