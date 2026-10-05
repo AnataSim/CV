@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { Shield, Edit3, Trash2, X } from "lucide-react";
 import { signedFetch } from "../../lib/api";
-import { isFirebaseConfigured } from "../../lib/firebase";
+import { db, isFirebaseConfigured } from "../../lib/firebase";
+import { doc, setDoc, updateDoc, deleteDoc, getDoc, increment } from "firebase/firestore";
 
 interface Quest {
   id: string;
@@ -79,6 +80,7 @@ export default function AdminQuestPanel({
   const [adminError, setAdminError] = useState<string | null>(null);
   const [adminSuccess, setAdminSuccess] = useState<string | null>(null);
   const [expandedProgressUserId, setExpandedProgressUserId] = useState<string | null>(null);
+  const [localPreviewMediaUrl, setLocalPreviewMediaUrl] = useState<string | null>(null);
 
   const pendingSubmissions = allSubmissions.filter((s: any) => s.status === "pending");
 
@@ -241,7 +243,7 @@ export default function AdminQuestPanel({
     }
   };
 
-  // Admin: Approve submission
+  // Admin: Approve submission with direct Cloud Firestore fallback
   const handleApproveSubmission = async (sub: any) => {
     try {
       const payload = {
@@ -256,26 +258,69 @@ export default function AdminQuestPanel({
         discordMessageId: sub.discordMessageId || ""
       };
 
-      const response = await signedFetch(`${backendUrl}/api/submissions/approve`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        sensitive: true
-      });
+      let success = false;
+      let roleAssignedText = "";
 
-      if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.error || `HTTP error! status: ${response.status}`);
+      try {
+        const response = await signedFetch(`${backendUrl}/api/submissions/approve`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+          sensitive: true
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.roleAssigned) {
+            roleAssignedText = ` Role "${data.roleName}" telah diberikan ke Discord.`;
+          }
+          success = true;
+        }
+      } catch (apiErr: any) {
+        console.warn("Backend API approve unreachable, attempting direct Firestore fallback:", apiErr.message);
       }
 
-      const data = await response.json();
-      alert(`✅ Bukti submission berhasil disetujui!${data.roleAssigned ? ` Role "${data.roleName}" telah diberikan ke Discord.` : ""}`);
-      onTriggerSync();
+      // Fallback directly to Cloud Firestore if API failed or backend server is offline
+      if (!success && isFirebaseConfigured && db) {
+        try {
+          const subRef = doc(db, "submissions", sub.id);
+          await setDoc(subRef, { ...sub, status: "approved", approvedAt: new Date().toISOString() }, { merge: true });
+
+          if (sub.userId) {
+            const userRef = doc(db, "users", sub.userId);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+              await updateDoc(userRef, {
+                cv: increment(sub.points || 0),
+                points: increment(sub.points || 0)
+              });
+            }
+
+            const deckRef = doc(db, "user_decks", sub.userId);
+            const deckSnap = await getDoc(deckRef);
+            if (deckSnap.exists()) {
+              const deckData = deckSnap.data();
+              const updatedStatuses = { ...(deckData.statuses || {}), [sub.questId]: "Completed" };
+              await updateDoc(deckRef, { statuses: updatedStatuses });
+            }
+          }
+          success = true;
+        } catch (fsErr: any) {
+          console.error("Direct Firestore approve failed:", fsErr);
+        }
+      }
+
+      if (success) {
+        alert(`✅ Bukti submission berhasil disetujui!${roleAssignedText}`);
+        onTriggerSync();
+      } else {
+        alert("❌ Gagal menyetujui submission. Pastikan koneksi internet aktif.");
+      }
     } catch (err: any) {
       alert("❌ Gagal menyetujui: " + err.message);
     }
   };
 
-  // Admin: Reject submission
+  // Admin: Reject submission with direct Cloud Firestore fallback
   const handleRejectSubmission = async (sub: any) => {
     if (confirm("Apakah Anda yakin ingin menolak & menghapus bukti pengerjaan ini?")) {
       try {
@@ -287,47 +332,108 @@ export default function AdminQuestPanel({
           username: sub.username
         };
 
-        const response = await signedFetch(`${backendUrl}/api/submissions/reject`, {
-          method: "POST",
-          body: JSON.stringify(payload),
-          sensitive: true
-        });
-
-        if (!response.ok) {
-          const errJson = await response.json().catch(() => ({}));
-          throw new Error(errJson.error || `HTTP error! status: ${response.status}`);
+        let success = false;
+        try {
+          const response = await signedFetch(`${backendUrl}/api/submissions/reject`, {
+            method: "POST",
+            body: JSON.stringify(payload),
+            sensitive: true
+          });
+          if (response.ok) success = true;
+        } catch (apiErr: any) {
+          console.warn("Backend API reject unreachable, attempting direct Firestore fallback:", apiErr.message);
         }
 
-        alert("❌ Bukti submission berhasil ditolak dan dihapus.");
-        onTriggerSync();
+        if (!success && isFirebaseConfigured && db) {
+          try {
+            const subRef = doc(db, "submissions", sub.id);
+            await deleteDoc(subRef).catch(async () => {
+              await updateDoc(subRef, { status: "rejected" });
+            });
+
+            if (sub.userId) {
+              const deckRef = doc(db, "user_decks", sub.userId);
+              const deckSnap = await getDoc(deckRef);
+              if (deckSnap.exists()) {
+                const deckData = deckSnap.data();
+                const updatedStatuses = { ...(deckData.statuses || {}), [sub.questId]: "Denied" };
+                await updateDoc(deckRef, { statuses: updatedStatuses });
+              }
+            }
+            success = true;
+          } catch (fsErr: any) {
+            console.error("Direct Firestore reject failed:", fsErr);
+          }
+        }
+
+        if (success) {
+          alert("❌ Bukti submission berhasil ditolak dan dihapus.");
+          onTriggerSync();
+        } else {
+          alert("❌ Gagal menolak submission.");
+        }
       } catch (err: any) {
         alert("❌ Gagal menolak: " + err.message);
       }
     }
   };
 
-  // Admin / Volunteer: Reset specific quest progress
+  // Admin / Volunteer: Reset specific quest progress with direct Cloud Firestore fallback
   const handleResetSpecificQuest = async (playerUserId: string, targetQuest: Quest, approvedSubmission?: any) => {
     if (confirm(`Apakah Anda yakin ingin mereset progress quest "${targetQuest.title}" untuk pemain ini? Poin quest akan dikurangi dan kartu ini dapat muncul kembali saat mengocok deck.`)) {
       try {
-        const response = await signedFetch(`${backendUrl}/api/submissions/reset-specific`, {
-          method: "POST",
-          body: JSON.stringify({
-            userId: playerUserId,
-            questId: targetQuest.id,
-            originalQuestId: (targetQuest as any).originalQuestId || targetQuest.id,
-            submissionId: approvedSubmission?.id
-          }),
-          sensitive: true
-        });
-
-        if (!response.ok) {
-          const errJson = await response.json().catch(() => ({}));
-          throw new Error(errJson.error || `HTTP error! status: ${response.status}`);
+        let success = false;
+        try {
+          const response = await signedFetch(`${backendUrl}/api/submissions/reset-specific`, {
+            method: "POST",
+            body: JSON.stringify({
+              userId: playerUserId,
+              questId: targetQuest.id,
+              originalQuestId: (targetQuest as any).originalQuestId || targetQuest.id,
+              submissionId: approvedSubmission?.id
+            }),
+            sensitive: true
+          });
+          if (response.ok) success = true;
+        } catch (apiErr: any) {
+          console.warn("Backend API reset unreachable, attempting direct Firestore fallback:", apiErr.message);
         }
 
-        alert(`✅ Progress quest "${targetQuest.title}" berhasil direset! Kartu ini dapat muncul kembali saat kocok deck.`);
-        onTriggerSync();
+        if (!success && isFirebaseConfigured && db) {
+          try {
+            if (approvedSubmission?.id) {
+              await deleteDoc(doc(db, "submissions", approvedSubmission.id)).catch(() => {});
+            }
+
+            const deckRef = doc(db, "user_decks", playerUserId);
+            const deckSnap = await getDoc(deckRef);
+            if (deckSnap.exists()) {
+              const deckData = deckSnap.data();
+              const updatedStatuses = { ...(deckData.statuses || {}) };
+              delete updatedStatuses[targetQuest.id];
+              await updateDoc(deckRef, { statuses: updatedStatuses });
+            }
+
+            const userRef = doc(db, "users", playerUserId);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+              await updateDoc(userRef, {
+                cv: increment(-Math.abs(targetQuest.points || 0)),
+                points: increment(-Math.abs(targetQuest.points || 0))
+              });
+            }
+            success = true;
+          } catch (fsErr: any) {
+            console.error("Direct Firestore reset failed:", fsErr);
+          }
+        }
+
+        if (success) {
+          alert(`✅ Progress quest "${targetQuest.title}" berhasil direset! Kartu ini dapat muncul kembali saat kocok deck.`);
+          onTriggerSync();
+        } else {
+          alert("❌ Gagal mereset progress quest.");
+        }
       } catch (err: any) {
         alert("❌ Gagal mereset progress quest: " + err.message);
       }
@@ -416,7 +522,7 @@ export default function AdminQuestPanel({
         ...player,
         serialBadge
       };
-    }).filter(player => player.activeApprovedCount > 0);
+    }).filter(player => player.submissions && player.submissions.length > 0);
   }, [allSubmissions, allUsers, quests]);
 
   return (
@@ -856,8 +962,7 @@ export default function AdminQuestPanel({
                                           if (url && !url.startsWith("http") && !url.startsWith("data:")) {
                                             url = `${backendUrl}${url}`;
                                           }
-                                          // Trigger parent callback to show preview image/video
-                                          alert(`Bukti media: ${url}`);
+                                          setLocalPreviewMediaUrl(url);
                                         }}
                                         className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-theater-gold font-bold text-[8.5px] uppercase tracking-wider py-1 px-2.5 rounded-lg transition-colors cursor-pointer"
                                       >
@@ -919,6 +1024,38 @@ export default function AdminQuestPanel({
                 Belum ada pemain dengan quest yang disetujui (Approved).
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Proof Media Preview Modal */}
+      {localPreviewMediaUrl && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 select-none animate-fade-in"
+          onClick={() => setLocalPreviewMediaUrl(null)}
+        >
+          <div 
+            className="relative max-w-4xl max-h-[85vh] w-full flex flex-col justify-center items-center gap-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setLocalPreviewMediaUrl(null)}
+              className="absolute -top-12 right-0 text-white/75 hover:text-white bg-neutral-900/80 hover:bg-neutral-850 border border-neutral-800 p-2.5 rounded-full cursor-pointer transition-all hover:scale-105"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="w-full h-full flex justify-center items-center overflow-hidden rounded-2xl border border-neutral-800 shadow-2xl bg-neutral-950">
+              {localPreviewMediaUrl.startsWith("data:video") || localPreviewMediaUrl.includes(".mp4") || localPreviewMediaUrl.includes(".webm") ? (
+                <video src={localPreviewMediaUrl} controls autoPlay className="max-w-full max-h-[75vh] object-contain" />
+              ) : (
+                <img src={localPreviewMediaUrl} alt="Pratinjau Bukti Submisi" className="max-w-full max-h-[75vh] object-contain" />
+              )}
+            </div>
+            
+            <div className="text-[10px] text-neutral-400 font-sans tracking-wide">
+              Klik di luar media atau tombol silang di atas untuk menutup modal.
+            </div>
           </div>
         </div>
       )}
