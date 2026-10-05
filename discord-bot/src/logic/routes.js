@@ -869,6 +869,48 @@ function registerRoutes(app) {
         if (levelingList.length === 0) throw new Error('Tidak ada data leveling yang berhasil diparse dari Cakey Bot');
         console.log(`✅ [API/leaderboard] Berhasil parse ${levelingList.length} member dari Cakey Bot leveling table!`);
 
+        // Enrich levelingList display names, handles, and avatars live from Discord Server Guild Members
+        if (state.isDiscordReady && state.client) {
+          try {
+            const targetGuildId = GUILD_ID || '1403255548698300416';
+            const guild = await state.client.guilds.fetch(targetGuildId).catch(() => null);
+            if (guild) {
+              let members = guild.members.cache;
+              if (members.size < (guild.memberCount || 10)) {
+                members = await guild.members.fetch().catch(() => guild.members.cache);
+              }
+              if (members && members.size > 0) {
+                let enrichedCount = 0;
+                levelingList.forEach(item => {
+                  let member = null;
+                  if (item.id && !item.id.startsWith('cakey-')) {
+                    member = members.get(item.id);
+                  }
+                  if (!member && item.username) {
+                    const cleanUser = item.username.toLowerCase();
+                    member = members.find(m => 
+                      m.user.username.toLowerCase() === cleanUser || 
+                      m.user.tag.toLowerCase() === cleanUser ||
+                      m.displayName.toLowerCase() === cleanUser
+                    );
+                  }
+                  if (member) {
+                    enrichedCount++;
+                    item.id = member.id;
+                    item.displayName = member.displayName || member.user.globalName || member.user.username;
+                    item.username = member.user.username;
+                    const fullAvatar = member.user.displayAvatarURL({ extension: 'webp', size: 256 });
+                    if (fullAvatar) item.avatar = fullAvatar;
+                  }
+                });
+                console.log(`✨ [API/leaderboard] Berhasil enrich ${enrichedCount} member dengan nama Discord server live!`);
+              }
+            }
+          } catch (enrichErr) {
+            console.warn('⚠️ [API/leaderboard] Gagal enrich live Discord names:', enrichErr.message);
+          }
+        }
+
         const streakMap = {
           'fuzusovereign': 281,
           'palecursedvessel': 280,
@@ -881,33 +923,16 @@ function registerRoutes(app) {
           'salz69': 27,
           'badawg': 25
         };
-        const streakDisplayNames = {
-          'fuzusovereign': '[AFK] [aFuzu IX]',
-          'palecursedvessel': 'Sadie Grey | Badmood',
-          'crunchyweeb': '[Her] CrunchyWeeb',
-          'starjumper._': '# - Fairy / @for Assist',
-          'raiidd': '[Reja] RobyN',
-          'halzionns': '.salz69.',
-          'zyaa2804': 'Zyaa',
-          'shin_origin': 'Shin—Origin Aha',
-          'salz69': 's∀⅃z',
-          'badawg': 'Badawg X Myrita Top Road'
-        };
 
         const streakList = levelingList.map(item => ({
           rank: item.rank,
           id: item.id,
           username: item.username,
-          displayName: streakDisplayNames[item.username] || item.displayName,
+          displayName: item.displayName,
           avatar: item.avatar,
           streak: streakMap[item.username] !== undefined ? streakMap[item.username] : Math.max(0, 200 - item.rank * 2)
         })).sort((a, b) => b.streak - a.streak);
         streakList.forEach((item, idx) => { item.rank = idx + 1; });
-
-        // Update levelingList display names
-        levelingList.forEach(item => {
-          if (streakDisplayNames[item.username]) item.displayName = streakDisplayNames[item.username];
-        });
 
         // 3. VOICE LIST (Sorted by real Cakey Bot voice minutes)
         const voiceList = [...levelingList]
